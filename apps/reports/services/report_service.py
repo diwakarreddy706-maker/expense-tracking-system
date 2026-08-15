@@ -152,8 +152,18 @@ class ReportService:
         }
 
     @classmethod
+    def sanitize_csv_cell(cls, val: str) -> str:
+        """Protects against CSV Formula Injection (DDE attacks in Excel/Sheets)."""
+        if not val:
+            return ""
+        s = str(val)
+        if s.startswith(('=', '+', '-', '@', '\t', '\r')):
+            return "'" + s
+        return s
+
+    @classmethod
     def export_expenses_to_csv(cls, queryset) -> HttpResponse:
-        """Streams CSV format for expense report."""
+        """Streams CSV format for expense report with injection defense."""
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="Expense_Report_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
 
@@ -165,16 +175,16 @@ class ReportService:
 
         for exp in queryset:
             writer.writerow([
-                exp.expense_code,
+                cls.sanitize_csv_cell(exp.expense_code),
                 exp.expense_date.strftime('%Y-%m-%d'),
-                exp.category.name if exp.category else '--',
-                exp.description or '',
+                cls.sanitize_csv_cell(exp.category.name if exp.category else '--'),
+                cls.sanitize_csv_cell(exp.description or ''),
                 f"{exp.amount:.2f}",
-                exp.get_payment_method_display(),
-                exp.account.account_name if exp.account else '--',
-                f"{exp.machine.machine_code} - {exp.machine.name}" if exp.machine else '--',
-                exp.supplier.name if exp.supplier else '--',
-                exp.created_by.username if exp.created_by else '--'
+                cls.sanitize_csv_cell(exp.get_payment_method_display()),
+                cls.sanitize_csv_cell(exp.account.account_name if exp.account else '--'),
+                cls.sanitize_csv_cell(f"{exp.machine.machine_code} - {exp.machine.name}" if exp.machine else '--'),
+                cls.sanitize_csv_cell(exp.supplier.name if exp.supplier else '--'),
+                cls.sanitize_csv_cell(exp.created_by.username if exp.created_by else '--')
             ])
 
         return response
