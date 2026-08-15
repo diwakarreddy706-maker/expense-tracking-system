@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 from decimal import Decimal
 
 
@@ -67,7 +68,6 @@ class Account(models.Model):
         if len(clean) <= 4:
             return clean
         masked = 'X' * (len(clean) - 4) + clean[-4:]
-        # Group in 4s for readability if numeric
         if clean.isdigit():
             chunks = [masked[i:i+4] for i in range(0, len(masked), 4)]
             return ' '.join(chunks)
@@ -159,3 +159,63 @@ class Supplier(models.Model):
 
     def __str__(self):
         return f"{self.supplier_code} - {self.name} ({self.get_supplier_type_display()})"
+
+
+class AccountTransaction(models.Model):
+    """
+    CENTRAL FINANCIAL LEDGER.
+    The single authoritative source of truth for all account balance movements.
+    Defined in DATABASE_SCHEMA.md.
+    """
+    TYPE_OPENING_BALANCE = 'OPENING_BALANCE'
+    TYPE_INCOME = 'INCOME'
+    TYPE_EXPENSE = 'EXPENSE'
+    TYPE_RECEIVABLE_PAYMENT = 'RECEIVABLE_PAYMENT'
+    TYPE_PAYABLE_PAYMENT = 'PAYABLE_PAYMENT'
+    TYPE_EMPLOYEE_PAYMENT = 'EMPLOYEE_PAYMENT'
+    TYPE_TRANSFER_IN = 'TRANSFER_IN'
+    TYPE_TRANSFER_OUT = 'TRANSFER_OUT'
+    TYPE_ADJUSTMENT = 'ADJUSTMENT'
+    TYPE_REVERSAL = 'REVERSAL'
+
+    TRANSACTION_TYPE_CHOICES = [
+        (TYPE_OPENING_BALANCE, 'Opening Balance Setup'),
+        (TYPE_INCOME, 'Direct Income / Revenue'),
+        (TYPE_EXPENSE, 'Operational / General Expense'),
+        (TYPE_RECEIVABLE_PAYMENT, 'Customer Receivable Payment'),
+        (TYPE_PAYABLE_PAYMENT, 'Supplier Payable Payment'),
+        (TYPE_EMPLOYEE_PAYMENT, 'Employee Wage / Advance Payout'),
+        (TYPE_TRANSFER_IN, 'Inter-Account Transfer (Inflow)'),
+        (TYPE_TRANSFER_OUT, 'Inter-Account Transfer (Outflow)'),
+        (TYPE_ADJUSTMENT, 'Audit / Ledger Adjustment'),
+        (TYPE_REVERSAL, 'Transaction Reversal / Correction'),
+    ]
+
+    DIRECTION_DEBIT = 'DEBIT'   # Outflow from account
+    DIRECTION_CREDIT = 'CREDIT' # Inflow into account
+
+    DIRECTION_CHOICES = [
+        (DIRECTION_DEBIT, 'Debit (Money Out)'),
+        (DIRECTION_CREDIT, 'Credit (Money In)'),
+    ]
+
+    account = models.ForeignKey(Account, on_delete=models.RESTRICT, related_name='ledger_transactions')
+    transaction_date = models.DateField(default=timezone.now, db_index=True)
+    transaction_type = models.CharField(max_length=30, choices=TRANSACTION_TYPE_CHOICES, db_index=True)
+    direction = models.CharField(max_length=10, choices=DIRECTION_CHOICES, db_index=True)
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    reference_type = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. Expense, CustomerPayment, FuelEntry")
+    reference_id = models.BigIntegerField(blank=True, null=True, db_index=True)
+    description = models.TextField(blank=True, null=True)
+    created_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='created_transactions')
+    is_deleted = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'account_transactions'
+        verbose_name = 'Account Ledger Transaction'
+        verbose_name_plural = 'Account Ledger Transactions'
+        ordering = ['-transaction_date', '-id']
+
+    def __str__(self):
+        return f"[{self.transaction_date}] {self.direction} ₹{self.amount} ({self.transaction_type}) on {self.account.account_name}"

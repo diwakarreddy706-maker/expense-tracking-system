@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Expenses | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">Operational Expenses</h2>
+    <p class="text-muted small mb-0">Record and track operational costs, machine maintenance, and farm supplies</p>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-ghost btn-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#quickExpenseModal">
+      <i class="bi bi-lightning-fill text-warning"></i>
+      <span>Quick Expense</span>
+    </button>
+    <a href="{% url 'expenses:create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+      <i class="bi bi-plus-lg"></i>
+      <span>Record Expense</span>
+    </a>
+  </div>
+</div>
+
+<!-- Multi-Parameter Filter Bar -->
+<div class="theme-card p-3 mb-4">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-12 col-md-3">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search code, notes, bill no...">
+      </div>
+    </div>
+    <div class="col-6 col-md-2">
+      <select name="category" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if cat_id == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <select name="account" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Accounts</option>
+        {% for acc in accounts %}
+          <option value="{{ acc.id }}" {% if acc_id == acc.id|stringformat:"i" %}selected{% endif %}>{{ acc.account_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <select name="method" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Payment Methods</option>
+        <option value="CASH" {% if method == 'CASH' %}selected{% endif %}>Cash</option>
+        <option value="UPI" {% if method == 'UPI' %}selected{% endif %}>UPI</option>
+        <option value="BANK_TRANSFER" {% if method == 'BANK_TRANSFER' %}selected{% endif %}>Bank Transfer</option>
+        <option value="CHEQUE" {% if method == 'CHEQUE' %}selected{% endif %}>Cheque</option>
+        <option value="CREDIT" {% if method == 'CREDIT' %}selected{% endif %}>Credit / Payable</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <select name="machine" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Machines</option>
+        {% for m in machines %}
+          <option value="{{ m.id }}" {% if mch_id == m.id|stringformat:"i" %}selected{% endif %}>{{ m.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-1 d-flex gap-1">
+      <button type="submit" class="btn btn-ghost btn-sm w-100" title="Apply Filters">
+        <i class="bi bi-funnel-fill"></i>
+      </button>
+      {% if query or cat_id or acc_id or method or mch_id or segment or start_date or end_date %}
+        <a href="{% url 'expenses:list' %}" class="btn btn-ghost btn-sm" title="Clear Filters"><i class="bi bi-x-lg"></i></a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Expenses Table -->
+<div class="theme-card">
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0">
+      <thead>
+        <tr class="text-muted small border-secondary">
+          <th>Date</th>
+          <th>Code</th>
+          <th>Category</th>
+          <th>Account / Method</th>
+          <th>Machine / Tag</th>
+          <th class="text-end">Amount</th>
+          <th class="text-center">Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for exp in expenses %}
+          <tr class="border-secondary">
+            <td class="text-muted small">{{ exp.expense_date|date:"d M Y" }}</td>
+            <td class="font-tabular text-info fw-semibold">
+              <a href="{% url 'expenses:detail' exp.id %}" class="text-decoration-none text-info">
+                {{ exp.expense_code }}
+              </a>
+              {% if exp.is_quick_expense %}
+                <span class="badge bg-dark border border-warning text-warning ms-1" style="font-size: 0.65rem;">Quick</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: {{ exp.category.color_hex }};"></span>
+                <span class="text-white fw-medium">{{ exp.category.name }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="text-white small">{{ exp.account.account_name|default:"Credit Obligation" }}</div>
+              <div class="text-muted" style="font-size: 0.75rem;">{{ exp.get_payment_method_display }}</div>
+            </td>
+            <td>
+              {% if exp.machine %}
+                <span class="badge bg-dark border border-secondary text-light">
+                  <i class="bi bi-truck me-1"></i>{{ exp.machine.name }}
+                </span>
+              {% elif exp.employee %}
+                <span class="badge bg-dark border border-secondary text-primary">
+                  <i class="bi bi-person me-1"></i>{{ exp.employee.full_name }}
+                </span>
+              {% else %}
+                <span class="text-muted small">--</span>
+              {% endif %}
+            </td>
+            <td class="text-end font-tabular text-crimson fw-bold">
+              -₹{{ exp.amount }}
+            </td>
+            <td class="text-center">
+              {% if exp.is_reversed %}
+                <span class="badge bg-danger">Reversed</span>
+              {% else %}
+                <span class="badge bg-success">Posted</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{% url 'expenses:detail' exp.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="View Detail & Ledger">
+                <i class="bi bi-eye"></i>
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" class="text-center py-5 text-muted">
+              <i class="bi bi-receipt fs-1 d-block mb-2 text-secondary"></i>
+              No expenses found matching the criteria. Click "Record Expense" or "Quick Expense" to log your first transaction.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

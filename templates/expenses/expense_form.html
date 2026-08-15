@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
+    <p class="text-muted small mb-0">Record operational expense with automatic central ledger debit</p>
+  </div>
+  <div>
+    <a href="{% url 'expenses:list' %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to Expenses
+    </a>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-9">
+    <div class="theme-card">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 small mb-3">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Expense Date *</label>
+            {{ form.expense_date }}
+            {% if form.expense_date.errors %}<div class="text-danger small mt-1">{{ form.expense_date.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Amount (₹) *</label>
+            {{ form.amount }}
+            {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Expense Category *</label>
+            {{ form.category }}
+            {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Payment Method *</label>
+            {{ form.payment_method }}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Debited Business Account (Mandatory for non-credit)</label>
+            {{ form.account }}
+            {% if form.account.errors %}<div class="text-danger small mt-1">{{ form.account.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Business Segment</label>
+            {{ form.business_segment }}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Bill / Tax Invoice / Receipt Number</label>
+            {{ form.reference_no }}
+          </div>
+        </div>
+
+        <!-- Optional Operational Tags -->
+        <div class="border border-secondary rounded p-3 mb-3 bg-dark">
+          <h4 class="fs-6 fw-bold text-white mb-3"><i class="bi bi-tags me-2 text-info"></i>Operational Tags (Optional)</h4>
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label small text-muted">Associated Machine / Equipment</label>
+              {{ form.machine }}
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label small text-muted">Associated Staff Member</label>
+              {{ form.employee }}
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label small text-muted">Vendor / Supplier</label>
+              {{ form.supplier }}
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label small text-muted">Description / Notes</label>
+          {{ form.description }}
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-3">
+          <a href="{% url 'expenses:list' %}" class="btn btn-ghost btn-sm">Cancel</a>
+          <button type="submit" class="btn btn-emerald btn-sm">Post Expense to Ledger</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

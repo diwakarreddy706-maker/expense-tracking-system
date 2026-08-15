@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <div class="d-flex align-items-center gap-2">
+      <h2 class="fs-4 fw-bold text-white mb-0">{{ expense.expense_code }}</h2>
+      {% if expense.is_reversed %}
+        <span class="badge bg-danger">Reversed</span>
+      {% else %}
+        <span class="badge bg-success">Posted</span>
+      {% endif %}
+      {% if expense.is_quick_expense %}
+        <span class="badge bg-warning text-dark">Quick Expense</span>
+      {% endif %}
+    </div>
+    <p class="text-muted small mb-0 mt-1">Recorded on {{ expense.expense_date|date:"d M Y" }} by {{ expense.created_by.get_full_name|default:expense.created_by.username }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'expenses:list' %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to Expenses
+    </a>
+    {% if not expense.is_reversed and request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+      <button class="btn btn-outline-danger btn-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#reversalModal">
+        <i class="bi bi-arrow-counterclockwise"></i>
+        <span>Reverse Expense</span>
+      </button>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Left Column: Core Expense Details -->
+  <div class="col-12 col-lg-7">
+    <div class="theme-card mb-4">
+      <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
+        <i class="bi bi-info-circle me-2 text-info"></i>Expense Information
+      </h3>
+
+      <div class="row g-3">
+        <div class="col-6">
+          <div class="text-muted small">Category</div>
+          <div class="text-white fw-semibold d-flex align-items-center gap-2 mt-1">
+            <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: {{ expense.category.color_hex }};"></span>
+            {{ expense.category.name }}
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted small">Amount</div>
+          <div class="text-crimson font-tabular fs-5 fw-bold mt-1">₹{{ expense.amount }}</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted small">Payment Method</div>
+          <div class="text-white fw-medium mt-1">{{ expense.get_payment_method_display }}</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted small">Debited Account</div>
+          <div class="text-white fw-medium mt-1">{{ expense.account.account_name|default:"None (Credit)" }}</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted small">Business Segment</div>
+          <div class="text-white mt-1">{{ expense.get_business_segment_display }}</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted small">Receipt / Bill Reference</div>
+          <div class="font-tabular text-info mt-1">{{ expense.reference_no|default:"--" }}</div>
+        </div>
+      </div>
+
+      {% if expense.description %}
+      <div class="border-top border-secondary pt-3 mt-3">
+        <div class="text-muted small">Description / Notes</div>
+        <div class="text-light small mt-1">{{ expense.description }}</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Linked Operations Card -->
+    <div class="theme-card">
+      <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
+        <i class="bi bi-tags me-2 text-warning"></i>Linked Operational Entities
+      </h3>
+      <div class="row g-3">
+        <div class="col-4">
+          <div class="text-muted small">Machine</div>
+          <div class="text-white small fw-medium mt-1">
+            {% if expense.machine %}
+              <i class="bi bi-truck me-1 text-emerald"></i>{{ expense.machine.name }}
+            {% else %}
+              <span class="text-muted">None</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="text-muted small">Employee</div>
+          <div class="text-white small fw-medium mt-1">
+            {% if expense.employee %}
+              <i class="bi bi-person me-1 text-primary"></i>{{ expense.employee.full_name }}
+            {% else %}
+              <span class="text-muted">None</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="text-muted small">Supplier</div>
+          <div class="text-white small fw-medium mt-1">
+            {% if expense.supplier %}
+              <i class="bi bi-shop me-1 text-info"></i>{{ expense.supplier.name }}
+            {% else %}
+              <span class="text-muted">None</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Authoritative Ledger & Audit Trail -->
+  <div class="col-12 col-lg-5">
+    <div class="theme-card mb-4">
+      <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
+        <i class="bi bi-journal-check me-2 text-emerald"></i>Central Financial Ledger
+      </h3>
+
+      {% if ledger_tx %}
+        <div class="p-3 rounded bg-dark border border-secondary mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-secondary">Ledger Entry #{{ ledger_tx.id }}</span>
+            <span class="badge bg-danger">{{ ledger_tx.get_direction_display }}</span>
+          </div>
+          <div class="d-flex justify-content-between text-muted small mb-1">
+            <span>Transaction Type:</span>
+            <span class="text-white fw-semibold">{{ ledger_tx.get_transaction_type_display }}</span>
+          </div>
+          <div class="d-flex justify-content-between text-muted small mb-1">
+            <span>Debited Account:</span>
+            <span class="text-white fw-semibold">{{ ledger_tx.account.account_name }}</span>
+          </div>
+          <div class="d-flex justify-content-between text-muted small mb-1">
+            <span>Posting Date:</span>
+            <span class="text-white font-tabular">{{ ledger_tx.transaction_date|date:"d M Y" }}</span>
+          </div>
+          <div class="d-flex justify-content-between border-top border-secondary pt-2 mt-2">
+            <span class="text-muted">Debited Amount:</span>
+            <span class="font-tabular text-crimson fw-bold">₹{{ ledger_tx.amount }}</span>
+          </div>
+        </div>
+        <div class="text-muted" style="font-size: 0.75rem;">
+          <i class="bi bi-shield-check text-emerald me-1"></i> Authoritative ledger entry posted atomically.
+        </div>
+      {% else %}
+        <div class="text-muted small py-3">No direct ledger transaction posted (Credit Obligation or Non-Financial).</div>
+      {% endif %}
+    </div>
+
+    <!-- Metadata Card -->
+    <div class="theme-card">
+      <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
+        <i class="bi bi-clock-history me-2 text-info"></i>System Audit
+      </h3>
+      <div class="text-muted small mb-2">Created: <span class="text-white font-tabular">{{ expense.created_at|date:"d M Y, H:i" }}</span></div>
+      <div class="text-muted small mb-2">Last Updated: <span class="text-white font-tabular">{{ expense.updated_at|date:"d M Y, H:i" }}</span></div>
+      <div class="text-muted small">Recorded By: <span class="text-white">{{ expense.created_by.username }}</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Reversal Modal (Owner Only) -->
+{% if not expense.is_reversed and request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+<div class="modal fade" id="reversalModal" tabindex="-1" aria-labelledby="reversalModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark border-secondary text-white">
+      <form method="post" action="{% url 'expenses:reverse' expense.id %}">
+        {% csrf_token %}
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title fs-6 fw-bold text-danger" id="reversalModalLabel">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Financial Reversal
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-light">
+            You are about to reverse expense <strong>{{ expense.expense_code }}</strong> (₹{{ expense.amount }}).
+          </p>
+          <div class="alert alert-warning py-2 small">
+            <i class="bi bi-info-circle me-1"></i> Under Rule 10 (Single Authoritative Source), this will post a compensatory <strong>CREDIT REVERSAL</strong> transaction to restore account balance while keeping full audit history intact.
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-muted">Reason for Reversal * (min 5 characters)</label>
+            <textarea name="reason" rows="2" class="form-control bg-dark text-white border-secondary" required placeholder="e.g. Duplicate entry recorded by mistake / Wrong account debited"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger btn-sm">Execute Reversal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

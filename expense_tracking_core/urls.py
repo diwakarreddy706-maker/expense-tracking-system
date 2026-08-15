@@ -8,6 +8,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
 
+from apps.dashboard.views import dashboard_index
+from apps.expenses.views import expense_quick_api_view
+
 
 def health_check(request):
     """
@@ -21,8 +24,6 @@ def health_check(request):
     })
 
 
-from apps.dashboard.views import dashboard_index
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('health/', health_check, name='health_check'),
@@ -30,6 +31,7 @@ urlpatterns = [
     path('dashboard/', include('apps.dashboard.urls')),
     path('accounts/', include('apps.accounts.urls')),
     path('expenses/', include('apps.expenses.urls')),
+    path('api/expenses/quick/', expense_quick_api_view, name='global_api_expenses_quick'),
     path('fuel/', include('apps.fuel.urls')),
     path('machines/', include('apps.machines.urls')),
     path('employees/', include('apps.employees.urls')),
