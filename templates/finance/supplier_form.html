@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
+    <p class="text-muted small mb-0">Vendor and supplier setup for fuels, parts, and workshops</p>
+  </div>
+  <div>
+    <a href="{% url 'finance:suppliers' %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to Suppliers
+    </a>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="theme-card">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 small mb-3">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Supplier Code *</label>
+            {{ form.supplier_code }}
+            {% if form.supplier_code.errors %}<div class="text-danger small mt-1">{{ form.supplier_code.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-8">
+            <label class="form-label small text-muted">Supplier / Vendor Name *</label>
+            {{ form.name }}
+            {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Supplier Classification *</label>
+            {{ form.supplier_type }}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Contact Phone Number</label>
+            {{ form.phone }}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Payment Terms (e.g. Net 15, Weekly)</label>
+            {{ form.payment_terms }}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Vendor Status</label>
+            {{ form.status }}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small text-muted">Shop / Outlet Address</label>
+          {{ form.location_address }}
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label small text-muted">Remarks / Notes</label>
+          {{ form.notes }}
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-3">
+          <a href="{% url 'finance:suppliers' %}" class="btn btn-ghost btn-sm">Cancel</a>
+          <button type="submit" class="btn btn-emerald btn-sm">Save Supplier</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

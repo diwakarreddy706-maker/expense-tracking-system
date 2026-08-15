@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Employees | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">Staff & Operator Directory</h2>
+    <p class="text-muted small mb-0">Tractor drivers, harvester operators, mechanics, and farm staff</p>
+  </div>
+  <div>
+    <a href="{% url 'employees:create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+      <i class="bi bi-person-plus-fill"></i>
+      <span>Add Employee</span>
+    </a>
+  </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="theme-card p-3 mb-4">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-12 col-md-5">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search by name, code, or phone...">
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-3">
+      <select name="role" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Operational Roles</option>
+        <option value="TRACTOR_DRIVER" {% if role == 'TRACTOR_DRIVER' %}selected{% endif %}>Tractor Driver</option>
+        <option value="HARVESTER_OPERATOR" {% if role == 'HARVESTER_OPERATOR' %}selected{% endif %}>Harvester Operator</option>
+        <option value="WORKSHOP_MECHANIC" {% if role == 'WORKSHOP_MECHANIC' %}selected{% endif %}>Mechanic</option>
+        <option value="SHOP_STAFF" {% if role == 'SHOP_STAFF' %}selected{% endif %}>Shop Staff</option>
+        <option value="DAILY_LABOR" {% if role == 'DAILY_LABOR' %}selected{% endif %}>Daily Labor</option>
+      </select>
+    </div>
+    <div class="col-12 col-sm-6 col-md-2">
+      <select name="status" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Statuses</option>
+        <option value="ACTIVE" {% if status == 'ACTIVE' %}selected{% endif %}>Active</option>
+        <option value="INACTIVE" {% if status == 'INACTIVE' %}selected{% endif %}>Inactive</option>
+        <option value="ON_LEAVE" {% if status == 'ON_LEAVE' %}selected{% endif %}>On Leave</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-ghost btn-sm w-100">Filter</button>
+      {% if query or role or status %}
+        <a href="{% url 'employees:list' %}" class="btn btn-ghost btn-sm" title="Clear"><i class="bi bi-x-lg"></i></a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Employees Table -->
+<div class="theme-card">
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0">
+      <thead>
+        <tr class="text-muted small border-secondary">
+          <th>Code</th>
+          <th>Staff Name</th>
+          <th>Designation / Role</th>
+          <th>Phone</th>
+          <th>Joining Date</th>
+          <th class="text-center">Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for emp in employees %}
+          <tr class="border-secondary">
+            <td class="font-tabular text-info fw-semibold">{{ emp.employee_code }}</td>
+            <td class="text-white fw-semibold">{{ emp.full_name }}</td>
+            <td><span class="badge bg-dark border border-secondary text-primary">{{ emp.get_role_display }}</span></td>
+            <td class="font-tabular text-muted">{{ emp.phone_number|default:"--" }}</td>
+            <td class="text-muted small">{{ emp.joining_date|date:"d M Y" }}</td>
+            <td class="text-center">
+              {% if emp.status == 'ACTIVE' %}
+                <span class="badge bg-success">Active</span>
+              {% elif emp.status == 'ON_LEAVE' %}
+                <span class="badge bg-warning text-dark">On Leave</span>
+              {% else %}
+                <span class="badge bg-secondary">Inactive</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{% url 'employees:edit' emp.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Edit Employee">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+              {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+                <a href="{% url 'employees:delete' emp.id %}" class="btn btn-ghost btn-sm py-1 px-2 text-danger" title="Delete" onclick="return confirm('Soft delete employee {{ emp.full_name }}?');">
+                  <i class="bi bi-trash"></i>
+                </a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-4 text-muted">No staff members found. Click "Add Employee" to register a team member.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

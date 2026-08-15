@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
+    <p class="text-muted small mb-0">Employee details, role classification, and wage setup</p>
+  </div>
+  <div>
+    <a href="{% url 'employees:list' %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to Employees
+    </a>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="theme-card">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 small mb-3">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Employee Code *</label>
+            {{ form.employee_code }}
+            {% if form.employee_code.errors %}<div class="text-danger small mt-1">{{ form.employee_code.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-8">
+            <label class="form-label small text-muted">Full Name *</label>
+            {{ form.full_name }}
+            {% if form.full_name.errors %}<div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Contact Phone</label>
+            {{ form.phone_number }}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Emergency Contact</label>
+            {{ form.emergency_contact }}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Operational Role *</label>
+            {{ form.role }}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Employment Status</label>
+            {{ form.status }}
+          </div>
+        </div>
+
+        <!-- Wage Configuration (Strictly restricted visibility for unauthorized users) -->
+        {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
+        <div class="border border-secondary rounded p-3 mb-3 bg-dark">
+          <h4 class="fs-6 fw-bold text-warning mb-3"><i class="bi bi-cash-stack me-2"></i>Wage / Salary Configuration</h4>
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label small text-muted">Wage Structure *</label>
+              {{ form.wage_type }}
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small text-muted">Base Rate (₹) *</label>
+              {{ form.base_rate }}
+            </div>
+          </div>
+        </div>
+        {% else %}
+          <input type="hidden" name="wage_type" value="{{ form.instance.wage_type|default:'DAILY_WAGE' }}">
+          <input type="hidden" name="base_rate" value="{{ form.instance.base_rate|default:'0.00' }}">
+        {% endif %}
+
+        <div class="mb-4">
+          <label class="form-label small text-muted">Joining Date *</label>
+          {{ form.joining_date }}
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-3">
+          <a href="{% url 'employees:list' %}" class="btn btn-ghost btn-sm">Cancel</a>
+          <button type="submit" class="btn btn-emerald btn-sm">Save Staff Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

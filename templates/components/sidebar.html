@@ -15,13 +15,23 @@
       </a>
     </li>
 
-    <!-- Expenses: All Roles -->
+    <!-- Expenses Hub -->
     <li class="menu-item">
       <a href="{% url 'expenses:list' %}" class="menu-link">
         <i class="bi bi-receipt menu-icon"></i>
         <span>Expenses</span>
       </a>
     </li>
+
+    <!-- Expense Categories: Owner & Accountant -->
+    {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
+    <li class="menu-item">
+      <a href="{% url 'expenses:categories' %}" class="menu-link">
+        <i class="bi bi-tags-fill menu-icon"></i>
+        <span>Expense Categories</span>
+      </a>
+    </li>
+    {% endif %}
 
     <!-- Fuel & Lubricants: All Roles -->
     <li class="menu-item">
@@ -41,22 +51,42 @@
     </li>
     {% endif %}
 
-    <!-- Employees: Owner, Manager -->
-    {% if role == 'OWNER' or role == 'MANAGER' or request.user.is_superuser %}
+    <!-- Employees: Owner, Manager, Accountant -->
+    {% if role == 'OWNER' or role == 'MANAGER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <li class="menu-item">
       <a href="{% url 'employees:list' %}" class="menu-link">
         <i class="bi bi-people-fill menu-icon"></i>
-        <span>Employees & Wages</span>
+        <span>Employees & Staff</span>
       </a>
     </li>
     {% endif %}
 
-    <!-- Accounts: Owner, Accountant -->
+    <!-- Business Accounts: Owner, Accountant -->
     {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <li class="menu-item">
       <a href="{% url 'finance:accounts' %}" class="menu-link">
         <i class="bi bi-bank2 menu-icon"></i>
         <span>Business Accounts</span>
+      </a>
+    </li>
+    {% endif %}
+
+    <!-- Customers & Farmers: Owner, Accountant, Manager -->
+    {% if role == 'OWNER' or role == 'ACCOUNTANT' or role == 'MANAGER' or request.user.is_superuser %}
+    <li class="menu-item">
+      <a href="{% url 'finance:customers' %}" class="menu-link">
+        <i class="bi bi-person-lines-fill menu-icon"></i>
+        <span>Customers</span>
+      </a>
+    </li>
+    {% endif %}
+
+    <!-- Suppliers & Vendors: Owner, Accountant, Manager -->
+    {% if role == 'OWNER' or role == 'ACCOUNTANT' or role == 'MANAGER' or request.user.is_superuser %}
+    <li class="menu-item">
+      <a href="{% url 'finance:suppliers' %}" class="menu-link">
+        <i class="bi bi-shop-window menu-icon"></i>
+        <span>Suppliers & Vendors</span>
       </a>
     </li>
     {% endif %}
@@ -91,8 +121,8 @@
     </li>
     {% endif %}
 
-    <!-- Daily Closing: Owner, Accountant, Manager -->
-    {% if role == 'OWNER' or role == 'ACCOUNTANT' or role == 'MANAGER' or request.user.is_superuser %}
+    <!-- Daily Closing: Owner, Accountant -->
+    {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <li class="menu-item">
       <a href="{% url 'finance:daily_closing' %}" class="menu-link">
         <i class="bi bi-lock-fill menu-icon"></i>
@@ -101,12 +131,12 @@
     </li>
     {% endif %}
 
-    <!-- Financial Reports: Owner, Accountant, Manager -->
+    <!-- Financial & Ops Reports -->
     {% if role == 'OWNER' or role == 'ACCOUNTANT' or role == 'MANAGER' or request.user.is_superuser %}
     <li class="menu-item">
       <a href="{% url 'reports:index' %}" class="menu-link">
         <i class="bi bi-file-earmark-bar-graph-fill menu-icon"></i>
-        <span>Financial Reports</span>
+        <span>Reports</span>
       </a>
     </li>
     {% endif %}

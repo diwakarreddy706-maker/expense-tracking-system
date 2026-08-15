@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
+    <p class="text-muted small mb-0">Financial account setup and opening balance definition</p>
+  </div>
+  <div>
+    <a href="{% url 'finance:accounts' %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to Accounts
+    </a>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="theme-card">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 small mb-3">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-8">
+            <label class="form-label small text-muted">Account Name *</label>
+            {{ form.account_name }}
+            {% if form.account_name.errors %}<div class="text-danger small mt-1">{{ form.account_name.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Account Type *</label>
+            {{ form.account_type }}
+            {% if form.account_type.errors %}<div class="text-danger small mt-1">{{ form.account_type.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Account Number / UPI ID</label>
+            {{ form.account_number }}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Bank Name</label>
+            {{ form.bank_name }}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">IFSC Code</label>
+            {{ form.ifsc_code }}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Opening Balance (₹) *</label>
+            {{ form.opening_balance }}
+            {% if form.opening_balance.errors %}<div class="text-danger small mt-1">{{ form.opening_balance.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Opening Balance Date *</label>
+            {{ form.opening_balance_date }}
+          </div>
+        </div>
+
+        <div class="form-check form-switch mb-4 mt-3">
+          {{ form.is_active }}
+          <label class="form-check-label text-white small ms-2" for="{{ form.is_active.id_for_label }}">Active for Financial Transactions</label>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-3">
+          <a href="{% url 'finance:accounts' %}" class="btn btn-ghost btn-sm">Cancel</a>
+          <button type="submit" class="btn btn-emerald btn-sm">Save Business Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

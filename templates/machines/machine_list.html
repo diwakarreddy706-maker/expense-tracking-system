@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Machines & Equipment | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">Agricultural Machinery & Equipment</h2>
+    <p class="text-muted small mb-0">Tractors, combine harvesters, tillers, and implements registry</p>
+  </div>
+  <div>
+    <a href="{% url 'machines:create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+      <i class="bi bi-plus-lg"></i>
+      <span>Add Machine</span>
+    </a>
+  </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="theme-card p-3 mb-4">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-12 col-md-5">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search by name, code, or registration...">
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-3">
+      <select name="type" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Equipment Types</option>
+        {% for t in machine_types %}
+          <option value="{{ t.code }}" {% if m_type == t.code %}selected{% endif %}>{{ t.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-sm-6 col-md-2">
+      <select name="status" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Statuses</option>
+        <option value="ACTIVE" {% if status == 'ACTIVE' %}selected{% endif %}>Active</option>
+        <option value="UNDER_MAINTENANCE" {% if status == 'UNDER_MAINTENANCE' %}selected{% endif %}>Under Maintenance</option>
+        <option value="IDLE" {% if status == 'IDLE' %}selected{% endif %}>Idle</option>
+        <option value="DECOMMISSIONED" {% if status == 'DECOMMISSIONED' %}selected{% endif %}>Decommissioned</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-ghost btn-sm w-100">Filter</button>
+      {% if query or m_type or status %}
+        <a href="{% url 'machines:list' %}" class="btn btn-ghost btn-sm" title="Clear"><i class="bi bi-x-lg"></i></a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Machines Table -->
+<div class="theme-card">
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0">
+      <thead>
+        <tr class="text-muted small border-secondary">
+          <th>Code</th>
+          <th>Model / Machine Name</th>
+          <th>Type</th>
+          <th>Registration / Chassis</th>
+          <th>Assigned Operator</th>
+          <th class="text-end">Current Meter</th>
+          <th class="text-center">Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in machines %}
+          <tr class="border-secondary">
+            <td class="font-tabular text-info fw-semibold">{{ m.machine_code }}</td>
+            <td class="text-white fw-semibold">
+              <i class="bi bi-truck me-2 text-emerald"></i>{{ m.name }}
+            </td>
+            <td><span class="badge bg-dark border border-secondary text-info">{{ m.machine_type.name }}</span></td>
+            <td class="font-tabular text-muted">{{ m.registration_no|default:"--" }}</td>
+            <td class="text-muted small">{{ m.default_operator.full_name|default:"Unassigned" }}</td>
+            <td class="text-end font-tabular text-emerald fw-semibold">{{ m.current_meter_reading }} {{ m.get_meter_unit_display }}</td>
+            <td class="text-center">
+              {% if m.status == 'ACTIVE' %}
+                <span class="badge bg-success">Active</span>
+              {% elif m.status == 'UNDER_MAINTENANCE' %}
+                <span class="badge bg-danger">Workshop</span>
+              {% elif m.status == 'IDLE' %}
+                <span class="badge bg-warning text-dark">Idle</span>
+              {% else %}
+                <span class="badge bg-secondary">Decommissioned</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{% url 'machines:edit' m.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Edit Machine">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+              {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+                <a href="{% url 'machines:delete' m.id %}" class="btn btn-ghost btn-sm py-1 px-2 text-danger" title="Delete" onclick="return confirm('Soft delete machine {{ m.name }}?');">
+                  <i class="bi bi-trash"></i>
+                </a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" class="text-center py-4 text-muted">No agricultural machines found. Click "Add Machine" to register your equipment.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

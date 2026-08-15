@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Suppliers | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">Suppliers & Vendors</h2>
+    <p class="text-muted small mb-0">Petroleum outlets, spare parts dealers, workshops, and agricultural vendors</p>
+  </div>
+  <div>
+    <a href="{% url 'finance:supplier_create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+      <i class="bi bi-plus-lg"></i>
+      <span>Add Supplier</span>
+    </a>
+  </div>
+</div>
+
+<!-- Search Bar -->
+<div class="theme-card p-3 mb-4">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-12 col-md-6">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search by vendor name, code, or phone...">
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4">
+      <select name="type" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Supplier Types</option>
+        <option value="FUEL_PUMP" {% if supp_type == 'FUEL_PUMP' %}selected{% endif %}>Fuel Pump</option>
+        <option value="SPARE_PARTS" {% if supp_type == 'SPARE_PARTS' %}selected{% endif %}>Spare Parts</option>
+        <option value="WORKSHOP" {% if supp_type == 'WORKSHOP' %}selected{% endif %}>Workshop</option>
+        <option value="FERTILIZER" {% if supp_type == 'FERTILIZER' %}selected{% endif %}>Fertilizer & Seeds</option>
+        <option value="OTHER" {% if supp_type == 'OTHER' %}selected{% endif %}>Other</option>
+      </select>
+    </div>
+    <div class="col-12 col-sm-6 col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-ghost btn-sm w-100">Filter</button>
+      {% if query or supp_type %}
+        <a href="{% url 'finance:suppliers' %}" class="btn btn-ghost btn-sm" title="Clear"><i class="bi bi-x-lg"></i></a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Suppliers Table -->
+<div class="theme-card">
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0">
+      <thead>
+        <tr class="text-muted small border-secondary">
+          <th>Code</th>
+          <th>Vendor Name</th>
+          <th>Type</th>
+          <th>Phone</th>
+          <th>Payment Terms</th>
+          <th class="text-center">Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in suppliers %}
+          <tr class="border-secondary">
+            <td class="font-tabular text-warning fw-semibold">{{ s.supplier_code }}</td>
+            <td class="text-white fw-semibold">{{ s.name }}</td>
+            <td><span class="badge bg-dark border border-secondary text-info">{{ s.get_supplier_type_display }}</span></td>
+            <td class="font-tabular text-muted">{{ s.phone|default:"--" }}</td>
+            <td class="text-muted small">{{ s.payment_terms|default:"Cash / Direct" }}</td>
+            <td class="text-center">
+              {% if s.status == 'ACTIVE' %}
+                <span class="badge bg-success">Active</span>
+              {% else %}
+                <span class="badge bg-secondary">Inactive</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{% url 'finance:supplier_edit' s.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Edit Supplier">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+              {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+                <a href="{% url 'finance:supplier_delete' s.id %}" class="btn btn-ghost btn-sm py-1 px-2 text-danger" title="Delete" onclick="return confirm('Soft delete supplier {{ s.name }}?');">
+                  <i class="bi bi-trash"></i>
+                </a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-4 text-muted">No suppliers found. Click "Add Supplier" to register a fuel pump or vendor.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

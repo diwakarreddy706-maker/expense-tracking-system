@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
+    <p class="text-muted small mb-0">Machinery registration, meter type, and operator assignment</p>
+  </div>
+  <div>
+    <a href="{% url 'machines:list' %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to Machines
+    </a>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="theme-card">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 small mb-3">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Machine Code *</label>
+            {{ form.machine_code }}
+            {% if form.machine_code.errors %}<div class="text-danger small mt-1">{{ form.machine_code.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-8">
+            <label class="form-label small text-muted">Machine / Model Name *</label>
+            {{ form.name }}
+            {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Equipment Type *</label>
+            {{ form.machine_type }}
+            {% if form.machine_type.errors %}<div class="text-danger small mt-1">{{ form.machine_type.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Registration / Chassis No.</label>
+            {{ form.registration_no }}
+            {% if form.registration_no.errors %}<div class="text-danger small mt-1">{{ form.registration_no.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Operational Status *</label>
+            {{ form.status }}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Default Operator</label>
+            {{ form.default_operator }}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Meter Unit *</label>
+            {{ form.meter_unit }}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Current Meter Reading *</label>
+            {{ form.current_meter_reading }}
+            {% if form.current_meter_reading.errors %}<div class="text-danger small mt-1">{{ form.current_meter_reading.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Purchase Date</label>
+            {{ form.purchase_date }}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Purchase Price (₹)</label>
+            {{ form.purchase_price }}
+          </div>
+        </div>
+
+        <div class="form-check form-switch mb-4 mt-3">
+          {{ form.is_active }}
+          <label class="form-check-label text-white small ms-2" for="{{ form.is_active.id_for_label }}">Active Equipment</label>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-3">
+          <a href="{% url 'machines:list' %}" class="btn btn-ghost btn-sm">Cancel</a>
+          <button type="submit" class="btn btn-emerald btn-sm">Save Machine Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
