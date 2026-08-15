@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}403 - Permission Denied | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="theme-card text-center py-5">
+  <i class="bi bi-shield-lock fs-1 text-danger mb-3 d-block"></i>
+  <h2 class="text-white fw-bold mb-2">403 - Permission Denied</h2>
+  <p class="text-muted mb-4">You do not have the required role or permissions to access this financial module.</p>
+  <a href="{% url 'dashboard:index' %}" class="btn btn-emerald btn-sm">
+    <i class="bi bi-house me-1"></i> Return to Dashboard
+  </a>
+</div>
+{% endblock %}

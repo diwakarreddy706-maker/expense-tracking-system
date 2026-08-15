@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
+    <p class="text-muted small mb-0">Configure role permissions and profile settings</p>
+  </div>
+  <div>
+    <a href="{% url 'accounts:user_list' %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to User List
+    </a>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="theme-card">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 small mb-3">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        {% if form.username %}
+          <div class="mb-3">
+            <label class="form-label small text-muted">Username *</label>
+            {{ form.username }}
+            {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>{% endif %}
+          </div>
+        {% endif %}
+
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label small text-muted">First Name</label>
+            {{ form.first_name }}
+          </div>
+          <div class="col-6">
+            <label class="form-label small text-muted">Last Name</label>
+            {{ form.last_name }}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small text-muted">Email Address</label>
+          {{ form.email }}
+          {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+        </div>
+
+        {% if form.password %}
+          <div class="mb-3">
+            <label class="form-label small text-muted">Password *</label>
+            {{ form.password }}
+            {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>{% endif %}
+          </div>
+        {% endif %}
+
+        <div class="row g-2 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">System Role *</label>
+            {{ form.role }}
+            {% if form.role.errors %}<div class="text-danger small mt-1">{{ form.role.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Phone Number</label>
+            {{ form.phone_number }}
+          </div>
+        </div>
+
+        {% if form.is_active %}
+          <div class="mb-4 form-check form-switch mt-3">
+            {{ form.is_active }}
+            <label class="form-check-label text-white small ms-2" for="{{ form.is_active.id_for_label }}">Active User Account</label>
+          </div>
+        {% endif %}
+
+        <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-3 mt-4">
+          <a href="{% url 'accounts:user_list' %}" class="btn btn-ghost btn-sm">Cancel</a>
+          <button type="submit" class="btn btn-emerald btn-sm">Save User Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

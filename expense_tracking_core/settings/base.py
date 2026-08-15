@@ -92,6 +92,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Authentication URLs
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'dashboard:index'
+LOGOUT_REDIRECT_URL = 'accounts:login'
+
 # Internationalization & Localization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Kolkata'

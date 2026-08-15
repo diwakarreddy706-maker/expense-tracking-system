@@ -6,71 +6,120 @@
     <h1 class="brand-title">Expense Tracking</h1>
   </div>
   <ul class="sidebar-menu">
+    {% with role=request.user.profile.role %}
+    <!-- Dashboard: All Roles -->
     <li class="menu-item">
       <a href="{% url 'dashboard:index' %}" class="menu-link active">
         <i class="bi bi-grid-1x2-fill menu-icon"></i>
         <span>Dashboard</span>
       </a>
     </li>
+
+    <!-- Expenses: All Roles -->
     <li class="menu-item">
       <a href="{% url 'expenses:list' %}" class="menu-link">
         <i class="bi bi-receipt menu-icon"></i>
         <span>Expenses</span>
       </a>
     </li>
+
+    <!-- Fuel & Lubricants: All Roles -->
     <li class="menu-item">
       <a href="{% url 'fuel:list' %}" class="menu-link">
         <i class="bi bi-fuel-pump-fill menu-icon"></i>
         <span>Fuel & Lubricants</span>
       </a>
     </li>
+
+    <!-- Machines: Owner, Manager -->
+    {% if role == 'OWNER' or role == 'MANAGER' or request.user.is_superuser %}
     <li class="menu-item">
       <a href="{% url 'machines:list' %}" class="menu-link">
         <i class="bi bi-truck menu-icon"></i>
         <span>Machines & Equipment</span>
       </a>
     </li>
+    {% endif %}
+
+    <!-- Employees: Owner, Manager -->
+    {% if role == 'OWNER' or role == 'MANAGER' or request.user.is_superuser %}
     <li class="menu-item">
       <a href="{% url 'employees:list' %}" class="menu-link">
         <i class="bi bi-people-fill menu-icon"></i>
         <span>Employees & Wages</span>
       </a>
     </li>
+    {% endif %}
+
+    <!-- Accounts: Owner, Accountant -->
+    {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <li class="menu-item">
       <a href="{% url 'finance:accounts' %}" class="menu-link">
         <i class="bi bi-bank2 menu-icon"></i>
         <span>Business Accounts</span>
       </a>
     </li>
+    {% endif %}
+
+    <!-- Budgets: Owner, Accountant, Manager -->
+    {% if role == 'OWNER' or role == 'ACCOUNTANT' or role == 'MANAGER' or request.user.is_superuser %}
     <li class="menu-item">
       <a href="{% url 'budgets:list' %}" class="menu-link">
         <i class="bi bi-bullseye menu-icon"></i>
         <span>Budgets</span>
       </a>
     </li>
+    {% endif %}
+
+    <!-- Receivables: Owner, Accountant -->
+    {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <li class="menu-item">
       <a href="{% url 'finance:receivables' %}" class="menu-link">
         <i class="bi bi-arrow-down-left-square-fill menu-icon"></i>
         <span>Receivables</span>
       </a>
     </li>
+    {% endif %}
+
+    <!-- Payables: Owner, Accountant -->
+    {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <li class="menu-item">
       <a href="{% url 'finance:payables' %}" class="menu-link">
         <i class="bi bi-arrow-up-right-square-fill menu-icon"></i>
         <span>Payables</span>
       </a>
     </li>
+    {% endif %}
+
+    <!-- Daily Closing: Owner, Accountant, Manager -->
+    {% if role == 'OWNER' or role == 'ACCOUNTANT' or role == 'MANAGER' or request.user.is_superuser %}
     <li class="menu-item">
       <a href="{% url 'finance:daily_closing' %}" class="menu-link">
         <i class="bi bi-lock-fill menu-icon"></i>
         <span>Daily Closing</span>
       </a>
     </li>
+    {% endif %}
+
+    <!-- Financial Reports: Owner, Accountant, Manager -->
+    {% if role == 'OWNER' or role == 'ACCOUNTANT' or role == 'MANAGER' or request.user.is_superuser %}
     <li class="menu-item">
       <a href="{% url 'reports:index' %}" class="menu-link">
         <i class="bi bi-file-earmark-bar-graph-fill menu-icon"></i>
         <span>Financial Reports</span>
       </a>
     </li>
+    {% endif %}
+
+    <!-- User Management: Owner Only -->
+    {% if role == 'OWNER' or request.user.is_superuser %}
+    <li class="menu-item border-top border-secondary pt-2 mt-2">
+      <a href="{% url 'accounts:user_list' %}" class="menu-link">
+        <i class="bi bi-person-gear menu-icon text-warning"></i>
+        <span>User Management</span>
+      </a>
+    </li>
+    {% endif %}
+    {% endwith %}
   </ul>
 </aside>

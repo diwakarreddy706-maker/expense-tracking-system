@@ -9,6 +9,7 @@ from django.test import TestCase, SimpleTestCase, Client
 from django.urls import reverse
 from django.conf import settings
 from django.db import connection, transaction
+from django.contrib.auth.models import User
 from apps.finance.services.balance_service import FinancialCalculationService
 
 
@@ -63,14 +64,15 @@ class MySQLDatabaseConnectionTests(TestCase):
                 self.assertEqual(result, 2)
 
 
-class FoundationRoutingAndViewsTests(SimpleTestCase):
-    """Verifies health check and root views."""
+class FoundationRoutingAndViewsTests(TestCase):
+    """Verifies health check and protected root views."""
 
     def setUp(self):
         self.client = Client()
+        self.user = User.objects.create_user(username="foundation_tester", password="password123")
 
     def test_health_check_endpoint(self):
-        """Verifies /health/ endpoint returns HTTP 200 and healthy status."""
+        """Verifies public /health/ endpoint returns HTTP 200 and healthy status."""
         response = self.client.get(reverse('health_check'))
         self.assertEqual(response.status_code, 200)
         json_data = response.json()
@@ -78,7 +80,8 @@ class FoundationRoutingAndViewsTests(SimpleTestCase):
         self.assertIn('Expense Tracking & Management System', json_data.get('application', ''))
 
     def test_dashboard_root_view(self):
-        """Verifies root / renders executive dashboard template."""
+        """Verifies root / renders executive dashboard template when authenticated."""
+        self.client.login(username="foundation_tester", password="password123")
         response = self.client.get(reverse('root'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'dashboard/index.html')
@@ -88,7 +91,8 @@ class FoundationRoutingAndViewsTests(SimpleTestCase):
         self.assertContains(response, "Today's Financial Summary")
 
     def test_dashboard_api_summary(self):
-        """Verifies dashboard API summary responds."""
+        """Verifies dashboard API summary responds when authenticated."""
+        self.client.login(username="foundation_tester", password="password123")
         response = self.client.get(reverse('dashboard:api_summary'))
         self.assertEqual(response.status_code, 200)
         json_data = response.json()
