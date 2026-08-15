@@ -1,9 +1,10 @@
 from functools import wraps
+from typing import Any, Sequence
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import HttpRequest, HttpResponse, JsonResponse, HttpResponseForbidden
 
 
 def role_required(allowed_roles):
@@ -55,17 +56,19 @@ class RoleRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     """
     CBV mixin that enforces role-based access control.
     """
-    allowed_roles = []
+    allowed_roles: Sequence[str] = []
+    request: HttpRequest
 
-    def test_func(self):
-        if self.request.user.is_superuser:
+    def test_func(self) -> bool:
+        if getattr(self.request.user, 'is_superuser', False):
             return True
         profile = getattr(self.request.user, 'profile', None)
         if not profile:
             return False
         return profile.role in self.allowed_roles
 
-    def handle_no_permission(self):
+    def handle_no_permission(self) -> Any:
         if not self.request.user.is_authenticated:
             return redirect('accounts:login')
         return render(self.request, 'errors/403.html', {'title': '403 Forbidden'}, status=403)
+

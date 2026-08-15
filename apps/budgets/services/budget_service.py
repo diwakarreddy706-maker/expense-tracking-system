@@ -131,7 +131,10 @@ class BudgetService:
         Creates a new budget with allocations.
         Enforces unique period/segment constraint and server-side RBAC.
         """
-        if not user.profile.is_owner and not user.profile.is_accountant and not user.is_superuser:
+        profile = getattr(user, 'profile', None)
+        is_owner = getattr(profile, 'is_owner', False) if profile else False
+        is_accountant = getattr(profile, 'is_accountant', False) if profile else False
+        if not is_owner and not is_accountant and not getattr(user, 'is_superuser', False):
             raise ValidationError("Creating budgets is restricted to Owners and Accountants.")
 
         if not (1 <= period_month <= 12):
@@ -216,7 +219,10 @@ class BudgetService:
         """
         Updates an existing budget and logs audit trail.
         """
-        if not user.profile.is_owner and not user.profile.is_accountant and not user.is_superuser:
+        profile = getattr(user, 'profile', None)
+        is_owner = getattr(profile, 'is_owner', False) if profile else False
+        is_accountant = getattr(profile, 'is_accountant', False) if profile else False
+        if not is_owner and not is_accountant and not getattr(user, 'is_superuser', False):
             raise ValidationError("Editing budgets is restricted to Owners and Accountants.")
 
         budget = Budget.objects.filter(id=budget_id, is_deleted=False).first()

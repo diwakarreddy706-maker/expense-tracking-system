@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.db.models import Q, Sum
 from django.views.decorators.http import require_POST
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from apps.accounts.decorators import (
     role_required,
@@ -15,8 +16,8 @@ from apps.accounts.decorators import (
 from apps.audit.utils import log_audit_event
 from apps.audit.models import AuditLog
 from apps.finance.models import Account
-from .models import Employee, EmployeePayment
-from .forms import EmployeeForm, SalaryAccrualForm, EmployeePayoutForm
+from .models import Employee, EmployeePayment, EmployeeCompensation
+from .forms import EmployeeForm, SalaryAccrualForm, EmployeePayoutForm, EmployeeCompensationForm
 from .services.employee_service import EmployeeFinancialService
 
 
@@ -34,7 +35,7 @@ def employee_list_view(request):
     role = request.GET.get('role', '').strip()
     status = request.GET.get('status', '').strip()
 
-    employees = Employee.objects.filter(is_deleted=False)
+    employees = Employee.objects.filter(is_deleted=False).prefetch_related('compensations')
     if query:
         employees = employees.filter(
             Q(full_name__icontains=query) |
@@ -142,7 +143,7 @@ def employee_wages_view(request):
     start_date = request.GET.get('start_date', '').strip()
     end_date = request.GET.get('end_date', '').strip()
 
-    payments = EmployeePayment.objects.filter(is_deleted=False).select_related('employee', 'account', 'created_by')
+    payments = EmployeePayment.objects.filter(is_deleted=False).select_related('employee', 'account', 'compensation', 'created_by')
 
     if query:
         payments = payments.filter(
@@ -185,22 +186,114 @@ def employee_wages_view(request):
 def employee_financial_profile_view(request, employee_id):
     """
     Detailed financial ledger profile for an individual staff member.
-    Shows Accruals, Advances, Settlements, Net Outstanding, and Payment History.
+    Shows Compensations, Accruals, Advances, Settlements, Net Outstanding, and Payment History.
     """
     emp = get_object_or_404(Employee, id=employee_id, is_deleted=False)
     balances = EmployeeFinancialService.calculate_employee_balances(emp.id)
 
+    compensations = emp.compensations.all().order_by('-is_active', '-effective_from')
     payment_history = EmployeePayment.objects.filter(
         employee=emp,
         is_deleted=False
-    ).select_related('account', 'linked_ledger_transaction', 'created_by').order_by('-date', '-id')
+    ).select_related('account', 'compensation', 'linked_ledger_transaction', 'created_by').order_by('-date', '-id')
 
     return render(request, 'employees/employee_financial_profile.html', {
         'employee': emp,
         'balances': balances,
+        'compensations': compensations,
         'payment_history': payment_history,
         'title': f"Financial Ledger: {emp.full_name}",
     })
+
+
+@accountant_or_owner_required
+def employee_compensation_create_view(request, employee_id):
+    """Adds a new compensation rate structure to an employee."""
+    emp = get_object_or_404(Employee, id=employee_id, is_deleted=False)
+    if request.method == 'POST':
+        form = EmployeeCompensationForm(request.POST)
+        if form.is_valid():
+            try:
+                comp = EmployeeFinancialService.add_compensation(
+                    user=request.user,
+                    employee=emp,
+                    wage_type=form.cleaned_data['wage_type'],
+                    rate=form.cleaned_data['rate'],
+                    effective_from=form.cleaned_data['effective_from'],
+                    effective_to=form.cleaned_data.get('effective_to'),
+                    notes=form.cleaned_data.get('notes'),
+                    request=request
+                )
+                messages.success(request, f"Added compensation rate: {comp.get_wage_type_display()} (₹{comp.rate}) for {emp.full_name}.")
+                return redirect('employees:financial_profile', employee_id=emp.id)
+            except ValidationError as e:
+                form.add_error(None, str(e))
+    else:
+        form = EmployeeCompensationForm(initial={'effective_from': timezone.now().date(), 'is_active': True})
+
+    return render(request, 'employees/employee_compensation_form.html', {
+        'form': form,
+        'employee': emp,
+        'title': f"Add Compensation Rate: {emp.full_name}",
+    })
+
+
+@accountant_or_owner_required
+def employee_compensation_edit_view(request, compensation_id):
+    """Edits an existing compensation rate structure."""
+    comp = get_object_or_404(EmployeeCompensation, id=compensation_id)
+    emp = comp.employee
+    if request.method == 'POST':
+        form = EmployeeCompensationForm(request.POST, instance=comp)
+        if form.is_valid():
+            try:
+                updated = EmployeeFinancialService.update_compensation(
+                    user=request.user,
+                    compensation_id=comp.id,
+                    rate=form.cleaned_data['rate'],
+                    effective_from=form.cleaned_data['effective_from'],
+                    effective_to=form.cleaned_data.get('effective_to'),
+                    is_active=form.cleaned_data.get('is_active', True),
+                    notes=form.cleaned_data.get('notes'),
+                    request=request
+                )
+                messages.success(request, f"Updated compensation rate for {emp.full_name}.")
+                return redirect('employees:financial_profile', employee_id=emp.id)
+            except ValidationError as e:
+                form.add_error(None, str(e))
+    else:
+        form = EmployeeCompensationForm(instance=comp)
+
+    return render(request, 'employees/employee_compensation_form.html', {
+        'form': form,
+        'employee': emp,
+        'compensation': comp,
+        'title': f"Edit Compensation: {emp.full_name}",
+    })
+
+
+@accountant_or_owner_required
+def employee_compensation_toggle_view(request, compensation_id):
+    """Toggles active/inactive status of a compensation structure."""
+    comp = get_object_or_404(EmployeeCompensation, id=compensation_id)
+    emp = comp.employee
+    if comp.is_active:
+        EmployeeFinancialService.deactivate_compensation(user=request.user, compensation_id=comp.id, request=request)
+        messages.warning(request, f"Deactivated {comp.get_wage_type_display()} for {emp.full_name}.")
+    else:
+        EmployeeFinancialService.update_compensation(
+            user=request.user,
+            compensation_id=comp.id,
+            rate=comp.rate,
+            effective_from=comp.effective_from,
+            effective_to=None,
+            is_active=True,
+            notes=comp.notes,
+            request=request
+        )
+        messages.success(request, f"Activated {comp.get_wage_type_display()} for {emp.full_name}.")
+
+    return redirect('employees:financial_profile', employee_id=emp.id)
 
 
 @accountant_or_owner_required
@@ -209,7 +302,8 @@ def employee_accrual_create_view(request):
     Records earned salary, daily wage, or commission (increases wage liability).
     RULE 4: Does NOT move cash/bank money.
     """
-    initial_emp = request.GET.get('employee')
+    initial_emp_id = request.GET.get('employee')
+    initial_comp_id = request.GET.get('compensation')
     if request.method == 'POST':
         form = SalaryAccrualForm(request.POST)
         if form.is_valid():
@@ -218,6 +312,8 @@ def employee_accrual_create_view(request):
                     user=request.user,
                     employee=form.cleaned_data['employee'],
                     amount=form.cleaned_data['amount'],
+                    compensation=form.cleaned_data.get('compensation'),
+                    units_logged=form.cleaned_data.get('units_logged'),
                     date_val=form.cleaned_data['date'],
                     reference_no=form.cleaned_data.get('reference_no'),
                     notes=form.cleaned_data.get('notes'),
@@ -228,7 +324,12 @@ def employee_accrual_create_view(request):
             except ValidationError as e:
                 form.add_error(None, str(e))
     else:
-        form = SalaryAccrualForm(initial={'employee': initial_emp})
+        initial = {}
+        if initial_emp_id:
+            initial['employee'] = initial_emp_id
+        if initial_comp_id:
+            initial['compensation'] = initial_comp_id
+        form = SalaryAccrualForm(initial=initial)
 
     return render(request, 'employees/employee_accrual_form.html', {
         'form': form,
@@ -293,3 +394,4 @@ def employee_payment_reverse_view(request, payment_id):
         messages.error(request, f"Reversal failed: {str(e)}")
 
     return redirect('employees:financial_profile', employee_id=payment.employee.id if 'payment' in locals() else 1)
+

@@ -256,7 +256,9 @@ class CustomerReceivableService:
         Reverses a customer payment (Owner only).
         Restores receivable outstanding amount and posts a compensatory DEBIT reversal ledger transaction.
         """
-        if not user.profile.is_owner and not user.is_superuser:
+        profile = getattr(user, 'profile', None)
+        is_owner = getattr(profile, 'is_owner', False) if profile else False
+        if not is_owner and not getattr(user, 'is_superuser', False):
             raise ValidationError("Reversing customer payments is restricted to system Owners.")
 
         if not reason or len(reason.strip()) < 5:
@@ -574,7 +576,9 @@ class SupplierPayableService:
         Reverses a supplier payment (Owner only).
         Restores payable outstanding balance and posts a compensatory CREDIT reversal ledger transaction.
         """
-        if not user.profile.is_owner and not user.is_superuser:
+        profile = getattr(user, 'profile', None)
+        is_owner = getattr(profile, 'is_owner', False) if profile else False
+        if not is_owner and not getattr(user, 'is_superuser', False):
             raise ValidationError("Reversing supplier payments is restricted to system Owners.")
 
         if not reason or len(reason.strip()) < 5:

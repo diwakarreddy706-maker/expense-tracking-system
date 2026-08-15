@@ -198,7 +198,9 @@ class ExpenseService:
         Reverses a posted financial expense by recording an authoritative REVERSAL credit transaction.
         Enforces Rule 10: History is preserved; never mutates original posted records to zero.
         """
-        if not user.profile.is_owner and not user.is_superuser:
+        profile = getattr(user, 'profile', None)
+        is_owner = getattr(profile, 'is_owner', False) if profile else False
+        if not is_owner and not getattr(user, 'is_superuser', False):
             raise ValidationError("Financial reversals are strictly restricted to system Owners.")
 
         if not reason or len(reason.strip()) < 5:
@@ -250,7 +252,9 @@ class ExpenseService:
         """
         Soft deletes an unreversed expense and voids associated ledger transactions.
         """
-        if not user.profile.is_owner and not user.is_superuser:
+        profile = getattr(user, 'profile', None)
+        is_owner = getattr(profile, 'is_owner', False) if profile else False
+        if not is_owner and not getattr(user, 'is_superuser', False):
             raise ValidationError("Deleting expense records is restricted to system Owners.")
 
         with transaction.atomic():

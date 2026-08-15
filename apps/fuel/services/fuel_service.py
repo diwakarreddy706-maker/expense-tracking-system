@@ -231,7 +231,9 @@ class FuelService:
         """
         Reverses the financial impact of a fuel entry via Expense reversal.
         """
-        if not user.profile.is_owner and not user.is_superuser:
+        profile = getattr(user, 'profile', None)
+        is_owner = getattr(profile, 'is_owner', False) if profile else False
+        if not is_owner and not getattr(user, 'is_superuser', False):
             raise ValidationError("Reversing fuel transactions is restricted to system Owners.")
 
         with transaction.atomic():

@@ -208,7 +208,10 @@ class DailyClosingService:
         Atomically submits and locks a Daily Financial Closing snapshot.
         Enforces discrepancy notes and duplicate closing protection.
         """
-        if not user.profile.is_owner and not user.profile.is_accountant and not user.is_superuser:
+        profile = getattr(user, 'profile', None)
+        is_owner = getattr(profile, 'is_owner', False) if profile else False
+        is_accountant = getattr(profile, 'is_accountant', False) if profile else False
+        if not is_owner and not is_accountant and not getattr(user, 'is_superuser', False):
             raise ValidationError("Submitting daily financial closings is restricted to Owners and Accountants.")
 
         if not isinstance(actual_closing, Decimal):

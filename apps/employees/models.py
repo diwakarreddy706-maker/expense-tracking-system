@@ -56,17 +56,20 @@ class Employee(models.Model):
         default=ROLE_TRACTOR_DRIVER,
         db_index=True
     )
+    # DEPRECATED / LEGACY: Kept for schema backward-compatibility only.
+    # The single authoritative source for employee rates is EmployeeCompensation.
     wage_type = models.CharField(
         max_length=20,
         choices=WAGE_TYPE_CHOICES,
         default=WAGE_DAILY,
-        db_index=True
+        db_index=True,
+        help_text="[LEGACY] Authoritative source is EmployeeCompensation."
     )
     base_rate = models.DecimalField(
         max_digits=15,
         decimal_places=2,
         default=Decimal('0.00'),
-        help_text="Base rate in INR (Monthly salary, daily wage, or per-acre rate)"
+        help_text="[LEGACY] Authoritative source is EmployeeCompensation."
     )
     status = models.CharField(
         max_length=20,
@@ -88,6 +91,91 @@ class Employee(models.Model):
 
     def __str__(self):
         return f"{self.employee_code} - {self.full_name} ({self.get_role_display()})"
+
+    @property
+    def active_compensations(self):
+        """Returns QuerySet of currently active compensation records."""
+        return self.compensations.filter(is_active=True).order_by('wage_type')
+
+    def get_active_rate(self, wage_type: str, target_date=None):
+        """
+        Returns the active EmployeeCompensation record for the given wage_type on target_date (or today).
+        """
+        d = target_date or timezone.now().date()
+        return self.compensations.filter(
+            wage_type=wage_type,
+            is_active=True,
+            effective_from__lte=d
+        ).filter(models.Q(effective_to__isnull=True) | models.Q(effective_to__gte=d)).order_by('-effective_from').first()
+
+
+class EmployeeCompensation(models.Model):
+    """
+    Authoritative Single Source for Employee Compensation Rates.
+    Supports multiple active and historical pay rates per staff member
+    (e.g., Tractor Driver with both Daily Allowance and Monthly Base).
+    """
+    WAGE_MONTHLY = 'MONTHLY_SALARY'
+    WAGE_DAILY = 'DAILY_WAGE'
+    WAGE_PER_ACRE = 'PER_ACRE_COMMISSION'
+
+    WAGE_TYPE_CHOICES = [
+        (WAGE_MONTHLY, 'Monthly Fixed Salary'),
+        (WAGE_DAILY, 'Daily Wage (Per Day Rate)'),
+        (WAGE_PER_ACRE, 'Per Acre Commission'),
+    ]
+
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        related_name='compensations',
+        help_text="Associated staff member"
+    )
+    wage_type = models.CharField(
+        max_length=30,
+        choices=WAGE_TYPE_CHOICES,
+        db_index=True,
+        help_text="Type of compensation"
+    )
+    rate = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        help_text="Authoritative compensation rate amount in INR"
+    )
+    effective_from = models.DateField(
+        default=timezone.now,
+        db_index=True,
+        help_text="Date from which this compensation rate is effective"
+    )
+    effective_to = models.DateField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="Date until which this rate was effective (null if currently active)"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        db_index=True,
+        help_text="Whether this compensation is currently active"
+    )
+    notes = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Context / remarks (e.g. Standard Field Allowance, Base Retainer)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'employee_compensations'
+        verbose_name = 'Employee Compensation'
+        verbose_name_plural = 'Employee Compensations'
+        ordering = ['-is_active', '-effective_from']
+
+    def __str__(self):
+        status_str = "Active" if self.is_active else "Inactive"
+        return f"{self.employee.full_name} - {self.get_wage_type_display()}: ₹{self.rate} ({status_str})"
 
 
 class EmployeePayment(models.Model):
@@ -124,6 +212,21 @@ class EmployeePayment(models.Model):
         Employee,
         on_delete=models.PROTECT,
         related_name='payments'
+    )
+    compensation = models.ForeignKey(
+        EmployeeCompensation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='applied_payments',
+        help_text="Authoritative compensation structure applied for this payment/accrual"
+    )
+    units_logged = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Number of units (days/acres/months) logged (e.g. 25 days @ ₹200.00)"
     )
     payment_type = models.CharField(
         max_length=30,
@@ -177,3 +280,4 @@ class EmployeePayment(models.Model):
 
     def __str__(self):
         return f"{self.payment_code} - {self.employee.full_name} ({self.get_payment_type_display()}): ₹{self.amount}"
+

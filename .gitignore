@@ -49,8 +49,10 @@ credentials/
 # IDE & OS
 .vscode/
 .idea/
+pyrightconfig.json
 *.swp
 *.swo
 *~
 .DS_Store
 Thumbs.db
+

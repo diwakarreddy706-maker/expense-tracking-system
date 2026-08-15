@@ -13,7 +13,11 @@ urlpatterns = [
     # Financial Wages & Payouts (Owner & Accountant)
     path('wages/', views.employee_wages_view, name='wages'),
     path('<int:employee_id>/finance/', views.employee_financial_profile_view, name='financial_profile'),
+    path('<int:employee_id>/compensations/add/', views.employee_compensation_create_view, name='compensation_create'),
+    path('compensations/<int:compensation_id>/edit/', views.employee_compensation_edit_view, name='compensation_edit'),
+    path('compensations/<int:compensation_id>/toggle/', views.employee_compensation_toggle_view, name='compensation_toggle'),
     path('accruals/add/', views.employee_accrual_create_view, name='accrual_create'),
     path('payouts/add/', views.employee_payout_create_view, name='payout_create'),
     path('payments/<int:payment_id>/reverse/', views.employee_payment_reverse_view, name='payment_reverse'),
 ]
+
