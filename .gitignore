@@ -37,8 +37,14 @@ db.sqlite3-journal
 .env
 .env.local
 .env.*.local
+*.env
+.env.development
+.env.production
 *.pem
 *.key
+*.crt
+secrets/
+credentials/
 
 # IDE & OS
 .vscode/
