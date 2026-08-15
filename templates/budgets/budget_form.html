@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
+    <p class="text-muted small mb-0">Set monthly financial spending controls by business segment</p>
+  </div>
+  <div>
+    <a href="{% url 'budgets:list' %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to Budgets
+    </a>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="theme-card">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 small mb-3">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="mb-3">
+          <label class="form-label small text-muted">Budget Title *</label>
+          {{ form.title }}
+          {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Budget Month *</label>
+            {{ form.period_month }}
+            {% if form.period_month.errors %}<div class="text-danger small mt-1">{{ form.period_month.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Budget Year *</label>
+            {{ form.period_year }}
+            {% if form.period_year.errors %}<div class="text-danger small mt-1">{{ form.period_year.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Business Segment *</label>
+            {{ form.business_segment }}
+            {% if form.business_segment.errors %}<div class="text-danger small mt-1">{{ form.business_segment.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Lifecycle Status *</label>
+            {{ form.status }}
+            {% if form.status.errors %}<div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label small text-muted">Notes / Strategic Goals</label>
+          {{ form.notes }}
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-3">
+          <a href="{% url 'budgets:list' %}" class="btn btn-ghost btn-sm">Cancel</a>
+          <button type="submit" class="btn btn-emerald btn-sm">Save Budget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
