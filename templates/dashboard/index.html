@@ -1,173 +1,376 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load humanize %}
 
-{% block title %}Executive Dashboard | Expense Tracking & Management System{% endblock %}
+{% block title %}Executive Business Dashboard | Expense Tracking & Management{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<!-- Executive Header & Quick Actions -->
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">Executive Dashboard</h2>
-    <p class="text-muted small mb-0">Financial Overview & Operational Cost Hierarchy</p>
+    <div class="d-flex align-items-center gap-2">
+      <h2 class="fs-4 fw-bold text-white mb-0">Executive Dashboard</h2>
+      <span class="badge bg-dark border border-secondary text-info font-tabular">
+        <i class="bi bi-calendar3 me-1"></i> {{ kpis.today_formatted }}
+      </span>
+    </div>
+    <p class="text-muted small mb-0 mt-1">Financial Overview & Operational Cost Hierarchy — Authoritative Liquid Balances & Machinery Intelligence</p>
   </div>
-  <div class="d-flex align-items-center gap-2">
-    <span class="badge bg-dark border border-secondary px-3 py-2 text-muted">
-      <i class="bi bi-clock-history me-1"></i> Foundation Layout Mode
-    </span>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{% url 'expenses:create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-1">
+      <i class="bi bi-receipt"></i><span>New Expense</span>
+    </a>
+    <a href="{% url 'fuel:create' %}" class="btn btn-ghost btn-sm d-flex align-items-center gap-1">
+      <i class="bi bi-fuel-pump text-warning"></i><span>Log Fuel</span>
+    </a>
+    <a href="{% url 'finance:daily_closing' %}" class="btn btn-ghost btn-sm d-flex align-items-center gap-1">
+      <i class="bi bi-lock text-info"></i><span>Daily Closing</span>
+    </a>
+    <a href="{% url 'reports:index' %}" class="btn btn-ghost btn-sm d-flex align-items-center gap-1">
+      <i class="bi bi-file-earmark-bar-graph"></i><span>Reports</span>
+    </a>
   </div>
 </div>
 
 <!-- ========================================================================= -->
-<!-- ROW 1: PRIMARY EXECUTIVE KPI CARDS                                        -->
-<!-- Hierarchy: TOTAL BALANCE | TODAY'S EXPENSE | MONTHLY EXPENSE | TO RECEIVE -->
-<!-- ========================================================================= -->
-<div class="row g-3 mb-4">
-  <div class="col-12 col-sm-6 col-xl-3">
-    <div class="kpi-card">
-      <div class="kpi-title">Total Balance</div>
-      <div class="kpi-value text-emerald">--.--</div>
-      <div class="small text-muted mt-2"><i class="bi bi-bank2 me-1"></i> Consolidated Accounts</div>
-    </div>
-  </div>
-  <div class="col-12 col-sm-6 col-xl-3">
-    <div class="kpi-card">
-      <div class="kpi-title">Today's Expense</div>
-      <div class="kpi-value text-crimson">--.--</div>
-      <div class="small text-muted mt-2"><i class="bi bi-receipt me-1"></i> Field & Operational</div>
-    </div>
-  </div>
-  <div class="col-12 col-sm-6 col-xl-3">
-    <div class="kpi-card">
-      <div class="kpi-title">Monthly Expense</div>
-      <div class="kpi-value text-white">--.--</div>
-      <div class="small text-muted mt-2"><i class="bi bi-calendar3 me-1"></i> Current Month</div>
-    </div>
-  </div>
-  <div class="col-12 col-sm-6 col-xl-3">
-    <div class="kpi-card">
-      <div class="kpi-title">To Receive</div>
-      <div class="kpi-value text-amber">--.--</div>
-      <div class="small text-muted mt-2"><i class="bi bi-arrow-down-left me-1"></i> Customer Receivables</div>
-    </div>
-  </div>
-</div>
-
-<!-- ========================================================================= -->
-<!-- ROW 2: TODAY'S FINANCIAL SUMMARY                                          -->
+<!-- 1. TODAY'S MONEY: AUTHORITATIVE LIQUID CASH & BANK POSITION               -->
 <!-- ========================================================================= -->
 <div class="theme-card mb-4">
-  <div class="card-header-clean">
-    <h3 class="card-title-clean"><i class="bi bi-journal-check me-2 text-emerald"></i>Today's Financial Summary</h3>
-    <span class="badge-status badge-pending">Closing Pending</span>
+  <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3 gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <div class="rounded p-2 bg-dark border border-secondary text-emerald">
+        <i class="bi bi-wallet2 fs-5"></i>
+      </div>
+      <div>
+        <h3 class="fs-6 fw-bold text-white mb-0">Today's Financial Summary</h3>
+        <span class="text-muted" style="font-size: 0.75rem;">Consolidated Authoritative Central Ledger Movements ({{ kpis.today|date:"d M Y" }})</span>
+      </div>
+    </div>
+    <div>
+      {% if kpis.is_day_closed %}
+        {% if kpis.closing_status == 'BALANCED' %}
+          <span class="badge bg-success py-2 px-3"><i class="bi bi-check-circle me-1"></i> Day Closed & Balanced</span>
+        {% elif kpis.closing_status == 'SURPLUS' %}
+          <span class="badge bg-warning text-dark py-2 px-3"><i class="bi bi-exclamation-triangle me-1"></i> Closed with Surplus (+₹{{ kpis.closing_difference }})</span>
+        {% else %}
+          <span class="badge bg-danger py-2 px-3"><i class="bi bi-exclamation-octagon me-1"></i> Closed with Deficit (-₹{{ kpis.closing_difference|cut:"-" }})</span>
+        {% endif %}
+      {% else %}
+        <a href="{% url 'finance:daily_closing' %}" class="badge bg-dark border border-warning text-warning text-decoration-none py-2 px-3">
+          <i class="bi bi-hourglass-split me-1"></i> Daily Closing Pending — Reconcile Now
+        </a>
+      {% endif %}
+    </div>
   </div>
+
   <div class="row g-3 text-center">
-    <div class="col-6 col-md-3 col-lg-2">
-      <div class="small text-muted">Opening Balance</div>
-      <div class="fw-bold num-tabular mt-1">--.--</div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="text-muted small">1. Opening Liquid (00:00)</div>
+      <div class="fs-5 fw-bold text-white font-tabular mt-1">₹{{ kpis.opening_balance }}</div>
     </div>
-    <div class="col-6 col-md-3 col-lg-2">
-      <div class="small text-muted">Today's Inflow</div>
-      <div class="fw-bold text-emerald num-tabular mt-1">--.--</div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="text-muted small">2. Money Received (+)</div>
+      <div class="fs-5 fw-bold text-emerald font-tabular mt-1">+ ₹{{ kpis.money_received_today }}</div>
     </div>
-    <div class="col-6 col-md-3 col-lg-2">
-      <div class="small text-muted">Today's Expense</div>
-      <div class="fw-bold text-danger num-tabular mt-1">--.--</div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="text-muted small">3. Money Spent (-)</div>
+      <div class="fs-5 fw-bold text-crimson font-tabular mt-1">- ₹{{ kpis.money_spent_today }}</div>
     </div>
-    <div class="col-6 col-md-3 col-lg-2">
-      <div class="small text-muted">Transfers</div>
-      <div class="fw-bold text-info num-tabular mt-1">--.--</div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="text-muted small">4. Expected Closing (=)</div>
+      <div class="fs-5 fw-bold text-info font-tabular mt-1">₹{{ kpis.expected_closing_today }}</div>
     </div>
-    <div class="col-6 col-md-3 col-lg-2">
-      <div class="small text-muted">Expected Closing</div>
-      <div class="fw-bold text-white num-tabular mt-1">--.--</div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="text-muted small">5. Counted / Verified</div>
+      <div class="fs-5 fw-bold {% if kpis.actual_closing_today is not None %}text-white{% else %}text-muted{% endif %} font-tabular mt-1">
+        {% if kpis.actual_closing_today is not None %}₹{{ kpis.actual_closing_today }}{% else %}--{% endif %}
+      </div>
     </div>
-    <div class="col-6 col-md-3 col-lg-2">
-      <div class="small text-muted">Closing Difference</div>
-      <div class="fw-bold text-muted num-tabular mt-1">--.--</div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="text-muted small">6. Total Balance (Liquid)</div>
+      <div class="fs-5 fw-bold text-emerald font-tabular mt-1">₹{{ kpis.total_current_liquid }}</div>
     </div>
   </div>
 </div>
 
 <!-- ========================================================================= -->
-<!-- ROW 3: EXPENSE ANALYTICS (Category Distribution & 12-Month Trend)         -->
+<!-- 2. THREE INDEPENDENT OBLIGATION SILOS                                     -->
 <!-- ========================================================================= -->
 <div class="row g-3 mb-4">
-  <div class="col-12 col-lg-7">
-    <div class="theme-card h-100 mb-0">
-      <div class="card-header-clean">
-        <h3 class="card-title-clean"><i class="bi bi-graph-up me-2 text-info"></i>12-Month Expense Trend</h3>
+  <div class="col-12 col-md-4">
+    <div class="theme-card p-3 border-start border-4 border-warning">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small">1. Customer Receivables</span>
+        <span class="badge bg-dark border border-secondary text-warning" style="font-size: 0.65rem;">YOU SHOULD RECEIVE</span>
       </div>
-      <div class="d-flex align-items-center justify-content-center p-5 text-muted border border-secondary border-dashed rounded">
-        <div class="text-center">
-          <i class="bi bi-bar-chart-line fs-2 text-secondary d-block mb-2"></i>
-          <p class="small mb-0">Chart Analytics Engine will activate in Phase 11</p>
+      <h3 class="fs-4 fw-bold text-warning mt-2 mb-1 font-tabular">₹{{ kpis.receivables_to_receive }}</h3>
+      <a href="{% url 'finance:receivables' %}" class="small text-decoration-none text-muted d-flex align-items-center gap-1 mt-2">
+        <span>View unpaid customer invoices</span> <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="theme-card p-3 border-start border-4 border-danger">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small">2. Supplier Payables</span>
+        <span class="badge bg-dark border border-secondary text-danger" style="font-size: 0.65rem;">YOU NEED TO PAY</span>
+      </div>
+      <h3 class="fs-4 fw-bold text-crimson mt-2 mb-1 font-tabular">₹{{ kpis.payables_to_pay }}</h3>
+      <a href="{% url 'finance:payables' %}" class="small text-decoration-none text-muted d-flex align-items-center gap-1 mt-2">
+        <span>View vendor bills & pump dues</span> <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="theme-card p-3 border-start border-4 border-info">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small">3. Employee Liabilities</span>
+        <span class="badge bg-dark border border-secondary text-info" style="font-size: 0.65rem;">WAGES OUTSTANDING</span>
+      </div>
+      <h3 class="fs-4 fw-bold text-info mt-2 mb-1 font-tabular">₹{{ kpis.employee_wages_due }}</h3>
+      <a href="{% url 'employees:wages' %}" class="small text-decoration-none text-muted d-flex align-items-center gap-1 mt-2">
+        <span>View payroll ledger & advances</span> <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 3. OPERATIONAL COSTS HIERARCHY & BUDGET CONTROLS (MONTH)                  -->
+<!-- ========================================================================= -->
+<div class="row g-4 mb-4">
+  <!-- Operational Spending Breakdown -->
+  <div class="col-12 col-lg-6">
+    <div class="theme-card h-100">
+      <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+        <h3 class="fs-6 fw-bold text-white mb-0">
+          <i class="bi bi-pie-chart-fill me-2 text-warning"></i>Operational Costs Hierarchy (This Month)
+        </h3>
+        <span class="text-white fw-bold font-tabular">Total: ₹{{ kpis.total_expenses_month }}</span>
+      </div>
+
+      <div class="d-flex flex-column gap-3">
+        <div>
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span><i class="bi bi-fuel-pump text-warning me-1"></i> Fuel & Diesel Expenses</span>
+            <span class="text-white font-tabular fw-semibold">₹{{ kpis.fuel_cost_month }}</span>
+          </div>
+          <div class="progress bg-dark border border-secondary" style="height: 6px;">
+            <div class="progress-bar bg-warning" style="width: {% if kpis.total_expenses_month > 0 %}{{ kpis.fuel_cost_month|floatformat:0 }}00{% else %}0{% endif %}%;"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span><i class="bi bi-tools text-info me-1"></i> Machinery Maintenance & Repairs</span>
+            <span class="text-white font-tabular fw-semibold">₹{{ kpis.maintenance_cost_month }}</span>
+          </div>
+          <div class="progress bg-dark border border-secondary" style="height: 6px;">
+            <div class="progress-bar bg-info" style="width: 30%;"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span><i class="bi bi-people text-emerald me-1"></i> Employee Wages & Advance Payouts</span>
+            <span class="text-white font-tabular fw-semibold">₹{{ kpis.emp_payouts_month }}</span>
+          </div>
+          <div class="progress bg-dark border border-secondary" style="height: 6px;">
+            <div class="progress-bar bg-success" style="width: 25%;"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span><i class="bi bi-receipt text-secondary me-1"></i> General Administration & Others</span>
+            <span class="text-white font-tabular fw-semibold">₹{{ kpis.other_expenses_month }}</span>
+          </div>
+          <div class="progress bg-dark border border-secondary" style="height: 6px;">
+            <div class="progress-bar bg-secondary" style="width: 15%;"></div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="col-12 col-lg-5">
-    <div class="theme-card h-100 mb-0">
-      <div class="card-header-clean">
-        <h3 class="card-title-clean"><i class="bi bi-pie-chart me-2 text-warning"></i>Expense Category Distribution</h3>
+
+  <!-- Budget Controls & Threshold Warnings -->
+  <div class="col-12 col-lg-6">
+    <div class="theme-card h-100">
+      <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+        <h3 class="fs-6 fw-bold text-white mb-0">
+          <i class="bi bi-bullseye me-2 text-info"></i>Budget Controls (This Month)
+        </h3>
+        {% if kpis.budget_summary.status == 'NORMAL' %}
+          <span class="badge bg-success">Normal (<80%)</span>
+        {% elif kpis.budget_summary.status == 'WARNING' %}
+          <span class="badge bg-warning text-dark">Warning (80-99%)</span>
+        {% else %}
+          <span class="badge bg-danger">Exceeded (≥100%)</span>
+        {% endif %}
       </div>
-      <div class="d-flex align-items-center justify-content-center p-5 text-muted border border-secondary border-dashed rounded">
-        <div class="text-center">
-          <i class="bi bi-pie-chart fs-2 text-secondary d-block mb-2"></i>
-          <p class="small mb-0">Category Breakdown will activate in Phase 11</p>
+
+      <div class="row g-3 mb-3 text-center">
+        <div class="col-4">
+          <span class="text-muted" style="font-size: 0.75rem;">Planned Budget</span>
+          <div class="fs-5 font-tabular text-white fw-bold mt-1">₹{{ kpis.budget_summary.total_budgeted }}</div>
+        </div>
+        <div class="col-4">
+          <span class="text-muted" style="font-size: 0.75rem;">Actual Spending</span>
+          <div class="fs-5 font-tabular text-emerald fw-bold mt-1">₹{{ kpis.budget_summary.total_spent }}</div>
+        </div>
+        <div class="col-4">
+          <span class="text-muted" style="font-size: 0.75rem;">Remaining</span>
+          <div class="fs-5 font-tabular {% if kpis.budget_summary.total_remaining < 0 %}text-crimson{% else %}text-white{% endif %} fw-bold mt-1">
+            ₹{{ kpis.budget_summary.total_remaining }}
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
 
-<!-- ========================================================================= -->
-<!-- ROW 4: TODAY'S TOP EXPENSES & BUDGET STATUS                               -->
-<!-- ========================================================================= -->
-<div class="row g-3 mb-4">
-  <div class="col-12 col-lg-6">
-    <div class="theme-card h-100 mb-0">
-      <div class="card-header-clean">
-        <h3 class="card-title-clean"><i class="bi bi-lightning-charge me-2 text-danger"></i>Today's Top Expenses</h3>
+      <div class="p-3 bg-dark rounded border border-secondary mb-3">
+        <div class="d-flex justify-content-between text-muted small mb-1">
+          <span>Overall Monthly Burn Rate</span>
+          <span class="font-tabular text-white fw-bold">{{ kpis.budget_summary.overall_utilization }}%</span>
+        </div>
+        <div class="progress bg-dark border border-secondary" style="height: 10px;">
+          <div class="progress-bar {% if kpis.budget_summary.status == 'EXCEEDED' %}bg-danger{% elif kpis.budget_summary.status == 'WARNING' %}bg-warning{% else %}bg-success{% endif %}"
+               style="width: {% if kpis.budget_summary.overall_utilization > 100 %}100{% else %}{{ kpis.budget_summary.overall_utilization }}{% endif %}%;">
+          </div>
+        </div>
       </div>
-      <div class="p-4 text-center text-muted border border-secondary border-dashed rounded">
-        <i class="bi bi-inbox fs-3 d-block mb-2 text-secondary"></i>
-        <p class="small mb-0">Operational expenses (Fuel, Wages, Maintenance, Parts) will display here.</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-12 col-lg-6">
-    <div class="theme-card h-100 mb-0">
-      <div class="card-header-clean">
-        <h3 class="card-title-clean"><i class="bi bi-bullseye me-2 text-purple"></i>Budget Status</h3>
-      </div>
-      <div class="p-4 text-center text-muted border border-secondary border-dashed rounded">
-        <i class="bi bi-speedometer2 fs-3 d-block mb-2 text-secondary"></i>
-        <p class="small mb-0">Monthly category thresholds and warnings will display here.</p>
+
+      <div class="text-end">
+        <a href="{% url 'budgets:list' %}" class="small text-decoration-none text-info">
+          Manage Segment & Category Budgets <i class="bi bi-arrow-right"></i>
+        </a>
       </div>
     </div>
   </div>
 </div>
 
 <!-- ========================================================================= -->
-<!-- ROW 5: RECENT EXPENSES & TO RECEIVE / TO PAY                               -->
+<!-- 4. MACHINERY OPERATING COST INTELLIGENCE (Fleet Comparison)               -->
 <!-- ========================================================================= -->
-<div class="row g-3">
-  <div class="col-12 col-lg-8">
-    <div class="theme-card mb-0">
-      <div class="card-header-clean">
-        <h3 class="card-title-clean"><i class="bi bi-clock-history me-2 text-secondary"></i>Recent Expenses</h3>
+<div class="theme-card mb-4">
+  <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+    <h3 class="fs-6 fw-bold text-white mb-0">
+      <i class="bi bi-truck me-2 text-warning"></i>Machinery Operating Costs & Efficiency Intelligence
+    </h3>
+    <span class="text-muted small">Excluding revenue/profit (Deferred to V2)</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0">
+      <thead>
+        <tr class="text-muted small border-secondary">
+          <th>Machine Code</th>
+          <th>Equipment Name</th>
+          <th>Classification</th>
+          <th class="text-end">Fuel Cost</th>
+          <th class="text-end">Repairs / Parts</th>
+          <th class="text-end">Total Operating Cost</th>
+          <th class="text-end">Current Meter</th>
+          <th class="text-end">Cost / Hour or KM</th>
+          <th class="text-center">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in kpis.machine_costs %}
+          <tr class="border-secondary">
+            <td class="font-tabular text-info fw-bold">{{ m.machine_code }}</td>
+            <td class="text-white fw-semibold">{{ m.name }}</td>
+            <td><span class="badge bg-dark border border-secondary text-light">{{ m.machine_type }}</span></td>
+            <td class="text-end font-tabular text-warning">₹{{ m.fuel_cost }}</td>
+            <td class="text-end font-tabular text-info">₹{{ m.maintenance_cost }}</td>
+            <td class="text-end font-tabular text-white fw-bold">₹{{ m.total_cost }}</td>
+            <td class="text-end font-tabular text-muted">{{ m.current_meter }} {{ m.meter_unit }}</td>
+            <td class="text-end font-tabular text-emerald fw-bold">
+              {% if m.cost_per_unit > 0 %}₹{{ m.cost_per_unit }}{% else %}--{% endif %}
+            </td>
+            <td class="text-center">
+              {% if m.status == 'ACTIVE' %}
+                <span class="badge bg-success">Ready</span>
+              {% elif m.status == 'UNDER_MAINTENANCE' %}
+                <span class="badge bg-warning text-dark">In Workshop</span>
+              {% else %}
+                <span class="badge bg-secondary">Idle</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="9" class="text-center py-4 text-muted">No machinery assets registered yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 5. RECENT TRANSACTIONS STREAM                                             -->
+<!-- ========================================================================= -->
+<div class="row g-4">
+  <div class="col-12 col-lg-6">
+    <div class="theme-card h-100">
+      <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+        <h3 class="fs-6 fw-bold text-white mb-0">
+          <i class="bi bi-receipt-cutoff me-2 text-danger"></i>Recent Operational Expenses
+        </h3>
+        <a href="{% url 'expenses:list' %}" class="small text-decoration-none text-muted">View All</a>
       </div>
-      <div class="p-4 text-center text-muted border border-secondary border-dashed rounded">
-        <p class="small mb-0">Recent transaction stream will populate from authoritative ledger in Phase 4.</p>
+
+      <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle mb-0" style="font-size: 0.85rem;">
+          <tbody>
+            {% for exp in kpis.recent_expenses %}
+              <tr class="border-secondary">
+                <td class="text-muted small">{{ exp.expense_date|date:"d M" }}</td>
+                <td class="text-info font-tabular fw-semibold">{{ exp.expense_code }}</td>
+                <td class="text-white">{{ exp.category.name }}</td>
+                <td class="text-muted small">{{ exp.account.account_name|default:"Credit" }}</td>
+                <td class="text-end font-tabular text-crimson fw-bold">₹{{ exp.amount }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5" class="text-center py-3 text-muted">No recent expenses.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
-  <div class="col-12 col-lg-4">
-    <div class="theme-card mb-0">
-      <div class="card-header-clean">
-        <h3 class="card-title-clean"><i class="bi bi-arrow-left-right me-2 text-emerald"></i>To Receive / To Pay</h3>
+
+  <div class="col-12 col-lg-6">
+    <div class="theme-card h-100">
+      <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+        <h3 class="fs-6 fw-bold text-white mb-0">
+          <i class="bi bi-arrow-left-right me-2 text-emerald"></i>Recent Receipts & Settlements
+        </h3>
+        <a href="{% url 'finance:receivables' %}" class="small text-decoration-none text-muted">Receivables</a>
       </div>
-      <div class="p-4 text-center text-muted border border-secondary border-dashed rounded">
-        <p class="small mb-0">Receivable dues and vendor payables will populate in Phase 8.</p>
+
+      <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle mb-0" style="font-size: 0.85rem;">
+          <tbody>
+            {% for cp in kpis.recent_customer_payments %}
+              <tr class="border-secondary">
+                <td class="text-muted small">{{ cp.payment_date|date:"d M" }}</td>
+                <td><span class="badge bg-success">Received</span></td>
+                <td class="text-white">{{ cp.receivable.customer.name }}</td>
+                <td class="text-end font-tabular text-emerald fw-bold">+ ₹{{ cp.amount }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="text-center py-3 text-muted">No customer receipts yet.</td></tr>
+            {% endfor %}
+            {% for sp in kpis.recent_supplier_payments %}
+              <tr class="border-secondary">
+                <td class="text-muted small">{{ sp.payment_date|date:"d M" }}</td>
+                <td><span class="badge bg-danger">Disbursed</span></td>
+                <td class="text-white">{{ sp.payable.supplier.name }}</td>
+                <td class="text-end font-tabular text-crimson fw-bold">- ₹{{ sp.amount }}</td>
+              </tr>
+            {% empty %}
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

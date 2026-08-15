@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Financial Audits & Statements | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">Financial Audits & Statements</h2>
+    <p class="text-muted small mb-0">Authoritative Central Ledger Journal, Historical Closings, and Cash Reconciliation Audit</p>
+  </div>
+  <div>
+    <a href="{% url 'reports:index' %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to Hub
+    </a>
+  </div>
+</div>
+
+<!-- Historical Daily Financial Closings -->
+<div class="theme-card mb-4">
+  <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
+    <i class="bi bi-lock-fill me-2 text-emerald"></i>Locked Daily Financial Closings
+  </h3>
+
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0">
+      <thead>
+        <tr class="text-muted small border-secondary">
+          <th>Closing Date</th>
+          <th>Scope</th>
+          <th>Account</th>
+          <th class="text-end">Opening Balance</th>
+          <th class="text-end">Expected Balance</th>
+          <th class="text-end">Actual Counted</th>
+          <th class="text-end">Discrepancy</th>
+          <th class="text-center">Status</th>
+          <th>Closed By</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in closings %}
+          <tr class="border-secondary">
+            <td class="font-tabular text-info fw-semibold">{{ c.closing_date|date:"d M Y" }}</td>
+            <td><span class="badge bg-dark border border-secondary text-light">{{ c.get_scope_display }}</span></td>
+            <td>{{ c.account.account_name|default:"Consolidated Liquid" }}</td>
+            <td class="text-end font-tabular text-muted">₹{{ c.opening_balance }}</td>
+            <td class="text-end font-tabular text-white">₹{{ c.expected_closing }}</td>
+            <td class="text-end font-tabular text-emerald fw-bold">₹{{ c.actual_closing }}</td>
+            <td class="text-end font-tabular fw-bold {% if c.discrepancy == 0 %}text-muted{% elif c.discrepancy > 0 %}text-warning{% else %}text-crimson{% endif %}">
+              ₹{{ c.discrepancy }}
+            </td>
+            <td class="text-center">
+              {% if c.status == 'BALANCED' %}
+                <span class="badge bg-success">Balanced</span>
+              {% elif c.status == 'SURPLUS' %}
+                <span class="badge bg-warning text-dark">Surplus</span>
+              {% else %}
+                <span class="badge bg-danger">Deficit</span>
+              {% endif %}
+            </td>
+            <td class="text-muted small">{{ c.closed_by.username }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="9" class="text-center py-4 text-muted">No historical closings recorded.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Central Ledger Journal -->
+<div class="theme-card">
+  <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
+    <i class="bi bi-journal-check me-2 text-info"></i>Authoritative Central Ledger Journal (account_transactions)
+  </h3>
+
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0" style="font-size: 0.85rem;">
+      <thead>
+        <tr class="text-muted small border-secondary">
+          <th>Tx Date</th>
+          <th>Account</th>
+          <th>Transaction Type</th>
+          <th>Direction</th>
+          <th class="text-end">Amount (INR)</th>
+          <th>Reference</th>
+          <th>Logged By</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tx in transactions %}
+          <tr class="border-secondary">
+            <td class="text-muted">{{ tx.transaction_date|date:"d M Y" }}</td>
+            <td class="text-white">{{ tx.account.account_name }}</td>
+            <td><span class="badge bg-dark border border-secondary text-info">{{ tx.get_transaction_type_display }}</span></td>
+            <td>
+              {% if tx.direction == 'CREDIT' %}
+                <span class="badge bg-success">CREDIT (In)</span>
+              {% else %}
+                <span class="badge bg-danger">DEBIT (Out)</span>
+              {% endif %}
+            </td>
+            <td class="text-end font-tabular fw-bold {% if tx.direction == 'CREDIT' %}text-emerald{% else %}text-crimson{% endif %}">
+              ₹{{ tx.amount }}
+            </td>
+            <td class="text-muted small">{{ tx.reference_type|default:"--" }} #{{ tx.reference_id|default:"--" }}</td>
+            <td class="text-muted small">{{ tx.created_by.username }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-center py-4 text-muted">No ledger transactions logged.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

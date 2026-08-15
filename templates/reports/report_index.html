@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Business Reports & Analytics Hub | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">Business Reports & Analytics Hub</h2>
+    <p class="text-muted small mb-0">Multi-dimensional operational cost sheets, fuel intelligence, and financial audits</p>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Card 1: Expense Analysis -->
+  <div class="col-12 col-md-6 col-lg-3">
+    <div class="theme-card h-100 p-4 d-flex flex-column justify-content-between">
+      <div>
+        <div class="rounded p-3 bg-dark border border-secondary text-danger d-inline-flex mb-3">
+          <i class="bi bi-receipt fs-3"></i>
+        </div>
+        <h3 class="fs-5 fw-bold text-white mb-2">Expense Analysis</h3>
+        <p class="text-muted small mb-3">Detailed categorization by machinery, supplier, payment method, and custom date windows.</p>
+      </div>
+      <a href="{% url 'reports:expenses' %}" class="btn btn-emerald btn-sm w-100">
+        Launch Report <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- Card 2: Operational & Fleet Costs -->
+  <div class="col-12 col-md-6 col-lg-3">
+    <div class="theme-card h-100 p-4 d-flex flex-column justify-content-between">
+      <div>
+        <div class="rounded p-3 bg-dark border border-secondary text-warning d-inline-flex mb-3">
+          <i class="bi bi-truck fs-3"></i>
+        </div>
+        <h3 class="fs-5 fw-bold text-white mb-2">Fleet Machinery Costs</h3>
+        <p class="text-muted small mb-3">Operating cost comparison, fuel efficiency, repairs cost per hour, and kilometer metrics.</p>
+      </div>
+      <a href="{% url 'reports:operational' %}" class="btn btn-emerald btn-sm w-100">
+        Launch Report <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- Card 3: Budgets & Control Variance -->
+  <div class="col-12 col-md-6 col-lg-3">
+    <div class="theme-card h-100 p-4 d-flex flex-column justify-content-between">
+      <div>
+        <div class="rounded p-3 bg-dark border border-secondary text-info d-inline-flex mb-3">
+          <i class="bi bi-bullseye fs-3"></i>
+        </div>
+        <h3 class="fs-5 fw-bold text-white mb-2">Budget Variance</h3>
+        <p class="text-muted small mb-3">Planned vs actual variance tracking, segment allocations, and over-budget control alerts.</p>
+      </div>
+      <a href="{% url 'budgets:list' %}" class="btn btn-emerald btn-sm w-100">
+        Launch Report <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- Card 4: Financial Statements & Audit -->
+  <div class="col-12 col-md-6 col-lg-3">
+    <div class="theme-card h-100 p-4 d-flex flex-column justify-content-between">
+      <div>
+        <div class="rounded p-3 bg-dark border border-secondary text-emerald d-inline-flex mb-3">
+          <i class="bi bi-journal-text fs-3"></i>
+        </div>
+        <h3 class="fs-5 fw-bold text-white mb-2">Financial Audits</h3>
+        <p class="text-muted small mb-3">Central ledger journals, historical daily closings, and liquid account balance reconciliation audit.</p>
+      </div>
+      {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
+        <a href="{% url 'reports:financial' %}" class="btn btn-emerald btn-sm w-100">
+          Launch Report <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      {% else %}
+        <span class="badge bg-secondary w-100 py-2">Owner / Accountant Only</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
