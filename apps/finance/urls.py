@@ -7,5 +7,6 @@ urlpatterns = [
     path('accounts/', views.accounts_list_view, name='accounts'),
     path('receivables/', views.receivables_list_view, name='receivables'),
     path('payables/', views.payables_list_view, name='payables'),
-    path('daily-closing/', views.daily_closing_view, name='daily_closing'),
+    path('closing/', views.daily_closing_view, name='daily_closing'),
+    path('reversal/<int:transaction_id>/', views.transaction_reversal_view, name='reversal'),
 ]

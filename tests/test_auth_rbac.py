@@ -117,50 +117,63 @@ class RoleBasedAccessControlTests(TestCase):
         self.client.login(username='owner_user', password=self.password)
         
         # User management (Owner only)
-        resp_users = self.client.get(reverse('accounts:user_list'))
-        self.assertEqual(resp_users.status_code, 200)
+        self.assertEqual(self.client.get(reverse('accounts:user_list')).status_code, 200)
 
         # Accounts (Owner & Accountant)
-        resp_acc = self.client.get(reverse('finance:accounts'))
-        self.assertEqual(resp_acc.status_code, 200)
+        self.assertEqual(self.client.get(reverse('finance:accounts')).status_code, 200)
 
-        # Employees (Owner, Accountant, Manager)
-        resp_emp = self.client.get(reverse('employees:list'))
-        self.assertEqual(resp_emp.status_code, 200)
+        # Employees & Wages (Owner & Accountant)
+        self.assertEqual(self.client.get(reverse('employees:list')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('employees:wages')).status_code, 200)
 
-        # Reports (Owner & Accountant)
-        resp_rep = self.client.get(reverse('reports:index'))
-        self.assertEqual(resp_rep.status_code, 200)
+        # Reports (Financial & Operational)
+        self.assertEqual(self.client.get(reverse('reports:index')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('reports:financial')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('reports:operational')).status_code, 200)
+
+        # Financial Reversals (Owner only)
+        self.assertEqual(self.client.get(reverse('finance:reversal', args=[1])).status_code, 200)
 
     def test_accountant_access_and_restrictions(self):
-        """Verifies ACCOUNTANT can access finance & reports, but blocked from user administration."""
+        """Verifies ACCOUNTANT can access finance & reports, but blocked from user administration & reversals."""
         self.client.login(username='accountant_user', password=self.password)
 
         # Can access accounts & reports
         self.assertEqual(self.client.get(reverse('finance:accounts')).status_code, 200)
-        self.assertEqual(self.client.get(reverse('reports:index')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('reports:financial')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('employees:wages')).status_code, 200)
 
         # BLOCKED from user administration (403 Forbidden)
         resp_users = self.client.get(reverse('accounts:user_list'))
         self.assertEqual(resp_users.status_code, 403)
         self.assertTemplateUsed(resp_users, 'errors/403.html')
 
+        # BLOCKED from financial reversals (Owner only)
+        self.assertEqual(self.client.get(reverse('finance:reversal', args=[1])).status_code, 403)
+
     def test_manager_access_and_restrictions(self):
-        """Verifies MANAGER can access operations/employees, but blocked from accounts & user admin."""
+        """Verifies MANAGER can access operations/employees/operational reports, but blocked from financial data."""
         self.client.login(username='manager_user', password=self.password)
 
-        # Can access employees & dashboard
+        # Can access operational employee directory & operational reports
         self.assertEqual(self.client.get(reverse('employees:list')).status_code, 200)
-        self.assertEqual(self.client.get(reverse('dashboard:index')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('reports:operational')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('reports:index')).status_code, 200)
 
         # BLOCKED from financial accounts (403)
         self.assertEqual(self.client.get(reverse('finance:accounts')).status_code, 403)
+
+        # BLOCKED from financial employee wages (403)
+        self.assertEqual(self.client.get(reverse('employees:wages')).status_code, 403)
+
+        # BLOCKED from financial reports (403)
+        self.assertEqual(self.client.get(reverse('reports:financial')).status_code, 403)
 
         # BLOCKED from user administration (403)
         self.assertEqual(self.client.get(reverse('accounts:user_list')).status_code, 403)
 
     def test_employee_strict_restrictions(self):
-        """Verifies EMPLOYEE is blocked from financial accounts, employee administration, and user admin."""
+        """Verifies EMPLOYEE is blocked from financial accounts, employee administration, reports, and user admin."""
         self.client.login(username='employee_user', password=self.password)
 
         # Can access dashboard
@@ -169,14 +182,54 @@ class RoleBasedAccessControlTests(TestCase):
         # BLOCKED from accounts (403)
         self.assertEqual(self.client.get(reverse('finance:accounts')).status_code, 403)
 
+        # BLOCKED from daily closing (403)
+        self.assertEqual(self.client.get(reverse('finance:daily_closing')).status_code, 403)
+
         # BLOCKED from employee administration (403)
         self.assertEqual(self.client.get(reverse('employees:list')).status_code, 403)
 
         # BLOCKED from reports (403)
         self.assertEqual(self.client.get(reverse('reports:index')).status_code, 403)
+        self.assertEqual(self.client.get(reverse('reports:operational')).status_code, 403)
+        self.assertEqual(self.client.get(reverse('reports:financial')).status_code, 403)
 
         # BLOCKED from user administration (403)
         self.assertEqual(self.client.get(reverse('accounts:user_list')).status_code, 403)
+
+    def test_unauthorized_post_and_mutations_blocked(self):
+        """Verifies unauthorized POST actions to user creation, editing, deletion are rejected with 403."""
+        # Employee attempting POST to create user
+        self.client.login(username='employee_user', password=self.password)
+        resp_create = self.client.post(reverse('accounts:user_create'), {'username': 'hacked_user'})
+        self.assertEqual(resp_create.status_code, 403)
+
+        # Manager attempting POST to edit user
+        self.client.login(username='manager_user', password=self.password)
+        resp_edit = self.client.post(reverse('accounts:user_edit', args=[self.employee.id]), {'role': 'OWNER'})
+        self.assertEqual(resp_edit.status_code, 403)
+
+        # Accountant attempting to delete employee profile
+        self.client.login(username='accountant_user', password=self.password)
+        resp_del = self.client.post(reverse('employees:delete', args=[self.employee.id]))
+        self.assertEqual(resp_del.status_code, 403)
+
+    def test_unauthorized_export_blocked(self):
+        """Verifies financial export is permitted only to Owner & Accountant, blocked for Manager & Employee."""
+        # Manager blocked
+        self.client.login(username='manager_user', password=self.password)
+        self.assertEqual(self.client.get(reverse('reports:export')).status_code, 403)
+
+        # Employee blocked
+        self.client.login(username='employee_user', password=self.password)
+        self.assertEqual(self.client.get(reverse('reports:export')).status_code, 403)
+
+        # Accountant permitted
+        self.client.login(username='accountant_user', password=self.password)
+        self.assertEqual(self.client.get(reverse('reports:export')).status_code, 200)
+
+        # Owner permitted
+        self.client.login(username='owner_user', password=self.password)
+        self.assertEqual(self.client.get(reverse('reports:export')).status_code, 200)
 
     def test_ajax_permission_denied_returns_json_403(self):
         """Verifies unauthorized AJAX API requests return HTTP 403 JSON instead of HTML."""
@@ -189,8 +242,8 @@ class RoleBasedAccessControlTests(TestCase):
         self.assertEqual(response.json().get('success'), False)
 
 
-class UserAdministrationTests(TestCase):
-    """Verifies Owner user provisioning and role editing."""
+class UserAdministrationAndSyncTests(TestCase):
+    """Verifies Owner user provisioning, role editing, and Role -> Django Group synchronization."""
 
     def setUp(self):
         self.client = Client()
@@ -198,6 +251,21 @@ class UserAdministrationTests(TestCase):
         self.owner = User.objects.create_user(username="owner_admin", password=self.password)
         self.owner.profile.role = UserProfile.ROLE_OWNER
         self.owner.profile.save()
+
+    def test_role_group_synchronization(self):
+        """Verifies UserProfile.role <-> Django Group synchronization is strictly enforced."""
+        staff = User.objects.create_user(username="sync_tester", password="password123")
+        # Newly created non-superuser gets default EMPLOYEE role and EMPLOYEE group
+        self.assertEqual(staff.profile.role, UserProfile.ROLE_EMPLOYEE)
+        self.assertTrue(staff.groups.filter(name=UserProfile.ROLE_EMPLOYEE).exists())
+
+        # Update role to MANAGER
+        staff.profile.role = UserProfile.ROLE_MANAGER
+        staff.profile.save()
+        staff.save()  # Triggers post_save signal
+        staff.refresh_from_db()
+        self.assertTrue(staff.groups.filter(name=UserProfile.ROLE_MANAGER).exists())
+        self.assertFalse(staff.groups.filter(name=UserProfile.ROLE_EMPLOYEE).exists())
 
     def test_owner_create_new_user(self):
         """Verifies Owner can create a new staff account with assigned role."""
@@ -247,3 +315,4 @@ class UserAdministrationTests(TestCase):
         target.refresh_from_db()
         self.assertEqual(target.profile.role, UserProfile.ROLE_ACCOUNTANT)
         self.assertEqual(target.profile.phone_number, '+91 9900112233')
+        self.assertTrue(target.groups.filter(name=UserProfile.ROLE_ACCOUNTANT).exists())

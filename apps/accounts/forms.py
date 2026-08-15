@@ -123,4 +123,7 @@ class UserEditForm(forms.ModelForm):
             profile.role = self.cleaned_data.get('role')
             profile.phone_number = self.cleaned_data.get('phone_number')
             profile.save()
+            from django.contrib.auth.models import Group
+            group, _ = Group.objects.get_or_create(name=profile.role)
+            user.groups.set([group])
         return user

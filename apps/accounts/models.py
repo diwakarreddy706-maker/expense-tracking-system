@@ -57,6 +57,12 @@ class UserProfile(models.Model):
     def is_employee(self):
         return self.role == self.ROLE_EMPLOYEE
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.user_id:
+            group, _ = Group.objects.get_or_create(name=self.role)
+            self.user.groups.set([group])
+
 
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
