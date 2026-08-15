@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Receivables | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">Customer Receivables & Collections</h2>
+    <p class="text-muted small mb-0">Track money owed to the business by clients, credit billing, and payment settlements</p>
+  </div>
+  <div>
+    <a href="{% url 'finance:receivable_create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+      <i class="bi bi-receipt"></i>
+      <span>New Receivable</span>
+    </a>
+  </div>
+</div>
+
+<!-- Summary Metrics Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="theme-card p-3">
+      <span class="text-muted small">Total Billed Receivables</span>
+      <h3 class="fs-4 fw-bold text-white mt-1 mb-0 font-tabular">₹{{ metrics.total_receivables }}</h3>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="theme-card p-3">
+      <span class="text-muted small">Total Collected (Money In)</span>
+      <h3 class="fs-4 fw-bold text-emerald mt-1 mb-0 font-tabular">₹{{ metrics.total_received }}</h3>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="theme-card p-3">
+      <span class="text-muted small">Outstanding Balance</span>
+      <h3 class="fs-4 fw-bold text-warning mt-1 mb-0 font-tabular">₹{{ metrics.outstanding_receivables }}</h3>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="theme-card p-3">
+      <span class="text-muted small">Overdue Receivables</span>
+      <h3 class="fs-4 fw-bold {% if metrics.overdue_receivables > 0 %}text-crimson{% else %}text-muted{% endif %} mt-1 mb-0 font-tabular">
+        ₹{{ metrics.overdue_receivables }}
+      </h3>
+    </div>
+  </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="theme-card p-3 mb-4">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-12 col-md-4">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search code, customer, invoice...">
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <select name="customer" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Customers</option>
+        {% for c in customers %}
+          <option value="{{ c.id }}" {% if cust_id == c.id|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-3">
+      <select name="status" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Statuses</option>
+        <option value="UNPAID" {% if status == 'UNPAID' %}selected{% endif %}>Unpaid</option>
+        <option value="PARTIAL" {% if status == 'PARTIAL' %}selected{% endif %}>Partially Paid</option>
+        <option value="PAID" {% if status == 'PAID' %}selected{% endif %}>Fully Settled</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-ghost btn-sm w-100">Filter</button>
+      {% if query or cust_id or status or start_date or end_date %}
+        <a href="{% url 'finance:receivables' %}" class="btn btn-ghost btn-sm" title="Clear"><i class="bi bi-x-lg"></i></a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Receivables Table -->
+<div class="theme-card">
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0">
+      <thead>
+        <tr class="text-muted small border-secondary">
+          <th>Bill Date</th>
+          <th>Code</th>
+          <th>Customer</th>
+          <th>Invoice No.</th>
+          <th>Due Date</th>
+          <th class="text-end">Billed Amount</th>
+          <th class="text-end">Received</th>
+          <th class="text-end">Outstanding</th>
+          <th class="text-center">Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rcv in receivables %}
+          <tr class="border-secondary">
+            <td class="text-muted small">{{ rcv.bill_date|date:"d M Y" }}</td>
+            <td class="font-tabular text-info fw-semibold">
+              <a href="{% url 'finance:receivable_detail' rcv.id %}" class="text-info text-decoration-none">
+                {{ rcv.receivable_code }}
+              </a>
+            </td>
+            <td class="text-white fw-semibold">{{ rcv.customer.name }}</td>
+            <td class="text-muted small">{{ rcv.invoice_no|default:"--" }}</td>
+            <td class="text-muted small">{{ rcv.due_date|date:"d M Y"|default:"--" }}</td>
+            <td class="text-end font-tabular text-white fw-semibold">₹{{ rcv.total_amount }}</td>
+            <td class="text-end font-tabular text-emerald">₹{{ rcv.received_amount }}</td>
+            <td class="text-end font-tabular fw-bold {% if rcv.outstanding_amount > 0 %}text-warning{% else %}text-muted{% endif %}">
+              ₹{{ rcv.outstanding_amount }}
+            </td>
+            <td class="text-center">
+              {% if rcv.status == 'PAID' %}
+                <span class="badge bg-success">Settled</span>
+              {% elif rcv.status == 'PARTIAL' %}
+                <span class="badge bg-warning text-dark">Partial</span>
+              {% else %}
+                <span class="badge bg-danger">Unpaid</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              {% if rcv.status != 'PAID' %}
+                <a href="{% url 'finance:customer_payment_create' rcv.id %}" class="btn btn-emerald btn-sm py-1 px-2" title="Record Payment Receipt">
+                  <i class="bi bi-cash me-1"></i> Receive
+                </a>
+              {% endif %}
+              <a href="{% url 'finance:receivable_detail' rcv.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Inspect">
+                <i class="bi bi-eye"></i>
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="10" class="text-center py-5 text-muted">
+              <i class="bi bi-receipt-cutoff fs-1 d-block mb-2 text-secondary"></i>
+              No customer receivables found. Click "New Receivable" to bill a customer obligation.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

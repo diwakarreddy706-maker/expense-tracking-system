@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <div class="d-flex align-items-center gap-2">
+      <h2 class="fs-4 fw-bold text-white mb-0">{{ receivable.receivable_code }}</h2>
+      {% if receivable.status == 'PAID' %}
+        <span class="badge bg-success">Settled</span>
+      {% elif receivable.status == 'PARTIAL' %}
+        <span class="badge bg-warning text-dark">Partially Paid</span>
+      {% else %}
+        <span class="badge bg-danger">Unpaid</span>
+      {% endif %}
+    </div>
+    <p class="text-muted small mb-0 mt-1">Billed to <strong>{{ receivable.customer.name }}</strong> on {{ receivable.bill_date|date:"d M Y" }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'finance:receivables' %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to Receivables
+    </a>
+    {% if receivable.status != 'PAID' %}
+      <a href="{% url 'finance:customer_payment_create' receivable.id %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+        <i class="bi bi-cash-stack"></i>
+        <span>Receive Payment</span>
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Ledger Summary Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-4">
+    <div class="theme-card p-3">
+      <span class="text-muted small">Total Billed Amount</span>
+      <h3 class="fs-4 fw-bold text-white mt-1 mb-0 font-tabular">₹{{ receivable.total_amount }}</h3>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="theme-card p-3">
+      <span class="text-muted small">Total Received (Money In)</span>
+      <h3 class="fs-4 fw-bold text-emerald mt-1 mb-0 font-tabular">₹{{ receivable.received_amount }}</h3>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="theme-card p-3">
+      <span class="text-muted small">Remaining Outstanding</span>
+      <h3 class="fs-4 fw-bold {% if receivable.outstanding_amount > 0 %}text-warning{% else %}text-muted{% endif %} mt-1 mb-0 font-tabular">
+        ₹{{ receivable.outstanding_amount }}
+      </h3>
+    </div>
+  </div>
+</div>
+
+<!-- Payment History Table -->
+<div class="theme-card">
+  <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
+    <i class="bi bi-cash-coin me-2 text-emerald"></i>Settlement Payment Receipts
+  </h3>
+
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0">
+      <thead>
+        <tr class="text-muted small border-secondary">
+          <th>Date</th>
+          <th>Payment Code</th>
+          <th>Credited Account</th>
+          <th>Method</th>
+          <th>Reference / Notes</th>
+          <th class="text-end">Received Amount</th>
+          <th class="text-center">Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pay in payments %}
+          <tr class="border-secondary">
+            <td class="text-muted small">{{ pay.payment_date|date:"d M Y" }}</td>
+            <td class="font-tabular text-info fw-semibold">{{ pay.payment_code }}</td>
+            <td>
+              <div class="text-white small"><i class="bi bi-wallet2 text-emerald me-1"></i>{{ pay.account.account_name }}</div>
+              <div class="text-muted" style="font-size: 0.75rem;">Ledger Tx #{{ pay.linked_ledger_transaction.id|default:"--" }}</div>
+            </td>
+            <td><span class="badge bg-dark border border-secondary text-info">{{ pay.get_payment_method_display }}</span></td>
+            <td class="text-light small">
+              {{ pay.notes|default:"--" }}
+              {% if pay.reference_no %}<span class="text-muted">({{ pay.reference_no }})</span>{% endif %}
+            </td>
+            <td class="text-end font-tabular text-emerald fw-bold">₹{{ pay.amount }}</td>
+            <td class="text-center">
+              {% if pay.is_reversed %}
+                <span class="badge bg-danger">Reversed</span>
+              {% else %}
+                <span class="badge bg-success">Posted</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              {% if not pay.is_reversed and request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+                <button class="btn btn-ghost btn-sm py-1 px-2 text-danger" data-bs-toggle="modal" data-bs-target="#custPayReversalModal{{ pay.id }}" title="Reverse Payment">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+
+                <!-- Reversal Modal -->
+                <div class="modal fade" id="custPayReversalModal{{ pay.id }}" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered text-start">
+                    <div class="modal-content bg-dark border-secondary text-white">
+                      <form method="post" action="{% url 'finance:customer_payment_reverse' pay.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header border-secondary">
+                          <h5 class="modal-title fs-6 fw-bold text-danger">Confirm Payment Reversal</h5>
+                          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                          <p class="small text-light">
+                            Reverse payment <strong>{{ pay.payment_code }}</strong> (₹{{ pay.amount }}) from {{ receivable.customer.name }}?
+                          </p>
+                          <div class="alert alert-warning py-2 small">
+                            <i class="bi bi-info-circle me-1"></i> This will restore the receivable balance by ₹{{ pay.amount }} and post a compensatory DEBIT reversal ledger transaction to deduct the funds from {{ pay.account.account_name }}.
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label small text-muted">Reason for Reversal *</label>
+                            <textarea name="reason" rows="2" class="form-control bg-dark text-white border-secondary" required placeholder="e.g. Cheque bounced / Payment logged against wrong client"></textarea>
+                          </div>
+                        </div>
+                        <div class="modal-footer border-secondary">
+                          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Cancel</button>
+                          <button type="submit" class="btn btn-danger btn-sm">Execute Reversal</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" class="text-center py-4 text-muted">No payments received yet against this receivable.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

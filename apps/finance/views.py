@@ -1,12 +1,33 @@
+from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseForbidden
 from django.contrib import messages
-from django.db.models import Q
-from apps.accounts.decorators import role_required, accountant_or_owner_required, owner_required
+from django.db.models import Q, Sum
+from django.views.decorators.http import require_POST
+from django.core.exceptions import ValidationError
+
+from apps.accounts.decorators import (
+    role_required,
+    manager_or_above_required,
+    accountant_or_owner_required,
+    owner_required
+)
 from apps.audit.utils import log_audit_event
 from apps.audit.models import AuditLog
-from .models import Account, Customer, Supplier
-from .forms import AccountForm, CustomerForm, SupplierForm
+from .models import (
+    Account, Customer, Supplier,
+    Receivable, CustomerPayment,
+    Payable, SupplierPayment
+)
+from .forms import (
+    AccountForm, CustomerForm, SupplierForm,
+    ReceivableForm, CustomerPaymentForm,
+    PayableForm, SupplierPaymentForm
+)
+from .services.settlement_service import (
+    CustomerReceivableService,
+    SupplierPayableService
+)
 
 
 # ============================================================================
@@ -297,18 +318,306 @@ def supplier_delete_view(request, supplier_id):
 
 
 # ============================================================================
-# FINANCIAL PLACEHOLDERS (To be fully implemented in Phase 7-10)
+# CUSTOMER RECEIVABLES & SETTLEMENTS (Owner & Accountant)
 # ============================================================================
 
 @accountant_or_owner_required
 def receivables_list_view(request):
-    return render(request, 'base.html', {'title': 'Receivables'})
+    """Lists Customer Receivables with search, status filtering, and metrics."""
+    query = request.GET.get('q', '').strip()
+    cust_id = request.GET.get('customer', '').strip()
+    status = request.GET.get('status', '').strip()
+    start_date = request.GET.get('start_date', '').strip()
+    end_date = request.GET.get('end_date', '').strip()
+
+    receivables = Receivable.objects.filter(is_deleted=False).select_related('customer', 'created_by')
+
+    if query:
+        receivables = receivables.filter(
+            Q(receivable_code__icontains=query) |
+            Q(customer__name__icontains=query) |
+            Q(invoice_no__icontains=query) |
+            Q(notes__icontains=query)
+        )
+    if cust_id:
+        receivables = receivables.filter(customer_id=cust_id)
+    if status:
+        receivables = receivables.filter(status=status)
+    if start_date:
+        receivables = receivables.filter(bill_date__gte=start_date)
+    if end_date:
+        receivables = receivables.filter(bill_date__lte=end_date)
+
+    metrics = CustomerReceivableService.get_receivable_metrics()
+
+    return render(request, 'finance/receivables_list.html', {
+        'receivables': receivables,
+        'customers': Customer.objects.filter(is_deleted=False),
+        'metrics': metrics,
+        'query': query,
+        'cust_id': cust_id,
+        'status': status,
+        'start_date': start_date,
+        'end_date': end_date,
+        'title': 'Customer Receivables & Collections',
+    })
 
 
 @accountant_or_owner_required
-def payables_list_view(request):
-    return render(request, 'base.html', {'title': 'Payables'})
+def receivable_create_view(request):
+    """Creates a new customer receivable obligation."""
+    if request.method == 'POST':
+        form = ReceivableForm(request.POST)
+        if form.is_valid():
+            try:
+                rcv = CustomerReceivableService.create_receivable(
+                    user=request.user,
+                    customer=form.cleaned_data['customer'],
+                    total_amount=form.cleaned_data['total_amount'],
+                    bill_date=form.cleaned_data['bill_date'],
+                    due_date=form.cleaned_data.get('due_date'),
+                    invoice_no=form.cleaned_data.get('invoice_no'),
+                    notes=form.cleaned_data.get('notes'),
+                    request=request
+                )
+                messages.success(request, f"Receivable '{rcv.receivable_code}' of ₹{rcv.total_amount} registered for {rcv.customer.name}.")
+                return redirect('finance:receivable_detail', receivable_id=rcv.id)
+            except ValidationError as e:
+                form.add_error(None, str(e))
+    else:
+        form = ReceivableForm()
 
+    return render(request, 'finance/receivable_form.html', {
+        'form': form,
+        'title': 'Create Customer Receivable',
+    })
+
+
+@accountant_or_owner_required
+def receivable_detail_view(request, receivable_id):
+    """Detailed inspector for a customer receivable and its settlement payments."""
+    rcv = get_object_or_404(
+        Receivable.objects.select_related('customer', 'created_by'),
+        id=receivable_id,
+        is_deleted=False
+    )
+    payments = rcv.payments.filter(is_deleted=False).select_related('account', 'linked_ledger_transaction', 'created_by').order_by('-payment_date', '-id')
+
+    return render(request, 'finance/receivable_detail.html', {
+        'receivable': rcv,
+        'payments': payments,
+        'title': f"Receivable: {rcv.receivable_code}",
+    })
+
+
+@accountant_or_owner_required
+def customer_payment_create_view(request, receivable_id):
+    """Records a customer receipt against a receivable obligation."""
+    rcv = get_object_or_404(Receivable, id=receivable_id, is_deleted=False)
+    if rcv.status == Receivable.STATUS_PAID:
+        messages.info(request, f"Receivable '{rcv.receivable_code}' is already fully paid.")
+        return redirect('finance:receivable_detail', receivable_id=rcv.id)
+
+    if request.method == 'POST':
+        form = CustomerPaymentForm(request.POST)
+        if form.is_valid():
+            try:
+                payment = CustomerReceivableService.record_payment(
+                    user=request.user,
+                    receivable_id=rcv.id,
+                    amount=form.cleaned_data['amount'],
+                    account=form.cleaned_data['account'],
+                    payment_method=form.cleaned_data['payment_method'],
+                    payment_date=form.cleaned_data['payment_date'],
+                    reference_no=form.cleaned_data.get('reference_no'),
+                    notes=form.cleaned_data.get('notes'),
+                    request=request
+                )
+                messages.success(request, f"Payment '{payment.payment_code}' of ₹{payment.amount} credited to {payment.account.account_name}.")
+                return redirect('finance:receivable_detail', receivable_id=rcv.id)
+            except ValidationError as e:
+                form.add_error(None, str(e))
+    else:
+        form = CustomerPaymentForm(initial={'amount': rcv.outstanding_amount})
+
+    return render(request, 'finance/customer_payment_form.html', {
+        'form': form,
+        'receivable': rcv,
+        'title': f"Receive Payment: {rcv.receivable_code}",
+    })
+
+
+@require_POST
+@owner_required
+def customer_payment_reverse_view(request, payment_id):
+    """Reverses a customer payment (Owner only)."""
+    reason = request.POST.get('reason', '').strip()
+    try:
+        payment = CustomerReceivableService.reverse_payment(
+            payment_id=payment_id,
+            user=request.user,
+            reason=reason,
+            request=request
+        )
+        messages.success(request, f"Customer payment '{payment.payment_code}' successfully reversed.")
+        return redirect('finance:receivable_detail', receivable_id=payment.receivable_id)
+    except (ValidationError, Exception) as e:
+        messages.error(request, f"Reversal failed: {str(e)}")
+        return redirect('finance:receivables')
+
+
+# ============================================================================
+# SUPPLIER PAYABLES & SETTLEMENTS (Owner & Accountant)
+# ============================================================================
+
+@accountant_or_owner_required
+def payables_list_view(request):
+    """Lists Supplier Payables with search, status filtering, and metrics."""
+    query = request.GET.get('q', '').strip()
+    supp_id = request.GET.get('supplier', '').strip()
+    status = request.GET.get('status', '').strip()
+    start_date = request.GET.get('start_date', '').strip()
+    end_date = request.GET.get('end_date', '').strip()
+
+    payables = Payable.objects.filter(is_deleted=False).select_related('supplier', 'linked_expense', 'created_by')
+
+    if query:
+        payables = payables.filter(
+            Q(payable_code__icontains=query) |
+            Q(supplier__name__icontains=query) |
+            Q(bill_no__icontains=query) |
+            Q(notes__icontains=query)
+        )
+    if supp_id:
+        payables = payables.filter(supplier_id=supp_id)
+    if status:
+        payables = payables.filter(status=status)
+    if start_date:
+        payables = payables.filter(bill_date__gte=start_date)
+    if end_date:
+        payables = payables.filter(bill_date__lte=end_date)
+
+    metrics = SupplierPayableService.get_payable_metrics()
+
+    return render(request, 'finance/payables_list.html', {
+        'payables': payables,
+        'suppliers': Supplier.objects.filter(is_deleted=False),
+        'metrics': metrics,
+        'query': query,
+        'supp_id': supp_id,
+        'status': status,
+        'start_date': start_date,
+        'end_date': end_date,
+        'title': 'Supplier Payables & Obligations',
+    })
+
+
+@accountant_or_owner_required
+def payable_create_view(request):
+    """Creates a new supplier payable obligation."""
+    if request.method == 'POST':
+        form = PayableForm(request.POST)
+        if form.is_valid():
+            try:
+                pay = SupplierPayableService.create_payable(
+                    user=request.user,
+                    supplier=form.cleaned_data['supplier'],
+                    total_amount=form.cleaned_data['total_amount'],
+                    bill_date=form.cleaned_data['bill_date'],
+                    due_date=form.cleaned_data.get('due_date'),
+                    bill_no=form.cleaned_data.get('bill_no'),
+                    notes=form.cleaned_data.get('notes'),
+                    request=request
+                )
+                messages.success(request, f"Payable '{pay.payable_code}' of ₹{pay.total_amount} registered for {pay.supplier.name}.")
+                return redirect('finance:payable_detail', payable_id=pay.id)
+            except ValidationError as e:
+                form.add_error(None, str(e))
+    else:
+        form = PayableForm()
+
+    return render(request, 'finance/payable_form.html', {
+        'form': form,
+        'title': 'Create Supplier Payable',
+    })
+
+
+@accountant_or_owner_required
+def payable_detail_view(request, payable_id):
+    """Detailed inspector for a supplier payable and its disbursement payments."""
+    pay = get_object_or_404(
+        Payable.objects.select_related('supplier', 'linked_expense', 'created_by'),
+        id=payable_id,
+        is_deleted=False
+    )
+    payments = pay.payments.filter(is_deleted=False).select_related('account', 'linked_ledger_transaction', 'created_by').order_by('-payment_date', '-id')
+
+    return render(request, 'finance/payable_detail.html', {
+        'payable': pay,
+        'payments': payments,
+        'title': f"Payable: {pay.payable_code}",
+    })
+
+
+@accountant_or_owner_required
+def supplier_payment_create_view(request, payable_id):
+    """Records a supplier payout against a payable obligation."""
+    pay = get_object_or_404(Payable, id=payable_id, is_deleted=False)
+    if pay.status == Payable.STATUS_PAID:
+        messages.info(request, f"Payable '{pay.payable_code}' is already fully settled.")
+        return redirect('finance:payable_detail', payable_id=pay.id)
+
+    if request.method == 'POST':
+        form = SupplierPaymentForm(request.POST)
+        if form.is_valid():
+            try:
+                payment = SupplierPayableService.record_payment(
+                    user=request.user,
+                    payable_id=pay.id,
+                    amount=form.cleaned_data['amount'],
+                    account=form.cleaned_data['account'],
+                    payment_method=form.cleaned_data['payment_method'],
+                    payment_date=form.cleaned_data['payment_date'],
+                    reference_no=form.cleaned_data.get('reference_no'),
+                    notes=form.cleaned_data.get('notes'),
+                    request=request
+                )
+                messages.success(request, f"Disbursement '{payment.payment_code}' of ₹{payment.amount} debited from {payment.account.account_name}.")
+                return redirect('finance:payable_detail', payable_id=pay.id)
+            except ValidationError as e:
+                form.add_error(None, str(e))
+    else:
+        form = SupplierPaymentForm(initial={'amount': pay.outstanding_amount})
+
+    return render(request, 'finance/supplier_payment_form.html', {
+        'form': form,
+        'payable': pay,
+        'title': f"Disburse Payment: {pay.payable_code}",
+    })
+
+
+@require_POST
+@owner_required
+def supplier_payment_reverse_view(request, payment_id):
+    """Reverses a supplier payment (Owner only)."""
+    reason = request.POST.get('reason', '').strip()
+    try:
+        payment = SupplierPayableService.reverse_payment(
+            payment_id=payment_id,
+            user=request.user,
+            reason=reason,
+            request=request
+        )
+        messages.success(request, f"Supplier payment '{payment.payment_code}' successfully reversed.")
+        return redirect('finance:payable_detail', payable_id=payment.payable_id)
+    except (ValidationError, Exception) as e:
+        messages.error(request, f"Reversal failed: {str(e)}")
+        return redirect('finance:payables')
+
+
+# ============================================================================
+# FINANCIAL PLACEHOLDERS (Phase 8 Daily Closing & Reversals)
+# ============================================================================
 
 @accountant_or_owner_required
 def daily_closing_view(request):

@@ -22,9 +22,21 @@ urlpatterns = [
     path('suppliers/<int:supplier_id>/edit/', views.supplier_edit_view, name='supplier_edit'),
     path('suppliers/<int:supplier_id>/delete/', views.supplier_delete_view, name='supplier_delete'),
 
-    # Receivables / Payables / Closings
+    # Customer Receivables & Settlements
     path('receivables/', views.receivables_list_view, name='receivables'),
+    path('receivables/add/', views.receivable_create_view, name='receivable_create'),
+    path('receivables/<int:receivable_id>/', views.receivable_detail_view, name='receivable_detail'),
+    path('receivables/<int:receivable_id>/pay/', views.customer_payment_create_view, name='customer_payment_create'),
+    path('customer-payments/<int:payment_id>/reverse/', views.customer_payment_reverse_view, name='customer_payment_reverse'),
+
+    # Supplier Payables & Settlements
     path('payables/', views.payables_list_view, name='payables'),
+    path('payables/add/', views.payable_create_view, name='payable_create'),
+    path('payables/<int:payable_id>/', views.payable_detail_view, name='payable_detail'),
+    path('payables/<int:payable_id>/pay/', views.supplier_payment_create_view, name='supplier_payment_create'),
+    path('supplier-payments/<int:payment_id>/reverse/', views.supplier_payment_reverse_view, name='supplier_payment_reverse'),
+
+    # Closings & General Reversals
     path('closing/', views.daily_closing_view, name='daily_closing'),
     path('reversal/<int:transaction_id>/', views.transaction_reversal_view, name='reversal'),
 ]

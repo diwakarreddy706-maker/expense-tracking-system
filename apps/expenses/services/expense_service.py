@@ -170,6 +170,20 @@ class ExpenseService:
                 request=request
             )
 
+            # 8. Credit Expense Integration: Create Supplier Payable if supplier is provided
+            if payment_method == Expense.METHOD_CREDIT and supplier:
+                from apps.finance.services.settlement_service import SupplierPayableService
+                SupplierPayableService.create_payable(
+                    user=user,
+                    supplier=supplier,
+                    total_amount=amount,
+                    bill_date=expense_date,
+                    bill_no=reference_no,
+                    linked_expense=expense,
+                    notes=f"Credit Expense {expense.expense_code}: {description or ''}",
+                    request=request
+                )
+
             return expense, ledger_tx
 
     @classmethod

@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
+    <p class="text-muted small mb-0">Record customer settlement for {{ receivable.customer.name }} (Outstanding: ₹{{ receivable.outstanding_amount }})</p>
+  </div>
+  <div>
+    <a href="{% url 'finance:receivable_detail' receivable.id %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to Receivable
+    </a>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="theme-card">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 small mb-3">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Receipt Date *</label>
+            {{ form.payment_date }}
+            {% if form.payment_date.errors %}<div class="text-danger small mt-1">{{ form.payment_date.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Received Amount (₹) * (Max: ₹{{ receivable.outstanding_amount }})</label>
+            {{ form.amount }}
+            {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Credited Business Account *</label>
+            {{ form.account }}
+            {% if form.account.errors %}<div class="text-danger small mt-1">{{ form.account.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Payment Mode *</label>
+            {{ form.payment_method }}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Receipt Reference / Cheque / UTR No.</label>
+            {{ form.reference_no }}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Notes / Remarks</label>
+            {{ form.notes }}
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-3">
+          <a href="{% url 'finance:receivable_detail' receivable.id %}" class="btn btn-ghost btn-sm">Cancel</a>
+          <button type="submit" class="btn btn-emerald btn-sm">Deposit Funds & Settle Receivable</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

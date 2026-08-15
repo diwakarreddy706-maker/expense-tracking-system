@@ -1,5 +1,10 @@
 from django import forms
-from .models import Account, Customer, Supplier
+from decimal import Decimal
+from .models import (
+    Account, Customer, Supplier,
+    Receivable, CustomerPayment,
+    Payable, SupplierPayment
+)
 
 
 class AccountForm(forms.ModelForm):
@@ -53,3 +58,159 @@ class SupplierForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'}),
             'notes': forms.Textarea(attrs={'class': 'form-control bg-dark text-white border-secondary', 'rows': 2}),
         }
+
+
+class ReceivableForm(forms.Form):
+    """Form for creating a customer receivable obligation."""
+    customer = forms.ModelChoiceField(
+        queryset=Customer.objects.filter(is_deleted=False, status=Customer.STATUS_ACTIVE),
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'})
+    )
+    invoice_no = forms.CharField(
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Bill / Invoice No.'})
+    )
+    bill_date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'date'})
+    )
+    due_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'date'})
+    )
+    total_amount = forms.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'placeholder': '₹ Total Billed Amount'})
+    )
+    notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control bg-dark text-white border-secondary', 'rows': 2, 'placeholder': 'Receivable remarks'})
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        total = cleaned_data.get('total_amount')
+        bill = cleaned_data.get('bill_date')
+        due = cleaned_data.get('due_date')
+
+        if total and total <= Decimal('0.00'):
+            self.add_error('total_amount', "Billed amount must be strictly greater than zero.")
+
+        if bill and due and due < bill:
+            self.add_error('due_date', "Payment due date cannot be before bill date.")
+
+        return cleaned_data
+
+
+class CustomerPaymentForm(forms.Form):
+    """Form for settling a customer receivable (receipt of funds)."""
+    payment_date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'date'})
+    )
+    amount = forms.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'placeholder': '₹ Receipt Amount'})
+    )
+    account = forms.ModelChoiceField(
+        queryset=Account.objects.filter(is_deleted=False, is_active=True),
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'})
+    )
+    payment_method = forms.ChoiceField(
+        choices=CustomerPayment.PAYMENT_METHOD_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'})
+    )
+    reference_no = forms.CharField(
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'UTR / Cheque / Receipt Reference'})
+    )
+    notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control bg-dark text-white border-secondary', 'rows': 2, 'placeholder': 'Payment notes'})
+    )
+
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if amount and amount <= Decimal('0.00'):
+            raise forms.ValidationError("Receipt amount must be strictly greater than zero.")
+        return amount
+
+
+class PayableForm(forms.Form):
+    """Form for creating a supplier payable obligation."""
+    supplier = forms.ModelChoiceField(
+        queryset=Supplier.objects.filter(is_deleted=False, status=Supplier.STATUS_ACTIVE),
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'})
+    )
+    bill_no = forms.CharField(
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Supplier Invoice / Bill No.'})
+    )
+    bill_date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'date'})
+    )
+    due_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'date'})
+    )
+    total_amount = forms.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'placeholder': '₹ Payable Amount'})
+    )
+    notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control bg-dark text-white border-secondary', 'rows': 2, 'placeholder': 'Payable remarks'})
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        total = cleaned_data.get('total_amount')
+        bill = cleaned_data.get('bill_date')
+        due = cleaned_data.get('due_date')
+
+        if total and total <= Decimal('0.00'):
+            self.add_error('total_amount', "Payable amount must be strictly greater than zero.")
+
+        if bill and due and due < bill:
+            self.add_error('due_date', "Due date cannot be before bill date.")
+
+        return cleaned_data
+
+
+class SupplierPaymentForm(forms.Form):
+    """Form for settling a supplier payable (disbursement of funds)."""
+    payment_date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'date'})
+    )
+    amount = forms.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'placeholder': '₹ Disbursement Amount'})
+    )
+    account = forms.ModelChoiceField(
+        queryset=Account.objects.filter(is_deleted=False, is_active=True),
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'})
+    )
+    payment_method = forms.ChoiceField(
+        choices=SupplierPayment.PAYMENT_METHOD_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'})
+    )
+    reference_no = forms.CharField(
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'UTR / Cheque / Voucher Reference'})
+    )
+    notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control bg-dark text-white border-secondary', 'rows': 2, 'placeholder': 'Payment notes'})
+    )
+
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if amount and amount <= Decimal('0.00'):
+            raise forms.ValidationError("Disbursement amount must be strictly greater than zero.")
+        return amount

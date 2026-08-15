@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
+    <p class="text-muted small mb-0">Record a billed customer receivable (money owed to the business)</p>
+  </div>
+  <div>
+    <a href="{% url 'finance:receivables' %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to Receivables
+    </a>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="theme-card">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 small mb-3">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Customer / Client *</label>
+            {{ form.customer }}
+            {% if form.customer.errors %}<div class="text-danger small mt-1">{{ form.customer.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Bill / Invoice Reference No.</label>
+            {{ form.invoice_no }}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Bill Date *</label>
+            {{ form.bill_date }}
+            {% if form.bill_date.errors %}<div class="text-danger small mt-1">{{ form.bill_date.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Payment Due Date</label>
+            {{ form.due_date }}
+            {% if form.due_date.errors %}<div class="text-danger small mt-1">{{ form.due_date.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Total Billed Amount (₹) *</label>
+            {{ form.total_amount }}
+            {% if form.total_amount.errors %}<div class="text-danger small mt-1">{{ form.total_amount.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label small text-muted">Notes / Service Scope (e.g. 50 Acres Harvester Rental)</label>
+          {{ form.notes }}
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-3">
+          <a href="{% url 'finance:receivables' %}" class="btn btn-ghost btn-sm">Cancel</a>
+          <button type="submit" class="btn btn-emerald btn-sm">Register Receivable</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
