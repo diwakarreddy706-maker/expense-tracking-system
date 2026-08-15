@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 from decimal import Decimal
 
 
@@ -87,3 +88,92 @@ class Employee(models.Model):
 
     def __str__(self):
         return f"{self.employee_code} - {self.full_name} ({self.get_role_display()})"
+
+
+class EmployeePayment(models.Model):
+    """
+    Employee Wage Accruals, Advance Payouts, Salary Settlements, and Bonuses.
+    Defined in DATABASE_SCHEMA.md.
+    """
+    TYPE_SALARY_ACCRUAL = 'SALARY_ACCRUAL'
+    TYPE_ADVANCE_PAYOUT = 'ADVANCE_PAYOUT'
+    TYPE_SALARY_SETTLEMENT = 'SALARY_SETTLEMENT'
+    TYPE_BONUS = 'BONUS'
+
+    PAYMENT_TYPE_CHOICES = [
+        (TYPE_SALARY_ACCRUAL, 'Salary / Wage Accrual (Liability Earned)'),
+        (TYPE_ADVANCE_PAYOUT, 'Advance Payout (Money Out)'),
+        (TYPE_SALARY_SETTLEMENT, 'Salary Settlement Payout (Money Out)'),
+        (TYPE_BONUS, 'Performance Bonus / Festival Payout (Money Out)'),
+    ]
+
+    METHOD_CASH = 'CASH'
+    METHOD_BANK_TRANSFER = 'BANK_TRANSFER'
+    METHOD_UPI = 'UPI'
+    METHOD_CHEQUE = 'CHEQUE'
+
+    PAYMENT_METHOD_CHOICES = [
+        (METHOD_CASH, 'Cash'),
+        (METHOD_BANK_TRANSFER, 'Bank Transfer / NEFT'),
+        (METHOD_UPI, 'UPI Transfer'),
+        (METHOD_CHEQUE, 'Cheque'),
+    ]
+
+    payment_code = models.CharField(max_length=30, unique=True, db_index=True)
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.PROTECT,
+        related_name='payments'
+    )
+    payment_type = models.CharField(
+        max_length=30,
+        choices=PAYMENT_TYPE_CHOICES,
+        db_index=True
+    )
+    amount = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        help_text="Financial amount in INR"
+    )
+    date = models.DateField(default=timezone.now, db_index=True)
+    account = models.ForeignKey(
+        'finance.Account',
+        on_delete=models.RESTRICT,
+        null=True,
+        blank=True,
+        related_name='employee_payouts'
+    )
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PAYMENT_METHOD_CHOICES,
+        default=METHOD_CASH,
+        db_index=True
+    )
+    linked_ledger_transaction = models.OneToOneField(
+        'finance.AccountTransaction',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='employee_payment',
+        help_text="Linked central ledger entry for actual bank/cash movements"
+    )
+    reference_no = models.CharField(max_length=100, blank=True, null=True, help_text="Voucher / Bank UTR / Receipt No.")
+    notes = models.TextField(blank=True, null=True)
+    is_reversed = models.BooleanField(default=False, db_index=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='created_employee_payments'
+    )
+    is_deleted = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'employee_payments'
+        verbose_name = 'Employee Wage / Payment'
+        verbose_name_plural = 'Employee Wages & Payments'
+        ordering = ['-date', '-id']
+
+    def __str__(self):
+        return f"{self.payment_code} - {self.employee.full_name} ({self.get_payment_type_display()}): ₹{self.amount}"

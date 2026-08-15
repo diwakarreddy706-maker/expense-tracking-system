@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <div class="d-flex align-items-center gap-2">
+      <h2 class="fs-4 fw-bold text-white mb-0">{{ employee.full_name }}</h2>
+      <span class="badge bg-dark border border-secondary text-info">{{ employee.get_role_display }}</span>
+      <span class="badge bg-dark border border-secondary text-primary">{{ employee.employee_code }}</span>
+    </div>
+    <p class="text-muted small mb-0 mt-1">Wage Structure: {{ employee.get_wage_type_display }} (Base: ₹{{ employee.base_rate }})</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'employees:wages' %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to Wages
+    </a>
+    <a href="{% url 'employees:accrual_create' %}?employee={{ employee.id }}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-plus-lg text-info me-1"></i> Accrue Wages
+    </a>
+    <a href="{% url 'employees:payout_create' %}?employee={{ employee.id }}" class="btn btn-emerald btn-sm">
+      <i class="bi bi-cash-stack me-1"></i> Pay Payout / Advance
+    </a>
+  </div>
+</div>
+
+<!-- Ledger Summary Metric Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="theme-card p-3">
+      <span class="text-muted small">Total Wages Earned</span>
+      <h3 class="fs-4 fw-bold text-white mt-1 mb-0 font-tabular">₹{{ balances.total_earned }}</h3>
+      <div class="text-muted" style="font-size: 0.7rem;">Accruals + Bonuses</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="theme-card p-3">
+      <span class="text-muted small">Advances Taken</span>
+      <h3 class="fs-4 fw-bold text-warning mt-1 mb-0 font-tabular">₹{{ balances.total_advances }}</h3>
+      <div class="text-muted" style="font-size: 0.7rem;">Advance Payouts</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="theme-card p-3">
+      <span class="text-muted small">Settlements Paid</span>
+      <h3 class="fs-4 fw-bold text-emerald mt-1 mb-0 font-tabular">₹{{ balances.total_settlements }}</h3>
+      <div class="text-muted" style="font-size: 0.7rem;">Salary Settlements</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="theme-card p-3">
+      <span class="text-muted small">Net Outstanding Payable</span>
+      <h3 class="fs-4 fw-bold {% if balances.net_outstanding > 0 %}text-crimson{% else %}text-muted{% endif %} mt-1 mb-0 font-tabular">
+        ₹{{ balances.net_outstanding }}
+      </h3>
+      <div class="text-muted" style="font-size: 0.7rem;">Remaining to Pay</div>
+    </div>
+  </div>
+</div>
+
+<!-- Historical Transaction Ledger Table -->
+<div class="theme-card">
+  <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
+    <i class="bi bi-journal-check me-2 text-emerald"></i>Staff Wage & Payment History
+  </h3>
+
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0">
+      <thead>
+        <tr class="text-muted small border-secondary">
+          <th>Date</th>
+          <th>Voucher</th>
+          <th>Type</th>
+          <th>Account / Movement</th>
+          <th>Notes / Reference</th>
+          <th class="text-end">Amount</th>
+          <th class="text-center">Status</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pay in payment_history %}
+          <tr class="border-secondary">
+            <td class="text-muted small">{{ pay.date|date:"d M Y" }}</td>
+            <td class="font-tabular text-info fw-semibold">{{ pay.payment_code }}</td>
+            <td>
+              {% if pay.payment_type == 'SALARY_ACCRUAL' %}
+                <span class="badge bg-dark border border-info text-info">Wage Accrual</span>
+              {% elif pay.payment_type == 'ADVANCE_PAYOUT' %}
+                <span class="badge bg-dark border border-warning text-warning">Advance Payout</span>
+              {% elif pay.payment_type == 'SALARY_SETTLEMENT' %}
+                <span class="badge bg-dark border border-success text-success">Salary Settlement</span>
+              {% else %}
+                <span class="badge bg-dark border border-primary text-primary">Bonus</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if pay.account %}
+                <div class="text-white small">
+                  <i class="bi bi-wallet2 text-emerald me-1"></i>{{ pay.account.account_name }}
+                </div>
+                <div class="text-muted" style="font-size: 0.75rem;">
+                  Ledger Tx #{{ pay.linked_ledger_transaction.id|default:"--" }} ({{ pay.get_payment_method_display }})
+                </div>
+              {% else %}
+                <span class="text-muted small">Liability Accrual (No Cash Out)</span>
+              {% endif %}
+            </td>
+            <td class="text-light small">
+              {{ pay.notes|default:"--" }}
+              {% if pay.reference_no %}<span class="text-muted">({{ pay.reference_no }})</span>{% endif %}
+            </td>
+            <td class="text-end font-tabular fw-bold {% if pay.payment_type == 'SALARY_ACCRUAL' %}text-info{% else %}text-crimson{% endif %}">
+              ₹{{ pay.amount }}
+            </td>
+            <td class="text-center">
+              {% if pay.is_reversed %}
+                <span class="badge bg-danger">Reversed</span>
+              {% else %}
+                <span class="badge bg-success">Posted</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              {% if not pay.is_reversed and request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+                <button class="btn btn-ghost btn-sm py-1 px-2 text-danger" data-bs-toggle="modal" data-bs-target="#payReversalModal{{ pay.id }}" title="Reverse Payment">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+
+                <!-- Reversal Modal for each transaction -->
+                <div class="modal fade" id="payReversalModal{{ pay.id }}" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered text-start">
+                    <div class="modal-content bg-dark border-secondary text-white">
+                      <form method="post" action="{% url 'employees:payment_reverse' pay.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header border-secondary">
+                          <h5 class="modal-title fs-6 fw-bold text-danger">Confirm Payment Reversal</h5>
+                          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                          <p class="small text-light">
+                            Reverse transaction <strong>{{ pay.payment_code }}</strong> (₹{{ pay.amount }}) for {{ employee.full_name }}?
+                          </p>
+                          <div class="mb-3">
+                            <label class="form-label small text-muted">Reason for Reversal *</label>
+                            <textarea name="reason" rows="2" class="form-control bg-dark text-white border-secondary" required placeholder="e.g. Duplicate voucher recorded"></textarea>
+                          </div>
+                        </div>
+                        <div class="modal-footer border-secondary">
+                          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Cancel</button>
+                          <button type="submit" class="btn btn-danger btn-sm">Execute Reversal</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" class="text-center py-4 text-muted">No financial records recorded yet for this staff member.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

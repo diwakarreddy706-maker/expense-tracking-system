@@ -71,7 +71,15 @@
         {% for emp in employees %}
           <tr class="border-secondary">
             <td class="font-tabular text-info fw-semibold">{{ emp.employee_code }}</td>
-            <td class="text-white fw-semibold">{{ emp.full_name }}</td>
+            <td class="text-white fw-semibold">
+              {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
+                <a href="{% url 'employees:financial_profile' emp.id %}" class="text-white text-decoration-none" title="View Financial Ledger">
+                  {{ emp.full_name }}
+                </a>
+              {% else %}
+                {{ emp.full_name }}
+              {% endif %}
+            </td>
             <td><span class="badge bg-dark border border-secondary text-primary">{{ emp.get_role_display }}</span></td>
             <td class="font-tabular text-muted">{{ emp.phone_number|default:"--" }}</td>
             <td class="text-muted small">{{ emp.joining_date|date:"d M Y" }}</td>
@@ -85,6 +93,11 @@
               {% endif %}
             </td>
             <td class="text-end">
+              {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
+                <a href="{% url 'employees:financial_profile' emp.id %}" class="btn btn-ghost btn-sm py-1 px-2 text-warning" title="Wage & Financial Ledger">
+                  <i class="bi bi-wallet2"></i>
+                </a>
+              {% endif %}
               <a href="{% url 'employees:edit' emp.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Edit Employee">
                 <i class="bi bi-pencil-square"></i>
               </a>

@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}Employee Wages & Payouts | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">Employee Wages & Payouts</h2>
+    <p class="text-muted small mb-0">Wage accruals, staff advance payouts, salary settlements, and performance bonuses</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'employees:accrual_create' %}" class="btn btn-ghost btn-sm d-flex align-items-center gap-2">
+      <i class="bi bi-clock-history text-info"></i>
+      <span>Record Wage Accrual</span>
+    </a>
+    <a href="{% url 'employees:payout_create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+      <i class="bi bi-cash-stack"></i>
+      <span>Disburse Payout</span>
+    </a>
+  </div>
+</div>
+
+<!-- Summary Metrics Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-sm-6">
+    <div class="theme-card p-3">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <span class="text-muted small">Total Wage Liabilities Accrued</span>
+          <h3 class="fs-4 fw-bold text-white mt-1 mb-0 font-tabular">₹{{ total_accrued }}</h3>
+        </div>
+        <div class="rounded-circle p-2 bg-dark border border-secondary text-info">
+          <i class="bi bi-journal-text fs-5"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-sm-6">
+    <div class="theme-card p-3">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <span class="text-muted small">Total Disbursed Payouts (Money Out)</span>
+          <h3 class="fs-4 fw-bold text-crimson mt-1 mb-0 font-tabular">₹{{ total_disbursed }}</h3>
+        </div>
+        <div class="rounded-circle p-2 bg-dark border border-secondary text-danger">
+          <i class="bi bi-bank fs-5"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="theme-card p-3 mb-4">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-12 col-md-4">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search voucher, staff, notes...">
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <select name="employee" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Staff Members</option>
+        {% for emp in employees %}
+          <option value="{{ emp.id }}" {% if emp_id == emp.id|stringformat:"i" %}selected{% endif %}>{{ emp.full_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-3">
+      <select name="type" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Payment Types</option>
+        <option value="SALARY_ACCRUAL" {% if p_type == 'SALARY_ACCRUAL' %}selected{% endif %}>Salary Accrual</option>
+        <option value="ADVANCE_PAYOUT" {% if p_type == 'ADVANCE_PAYOUT' %}selected{% endif %}>Advance Payout</option>
+        <option value="SALARY_SETTLEMENT" {% if p_type == 'SALARY_SETTLEMENT' %}selected{% endif %}>Salary Settlement</option>
+        <option value="BONUS" {% if p_type == 'BONUS' %}selected{% endif %}>Bonus Reward</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-ghost btn-sm w-100">Filter</button>
+      {% if query or emp_id or p_type or start_date or end_date %}
+        <a href="{% url 'employees:wages' %}" class="btn btn-ghost btn-sm" title="Clear"><i class="bi bi-x-lg"></i></a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Payments Table -->
+<div class="theme-card">
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0">
+      <thead>
+        <tr class="text-muted small border-secondary">
+          <th>Date</th>
+          <th>Voucher Code</th>
+          <th>Staff Member</th>
+          <th>Payment Type</th>
+          <th>Account / Method</th>
+          <th class="text-end">Amount</th>
+          <th class="text-center">Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pay in payments %}
+          <tr class="border-secondary">
+            <td class="text-muted small">{{ pay.date|date:"d M Y" }}</td>
+            <td class="font-tabular text-info fw-semibold">{{ pay.payment_code }}</td>
+            <td class="text-white fw-semibold">
+              <a href="{% url 'employees:financial_profile' pay.employee.id %}" class="text-white text-decoration-none">
+                {{ pay.employee.full_name }}
+              </a>
+            </td>
+            <td>
+              {% if pay.payment_type == 'SALARY_ACCRUAL' %}
+                <span class="badge bg-dark border border-info text-info">Wage Accrual</span>
+              {% elif pay.payment_type == 'ADVANCE_PAYOUT' %}
+                <span class="badge bg-dark border border-warning text-warning">Advance</span>
+              {% elif pay.payment_type == 'SALARY_SETTLEMENT' %}
+                <span class="badge bg-dark border border-success text-success">Settlement</span>
+              {% else %}
+                <span class="badge bg-dark border border-primary text-primary">Bonus</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if pay.account %}
+                <div class="text-white small">{{ pay.account.account_name }}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">{{ pay.get_payment_method_display }}</div>
+              {% else %}
+                <span class="text-muted small">Liability Accrual (No Cash Out)</span>
+              {% endif %}
+            </td>
+            <td class="text-end font-tabular fw-bold {% if pay.payment_type == 'SALARY_ACCRUAL' %}text-info{% else %}text-crimson{% endif %}">
+              ₹{{ pay.amount }}
+            </td>
+            <td class="text-center">
+              {% if pay.is_reversed %}
+                <span class="badge bg-danger">Reversed</span>
+              {% else %}
+                <span class="badge bg-success">Posted</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{% url 'employees:financial_profile' pay.employee.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="View Financial Profile">
+                <i class="bi bi-person-badge"></i>
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" class="text-center py-5 text-muted">
+              <i class="bi bi-cash-coin fs-1 d-block mb-2 text-secondary"></i>
+              No wage records found. Click "Record Wage Accrual" or "Disburse Payout" to post staff compensation.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
