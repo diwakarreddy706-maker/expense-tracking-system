@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Fuel & Lubricants | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">Fuel & Lubricants Tracking</h2>
+    <p class="text-muted small mb-0">Machinery fueling logs, diesel consumption, lubricants, and supplier pump tracking</p>
+  </div>
+  <div>
+    <a href="{% url 'fuel:create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+      <i class="bi bi-fuel-pump-fill"></i>
+      <span>Log Fuel Entry</span>
+    </a>
+  </div>
+</div>
+
+<!-- Key Fuel Metrics (Section 22 Analytics Preparation) -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-sm-4">
+    <div class="theme-card p-3">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <span class="text-muted small">Total Volume Dispensed</span>
+          <h3 class="fs-4 fw-bold text-white mt-1 mb-0 font-tabular">{{ stats.total_litres|default:"0.00" }} L</h3>
+        </div>
+        <div class="rounded-circle p-2 bg-dark border border-secondary text-warning">
+          <i class="bi bi-droplet-fill fs-5"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-sm-4">
+    <div class="theme-card p-3">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <span class="text-muted small">Total Fuel Expense</span>
+          <h3 class="fs-4 fw-bold text-crimson mt-1 mb-0 font-tabular">₹{{ stats.total_fuel_cost|default:"0.00" }}</h3>
+        </div>
+        <div class="rounded-circle p-2 bg-dark border border-secondary text-danger">
+          <i class="bi bi-cash-stack fs-5"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-sm-4">
+    <div class="theme-card p-3">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <span class="text-muted small">Average Unit Price</span>
+          <h3 class="fs-4 fw-bold text-emerald mt-1 mb-0 font-tabular">₹{{ stats.avg_price|floatformat:2|default:"0.00" }} / L</h3>
+        </div>
+        <div class="rounded-circle p-2 bg-dark border border-secondary text-emerald">
+          <i class="bi bi-graph-up fs-5"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Multi-Parameter Filter Bar -->
+<div class="theme-card p-3 mb-4">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-12 col-md-3">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search slip, machine, notes...">
+      </div>
+    </div>
+    <div class="col-6 col-md-2">
+      <select name="machine" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Machines</option>
+        {% for m in machines %}
+          <option value="{{ m.id }}" {% if mch_id == m.id|stringformat:"i" %}selected{% endif %}>{{ m.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <select name="type" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Fuel Types</option>
+        <option value="DIESEL" {% if f_type == 'DIESEL' %}selected{% endif %}>Diesel</option>
+        <option value="PETROL" {% if f_type == 'PETROL' %}selected{% endif %}>Petrol</option>
+        <option value="ENGINE_OIL" {% if f_type == 'ENGINE_OIL' %}selected{% endif %}>Engine Oil</option>
+        <option value="HYDRAULIC_OIL" {% if f_type == 'HYDRAULIC_OIL' %}selected{% endif %}>Hydraulic Oil</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <select name="supplier" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Suppliers</option>
+        {% for s in suppliers %}
+          <option value="{{ s.id }}" {% if supp_id == s.id|stringformat:"i" %}selected{% endif %}>{{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <select name="account" class="form-select form-select-sm bg-dark text-white border-secondary">
+        <option value="">All Accounts</option>
+        {% for a in accounts %}
+          <option value="{{ a.id }}" {% if acc_id == a.id|stringformat:"i" %}selected{% endif %}>{{ a.account_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-1 d-flex gap-1">
+      <button type="submit" class="btn btn-ghost btn-sm w-100" title="Apply Filters">
+        <i class="bi bi-funnel-fill"></i>
+      </button>
+      {% if query or mch_id or f_type or supp_id or acc_id or start_date or end_date %}
+        <a href="{% url 'fuel:list' %}" class="btn btn-ghost btn-sm" title="Clear Filters"><i class="bi bi-x-lg"></i></a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Fuel Entries Table -->
+<div class="theme-card">
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0">
+      <thead>
+        <tr class="text-muted small border-secondary">
+          <th>Date</th>
+          <th>Code</th>
+          <th>Machine & Meter</th>
+          <th>Type</th>
+          <th class="text-end">Volume (L)</th>
+          <th class="text-end">Rate (₹/L)</th>
+          <th class="text-end">Total Amount</th>
+          <th>Supplier / Account</th>
+          <th class="text-center">Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in entries %}
+          <tr class="border-secondary">
+            <td class="text-muted small">{{ entry.date|date:"d M Y" }}</td>
+            <td class="font-tabular text-warning fw-semibold">
+              <a href="{% url 'fuel:detail' entry.id %}" class="text-decoration-none text-warning">
+                {{ entry.fuel_code }}
+              </a>
+            </td>
+            <td>
+              <div class="text-white fw-semibold">
+                <i class="bi bi-truck me-1 text-emerald"></i>{{ entry.machine.name }}
+              </div>
+              <div class="text-muted" style="font-size: 0.75rem;">
+                Meter: {{ entry.meter_reading }} {{ entry.machine.get_meter_unit_display }}
+              </div>
+            </td>
+            <td>
+              <span class="badge bg-dark border border-secondary text-info">
+                {{ entry.get_fuel_type_display }}
+              </span>
+            </td>
+            <td class="text-end font-tabular text-white fw-semibold">{{ entry.quantity }}</td>
+            <td class="text-end font-tabular text-muted">₹{{ entry.unit_price }}</td>
+            <td class="text-end font-tabular text-crimson fw-bold">₹{{ entry.total_amount }}</td>
+            <td>
+              <div class="text-white small">{{ entry.supplier.name|default:"Direct / Cash" }}</div>
+              <div class="text-muted" style="font-size: 0.75rem;">{{ entry.account.account_name|default:entry.get_payment_method_display }}</div>
+            </td>
+            <td class="text-center">
+              {% if entry.linked_expense.is_reversed %}
+                <span class="badge bg-danger">Reversed</span>
+              {% else %}
+                <span class="badge bg-success">Posted</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{% url 'fuel:detail' entry.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Inspect Fuel & Ledger Link">
+                <i class="bi bi-eye"></i>
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="10" class="text-center py-5 text-muted">
+              <i class="bi bi-fuel-pump fs-1 d-block mb-2 text-secondary"></i>
+              No fuel or lubricant logs found. Click "Log Fuel Entry" to record equipment refueling.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

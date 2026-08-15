@@ -258,7 +258,7 @@ class QuickExpenseAPITests(TestCase):
         }
 
         response = self.client.post(
-            reverse('expenses:api_quick'),
+            reverse('api_expenses_quick'),
             data=json.dumps(payload),
             content_type='application/json'
         )
@@ -282,7 +282,7 @@ class QuickExpenseAPITests(TestCase):
         }
 
         response = self.client.post(
-            reverse('expenses:api_quick'),
+            reverse('api_expenses_quick'),
             data=json.dumps(payload),
             content_type='application/json'
         )

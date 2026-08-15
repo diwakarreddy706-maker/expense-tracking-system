@@ -10,8 +10,7 @@ urlpatterns = [
     path('<int:expense_id>/', views.expense_detail_view, name='detail'),
     path('<int:expense_id>/reverse/', views.expense_reverse_view, name='reverse'),
 
-    # Quick Expense API
-    path('api/quick/', views.expense_quick_api_view, name='api_quick'),
+    # Options API for dynamic dropdowns
     path('api/options/', views.expense_options_api_view, name='api_options'),
 
     # Categories

@@ -2,7 +2,7 @@
 <div class="modal fade" id="quickExpenseModal" tabindex="-1" aria-labelledby="quickExpenseModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content bg-dark border-secondary text-white">
-      <form id="quickExpenseForm" method="post" action="{% url 'expenses:api_quick' %}">
+      <form id="quickExpenseForm" method="post" action="{% url 'api_expenses_quick' %}">
         {% csrf_token %}
         <div class="modal-header border-secondary">
           <h5 class="modal-title fs-6 fw-bold text-white" id="quickExpenseModalLabel">

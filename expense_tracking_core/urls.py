@@ -31,7 +31,7 @@ urlpatterns = [
     path('dashboard/', include('apps.dashboard.urls')),
     path('accounts/', include('apps.accounts.urls')),
     path('expenses/', include('apps.expenses.urls')),
-    path('api/expenses/quick/', expense_quick_api_view, name='global_api_expenses_quick'),
+    path('api/expenses/quick/', expense_quick_api_view, name='api_expenses_quick'),
     path('fuel/', include('apps.fuel.urls')),
     path('machines/', include('apps.machines.urls')),
     path('employees/', include('apps.employees.urls')),
