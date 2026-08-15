@@ -1,13 +1,14 @@
 """
 Phase 1 Foundation Test Suite.
-Validates Django configuration, health check, template rendering,
-and basic calculation services.
+Validates Django configuration, MySQL 8 database connectivity, health check,
+template rendering, and basic calculation services.
 """
 
 from decimal import Decimal
 from django.test import TestCase, SimpleTestCase, Client
 from django.urls import reverse
 from django.conf import settings
+from django.db import connection, transaction
 from apps.finance.services.balance_service import FinancialCalculationService
 
 
@@ -29,6 +30,38 @@ class FoundationConfigurationTests(SimpleTestCase):
         self.assertTrue(settings.STATIC_ROOT is not None)
         self.assertTrue(settings.MEDIA_ROOT is not None)
 
+    def test_database_engine_is_mysql(self):
+        """Verifies default database backend is explicitly configured for MySQL."""
+        engine = settings.DATABASES['default']['ENGINE']
+        self.assertEqual(
+            engine,
+            'django.db.backends.mysql',
+            f"Expected MySQL backend ('django.db.backends.mysql'), but found: {engine}"
+        )
+        self.assertNotIn('sqlite', engine.lower(), "SQLite fallback is strictly prohibited.")
+
+
+class MySQLDatabaseConnectionTests(TestCase):
+    """Verifies live connection and queries to MySQL 8.x database."""
+
+    def test_mysql_database_connection(self):
+        """Verifies active database connection, version 8.x, UTF8MB4, and InnoDB."""
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT VERSION(), @@character_set_database, @@default_storage_engine")
+            row = cursor.fetchone()
+            version, charset, storage_engine = row[0], row[1], row[2]
+            self.assertTrue(version.startswith('8.'), f"Expected MySQL 8.x, found {version}")
+            self.assertEqual(charset, 'utf8mb4', f"Expected utf8mb4 charset, found {charset}")
+            self.assertEqual(storage_engine.lower(), 'innodb', f"Expected InnoDB engine, found {storage_engine}")
+
+    def test_mysql_atomic_transaction(self):
+        """Verifies atomic transaction execution and rollback on MySQL."""
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1 + 1")
+                result = cursor.fetchone()[0]
+                self.assertEqual(result, 2)
+
 
 class FoundationRoutingAndViewsTests(SimpleTestCase):
     """Verifies health check and root views."""
@@ -46,7 +79,7 @@ class FoundationRoutingAndViewsTests(SimpleTestCase):
 
     def test_dashboard_root_view(self):
         """Verifies root / renders executive dashboard template."""
-        response = self.client.get(reverse('dashboard:index'))
+        response = self.client.get(reverse('root'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'dashboard/index.html')
         self.assertTemplateUsed(response, 'base.html')
