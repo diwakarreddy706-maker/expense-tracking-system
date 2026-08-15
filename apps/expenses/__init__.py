@@ -1,0 +1,3 @@
+"""
+Expenses app package.
+"""

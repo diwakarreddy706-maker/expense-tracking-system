@@ -1,0 +1,54 @@
+/* ==============================================================================
+   EXPENSE TRACKING & MANAGEMENT SYSTEM - PRINT STYLESHEET (A4 OPTIMIZED)
+   ============================================================================== */
+
+@media print {
+  body {
+    background-color: #fff !important;
+    color: #000 !important;
+    font-size: 10pt;
+  }
+
+  .app-sidebar,
+  .app-topbar,
+  .btn,
+  .no-print {
+    display: none !important;
+  }
+
+  .app-main {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+
+  .content-canvas {
+    padding: 0 !important;
+  }
+
+  .theme-card,
+  .kpi-card {
+    background: transparent !important;
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    color: #000 !important;
+    break-inside: avoid;
+  }
+
+  .kpi-value,
+  .kpi-title,
+  .card-title-clean {
+    color: #000 !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  table th,
+  table td {
+    border: 1px solid #ccc !important;
+    padding: 4pt 6pt !important;
+    color: #000 !important;
+  }
+}

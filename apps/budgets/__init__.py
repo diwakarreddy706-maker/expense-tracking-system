@@ -1,0 +1,3 @@
+"""
+Budgets app package.
+"""

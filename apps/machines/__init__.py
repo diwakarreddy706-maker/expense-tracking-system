@@ -1,0 +1,3 @@
+"""
+Machines app package.
+"""

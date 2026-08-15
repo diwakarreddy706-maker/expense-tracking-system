@@ -1,0 +1,3 @@
+"""
+Dashboard app package.
+"""

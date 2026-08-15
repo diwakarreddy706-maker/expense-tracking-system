@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Executive Dashboard | Expense Tracking & Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">Executive Dashboard</h2>
+    <p class="text-muted small mb-0">Financial Overview & Operational Cost Hierarchy</p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <span class="badge bg-dark border border-secondary px-3 py-2 text-muted">
+      <i class="bi bi-clock-history me-1"></i> Foundation Layout Mode
+    </span>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- ROW 1: PRIMARY EXECUTIVE KPI CARDS                                        -->
+<!-- Hierarchy: TOTAL BALANCE | TODAY'S EXPENSE | MONTHLY EXPENSE | TO RECEIVE -->
+<!-- ========================================================================= -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-title">Total Balance</div>
+      <div class="kpi-value text-emerald">--.--</div>
+      <div class="small text-muted mt-2"><i class="bi bi-bank2 me-1"></i> Consolidated Accounts</div>
+    </div>
+  </div>
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-title">Today's Expense</div>
+      <div class="kpi-value text-crimson">--.--</div>
+      <div class="small text-muted mt-2"><i class="bi bi-receipt me-1"></i> Field & Operational</div>
+    </div>
+  </div>
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-title">Monthly Expense</div>
+      <div class="kpi-value text-white">--.--</div>
+      <div class="small text-muted mt-2"><i class="bi bi-calendar3 me-1"></i> Current Month</div>
+    </div>
+  </div>
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-title">To Receive</div>
+      <div class="kpi-value text-amber">--.--</div>
+      <div class="small text-muted mt-2"><i class="bi bi-arrow-down-left me-1"></i> Customer Receivables</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- ROW 2: TODAY'S FINANCIAL SUMMARY                                          -->
+<!-- ========================================================================= -->
+<div class="theme-card mb-4">
+  <div class="card-header-clean">
+    <h3 class="card-title-clean"><i class="bi bi-journal-check me-2 text-emerald"></i>Today's Financial Summary</h3>
+    <span class="badge-status badge-pending">Closing Pending</span>
+  </div>
+  <div class="row g-3 text-center">
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="small text-muted">Opening Balance</div>
+      <div class="fw-bold num-tabular mt-1">--.--</div>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="small text-muted">Today's Inflow</div>
+      <div class="fw-bold text-emerald num-tabular mt-1">--.--</div>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="small text-muted">Today's Expense</div>
+      <div class="fw-bold text-danger num-tabular mt-1">--.--</div>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="small text-muted">Transfers</div>
+      <div class="fw-bold text-info num-tabular mt-1">--.--</div>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="small text-muted">Expected Closing</div>
+      <div class="fw-bold text-white num-tabular mt-1">--.--</div>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="small text-muted">Closing Difference</div>
+      <div class="fw-bold text-muted num-tabular mt-1">--.--</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- ROW 3: EXPENSE ANALYTICS (Category Distribution & 12-Month Trend)         -->
+<!-- ========================================================================= -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-lg-7">
+    <div class="theme-card h-100 mb-0">
+      <div class="card-header-clean">
+        <h3 class="card-title-clean"><i class="bi bi-graph-up me-2 text-info"></i>12-Month Expense Trend</h3>
+      </div>
+      <div class="d-flex align-items-center justify-content-center p-5 text-muted border border-secondary border-dashed rounded">
+        <div class="text-center">
+          <i class="bi bi-bar-chart-line fs-2 text-secondary d-block mb-2"></i>
+          <p class="small mb-0">Chart Analytics Engine will activate in Phase 11</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-5">
+    <div class="theme-card h-100 mb-0">
+      <div class="card-header-clean">
+        <h3 class="card-title-clean"><i class="bi bi-pie-chart me-2 text-warning"></i>Expense Category Distribution</h3>
+      </div>
+      <div class="d-flex align-items-center justify-content-center p-5 text-muted border border-secondary border-dashed rounded">
+        <div class="text-center">
+          <i class="bi bi-pie-chart fs-2 text-secondary d-block mb-2"></i>
+          <p class="small mb-0">Category Breakdown will activate in Phase 11</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- ROW 4: TODAY'S TOP EXPENSES & BUDGET STATUS                               -->
+<!-- ========================================================================= -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-lg-6">
+    <div class="theme-card h-100 mb-0">
+      <div class="card-header-clean">
+        <h3 class="card-title-clean"><i class="bi bi-lightning-charge me-2 text-danger"></i>Today's Top Expenses</h3>
+      </div>
+      <div class="p-4 text-center text-muted border border-secondary border-dashed rounded">
+        <i class="bi bi-inbox fs-3 d-block mb-2 text-secondary"></i>
+        <p class="small mb-0">Operational expenses (Fuel, Wages, Maintenance, Parts) will display here.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-6">
+    <div class="theme-card h-100 mb-0">
+      <div class="card-header-clean">
+        <h3 class="card-title-clean"><i class="bi bi-bullseye me-2 text-purple"></i>Budget Status</h3>
+      </div>
+      <div class="p-4 text-center text-muted border border-secondary border-dashed rounded">
+        <i class="bi bi-speedometer2 fs-3 d-block mb-2 text-secondary"></i>
+        <p class="small mb-0">Monthly category thresholds and warnings will display here.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- ROW 5: RECENT EXPENSES & TO RECEIVE / TO PAY                               -->
+<!-- ========================================================================= -->
+<div class="row g-3">
+  <div class="col-12 col-lg-8">
+    <div class="theme-card mb-0">
+      <div class="card-header-clean">
+        <h3 class="card-title-clean"><i class="bi bi-clock-history me-2 text-secondary"></i>Recent Expenses</h3>
+      </div>
+      <div class="p-4 text-center text-muted border border-secondary border-dashed rounded">
+        <p class="small mb-0">Recent transaction stream will populate from authoritative ledger in Phase 4.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-4">
+    <div class="theme-card mb-0">
+      <div class="card-header-clean">
+        <h3 class="card-title-clean"><i class="bi bi-arrow-left-right me-2 text-emerald"></i>To Receive / To Pay</h3>
+      </div>
+      <div class="p-4 text-center text-muted border border-secondary border-dashed rounded">
+        <p class="small mb-0">Receivable dues and vendor payables will populate in Phase 8.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
