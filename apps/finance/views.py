@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.db.models import Q, Sum
 from django.views.decorators.http import require_POST
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from apps.accounts.decorators import (
     role_required,
@@ -17,12 +18,14 @@ from apps.audit.models import AuditLog
 from .models import (
     Account, Customer, Supplier,
     Receivable, CustomerPayment,
-    Payable, SupplierPayment
+    Payable, SupplierPayment,
+    DailyClosing
 )
 from .forms import (
     AccountForm, CustomerForm, SupplierForm,
     ReceivableForm, CustomerPaymentForm,
-    PayableForm, SupplierPaymentForm
+    PayableForm, SupplierPaymentForm,
+    DailyClosingForm
 )
 from .services.settlement_service import (
     CustomerReceivableService,
@@ -616,12 +619,120 @@ def supplier_payment_reverse_view(request, payment_id):
 
 
 # ============================================================================
-# FINANCIAL PLACEHOLDERS (Phase 8 Daily Closing & Reversals)
+# DAILY FINANCIAL CLOSING & RECONCILIATION (Owner & Accountant)
 # ============================================================================
 
 @accountant_or_owner_required
 def daily_closing_view(request):
-    return render(request, 'base.html', {'title': 'Daily Closing'})
+    """
+    Daily Financial Closing and Cash / Bank / UPI Reconciliation Dashboard.
+    Reconciles actual physical cash or verified bank balances against expected ledger balance.
+    """
+    date_str = request.GET.get('date', '').strip()
+    scope = request.GET.get('scope', DailyClosing.SCOPE_CONSOLIDATED).strip()
+    acc_id_str = request.GET.get('account', '').strip()
+
+    today = timezone.now().date()
+    if date_str:
+        try:
+            closing_date = timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
+            if closing_date > today:
+                closing_date = today
+                messages.warning(request, "Future dates are not permitted for daily closing. Adjusted to today.")
+        except ValueError:
+            closing_date = today
+    else:
+        closing_date = today
+
+    acc_id = int(acc_id_str) if acc_id_str.isdigit() else None
+
+    # Calculate live reconciliation figures
+    reconciliation = None
+    calc_error = None
+    try:
+        from .services.closing_service import DailyClosingService
+        reconciliation = DailyClosingService.calculate_daily_reconciliation(
+            closing_date=closing_date,
+            scope=scope,
+            account_id=acc_id
+        )
+    except ValidationError as e:
+        calc_error = str(e)
+
+    # Check if a locked snapshot already exists
+    existing_closing = None
+    if reconciliation and reconciliation.get('target_account'):
+        existing_closing = DailyClosing.objects.filter(
+            closing_date=closing_date,
+            scope=scope,
+            account=reconciliation['target_account']
+        ).first()
+    elif scope == DailyClosing.SCOPE_CONSOLIDATED:
+        existing_closing = DailyClosing.objects.filter(
+            closing_date=closing_date,
+            scope=scope,
+            account=None
+        ).first()
+
+    # Historical closings list
+    recent_closings = DailyClosing.objects.select_related('account', 'closed_by').order_by('-closing_date', '-id')[:20]
+
+    # Accounts categorized for quick switching
+    cash_accounts = Account.objects.filter(is_deleted=False, is_active=True, account_type__in=[Account.TYPE_CASH, Account.TYPE_PETTY_CASH])
+    bank_accounts = Account.objects.filter(is_deleted=False, is_active=True, account_type__in=[Account.TYPE_BANK_SAVINGS, Account.TYPE_BANK_CURRENT])
+    upi_accounts = Account.objects.filter(is_deleted=False, is_active=True, account_type=Account.TYPE_UPI_WALLET)
+
+    form = DailyClosingForm(initial={
+        'closing_date': closing_date,
+        'scope': scope,
+        'account': reconciliation.get('target_account') if reconciliation else None,
+        'actual_closing': existing_closing.actual_closing if existing_closing else (reconciliation['expected_closing'] if reconciliation else Decimal('0.00'))
+    })
+
+    return render(request, 'finance/daily_closing.html', {
+        'closing_date': closing_date,
+        'scope': scope,
+        'acc_id': acc_id,
+        'reconciliation': reconciliation,
+        'calc_error': calc_error,
+        'existing_closing': existing_closing,
+        'recent_closings': recent_closings,
+        'cash_accounts': cash_accounts,
+        'bank_accounts': bank_accounts,
+        'upi_accounts': upi_accounts,
+        'form': form,
+        'title': 'Daily Financial Closing & Cash Reconciliation',
+    })
+
+
+@require_POST
+@accountant_or_owner_required
+def daily_closing_submit_view(request):
+    """
+    Submits and locks a daily financial closing snapshot.
+    """
+    form = DailyClosingForm(request.POST)
+    if form.is_valid():
+        try:
+            from .services.closing_service import DailyClosingService
+            closing = DailyClosingService.submit_daily_closing(
+                user=request.user,
+                closing_date=form.cleaned_data['closing_date'],
+                scope=form.cleaned_data['scope'],
+                actual_closing=form.cleaned_data['actual_closing'],
+                account_id=form.cleaned_data['account'].id if form.cleaned_data.get('account') else None,
+                notes=form.cleaned_data.get('notes'),
+                request=request
+            )
+            messages.success(request, f"Daily closing for {closing.closing_date} ({closing.get_scope_display()}) successfully locked [{closing.status}].")
+            return redirect(f"{request.path_info.replace('submit/', '')}?date={closing.closing_date}&scope={closing.scope}" + (f"&account={closing.account_id}" if closing.account_id else ""))
+        except ValidationError as e:
+            messages.error(request, f"Closing failed: {str(e)}")
+    else:
+        for field, errs in form.errors.items():
+            messages.error(request, f"{field}: {errs[0]}")
+
+    return redirect('finance:daily_closing')
 
 
 @owner_required

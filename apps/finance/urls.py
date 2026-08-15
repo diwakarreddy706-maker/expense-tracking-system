@@ -38,5 +38,6 @@ urlpatterns = [
 
     # Closings & General Reversals
     path('closing/', views.daily_closing_view, name='daily_closing'),
+    path('closing/submit/', views.daily_closing_submit_view, name='daily_closing_submit'),
     path('reversal/<int:transaction_id>/', views.transaction_reversal_view, name='reversal'),
 ]

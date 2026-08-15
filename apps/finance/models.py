@@ -413,3 +413,67 @@ class SupplierPayment(models.Model):
 
     def __str__(self):
         return f"{self.payment_code} - {self.payable.supplier.name}: ₹{self.amount} from {self.account.account_name}"
+
+
+class DailyClosing(models.Model):
+    """
+    Scoped Daily Financial Closing and Cash / Bank / UPI Reconciliation Snapshot.
+    Defined in DATABASE_SCHEMA.md (Table 12).
+    """
+    SCOPE_CASH = 'CASH_ACCOUNT'
+    SCOPE_BANK = 'BANK_ACCOUNT'
+    SCOPE_UPI = 'UPI_ACCOUNT'
+    SCOPE_CONSOLIDATED = 'CONSOLIDATED'
+
+    SCOPE_CHOICES = [
+        (SCOPE_CASH, 'Cash Account Physical Closing'),
+        (SCOPE_BANK, 'Bank Account Reconciliation'),
+        (SCOPE_UPI, 'UPI / Wallet Reconciliation'),
+        (SCOPE_CONSOLIDATED, 'Consolidated Liquid Closing'),
+    ]
+
+    STATUS_BALANCED = 'BALANCED'
+    STATUS_SURPLUS = 'SURPLUS'
+    STATUS_DEFICIT = 'DEFICIT'
+
+    STATUS_CHOICES = [
+        (STATUS_BALANCED, 'Balanced (Zero Discrepancy)'),
+        (STATUS_SURPLUS, 'Surplus Cash / Excess Funds'),
+        (STATUS_DEFICIT, 'Deficit Cash / Shortage Funds'),
+    ]
+
+    closing_date = models.DateField(default=timezone.now, db_index=True)
+    scope = models.CharField(max_length=20, choices=SCOPE_CHOICES, default=SCOPE_CONSOLIDATED, db_index=True)
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.RESTRICT,
+        null=True,
+        blank=True,
+        related_name='daily_closings',
+        help_text="Specific account (NULL if CONSOLIDATED)"
+    )
+    opening_balance = models.DecimalField(max_digits=15, decimal_places=2)
+    total_inflow = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0.00'))
+    total_outflow = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0.00'))
+    transfer_in = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0.00'))
+    transfer_out = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0.00'))
+    expected_closing = models.DecimalField(max_digits=15, decimal_places=2)
+    actual_closing = models.DecimalField(max_digits=15, decimal_places=2)
+    discrepancy = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0.00'))
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_BALANCED, db_index=True)
+    notes = models.TextField(blank=True, null=True, help_text="Mandatory explanation if discrepancy != 0")
+    is_locked = models.BooleanField(default=True, db_index=True)
+    closed_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='closed_financial_days')
+    closed_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'daily_closings'
+        verbose_name = 'Daily Financial Closing'
+        verbose_name_plural = 'Daily Financial Closings'
+        ordering = ['-closing_date', '-id']
+        unique_together = [('closing_date', 'scope', 'account')]
+
+    def __str__(self):
+        acc_label = self.account.account_name if self.account else "Consolidated Liquid"
+        return f"[{self.closing_date}] {self.get_scope_display()} ({acc_label}): Expected ₹{self.expected_closing}, Actual ₹{self.actual_closing} ({self.status})"

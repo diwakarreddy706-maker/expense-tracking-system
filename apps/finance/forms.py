@@ -3,7 +3,8 @@ from decimal import Decimal
 from .models import (
     Account, Customer, Supplier,
     Receivable, CustomerPayment,
-    Payable, SupplierPayment
+    Payable, SupplierPayment,
+    DailyClosing
 )
 
 
@@ -214,3 +215,38 @@ class SupplierPaymentForm(forms.Form):
         if amount and amount <= Decimal('0.00'):
             raise forms.ValidationError("Disbursement amount must be strictly greater than zero.")
         return amount
+
+
+class DailyClosingForm(forms.Form):
+    """Form for submitting a physical cash count / verified bank closing."""
+    closing_date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'date'})
+    )
+    scope = forms.ChoiceField(
+        choices=DailyClosing.SCOPE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary', 'id': 'closingScopeSelect'})
+    )
+    account = forms.ModelChoiceField(
+        queryset=Account.objects.filter(is_deleted=False, is_active=True),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary', 'id': 'closingAccountSelect'})
+    )
+    actual_closing = forms.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'id': 'actualClosingInput', 'placeholder': '₹ Counted / Verified Amount'})
+    )
+    notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control bg-dark text-white border-secondary', 'rows': 2, 'placeholder': 'Discrepancy explanation / Verification notes (Mandatory if surplus/deficit)'})
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        scope = cleaned_data.get('scope')
+        account = cleaned_data.get('account')
+
+        if scope != DailyClosing.SCOPE_CONSOLIDATED and not account:
+            self.add_error('account', "A specific account is required for account-level closings.")
+
+        return cleaned_data
