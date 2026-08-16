@@ -8,7 +8,10 @@
     <h2 class="fs-4 fw-bold text-white mb-1">Agricultural Machinery & Equipment</h2>
     <p class="text-muted small mb-0">Tractors, combine harvesters, tillers, and implements registry</p>
   </div>
-  <div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'machines:work_list' %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-clock-history me-1 text-info"></i> Work & Billing Logs
+    </a>
     <a href="{% url 'machines:create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
       <i class="bi bi-plus-lg"></i>
       <span>Add Machine</span>

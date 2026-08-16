@@ -1,0 +1,356 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Expense Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
+    <p class="text-muted small mb-0">Record field work calculations with independent machine-meter equipment tracking</p>
+  </div>
+  <div>
+    <a href="{% url 'machines:work_list' %}" class="btn btn-ghost btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to Work Entries
+    </a>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-10">
+    <div class="theme-card p-4">
+      <form method="post" novalidate id="workEntryForm">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 small mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <!-- Section 1: Work Information Master -->
+        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom border-secondary">
+          <i class="bi bi-info-circle-fill text-info"></i>
+          <h5 class="fs-6 fw-bold text-white mb-0">1. Work & Assignment Details</h5>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Work Date *</label>
+            {{ form.work_date }}
+            {% if form.work_date.errors %}<div class="text-danger small mt-1">{{ form.work_date.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Customer / Farmer *</label>
+            {{ form.customer }}
+            {% if form.customer.errors %}<div class="text-danger small mt-1">{{ form.customer.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label small text-muted">Machine / Equipment *</label>
+            {{ form.machine }}
+            {% if form.machine.errors %}<div class="text-danger small mt-1">{{ form.machine.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Assigned Operator</label>
+            {{ form.operator }}
+            {% if form.operator.errors %}<div class="text-danger small mt-1">{{ form.operator.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small text-muted">Billing Workflow / Model *</label>
+            {{ form.billing_type }}
+            {% if form.billing_type.errors %}<div class="text-danger small mt-1">{{ form.billing_type.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <!-- Section 2: Dynamic Customer Billing Calculation -->
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-calculator-fill text-emerald"></i>
+            <h5 class="fs-6 fw-bold text-white mb-0">2. Customer Billing Calculation</h5>
+          </div>
+          <span class="badge bg-dark text-muted border border-secondary" id="billingWorkflowBadge">Time-Based Harvester</span>
+        </div>
+
+        <!-- Harvester Time-Based Panel -->
+        <div id="harvesterBillingPanel" class="p-3 mb-4 rounded border border-secondary bg-dark-subtle">
+          <div class="row g-3 align-items-end mb-3">
+            <div class="col-12 col-sm-6 col-md-3">
+              <label class="form-label small text-muted">Start Time *</label>
+              {{ form.start_time }}
+              {% if form.start_time.errors %}<div class="text-danger small mt-1">{{ form.start_time.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+              <label class="form-label small text-muted">End Time *</label>
+              {{ form.end_time }}
+              {% if form.end_time.errors %}<div class="text-danger small mt-1">{{ form.end_time.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+              <label class="form-label small text-muted">Break Hours</label>
+              {{ form.break_hours }}
+              {% if form.break_hours.errors %}<div class="text-danger small mt-1">{{ form.break_hours.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+              <label class="form-label small text-muted">Hourly Rate (₹/hr) *</label>
+              {{ form.hourly_rate }}
+              {% if form.hourly_rate.errors %}<div class="text-danger small mt-1">{{ form.hourly_rate.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <!-- Live Harvester Calculation Cards -->
+          <div class="row g-2 pt-2 border-top border-secondary">
+            <div class="col-6 col-md-3">
+              <div class="bg-dark p-2 rounded border border-secondary text-center">
+                <span class="text-muted" style="font-size: 0.7rem;">ELAPSED TIME</span>
+                <div class="fw-bold text-white num-tabular fs-6" id="dispElapsedTime">0.00 hrs</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="bg-dark p-2 rounded border border-secondary text-center">
+                <span class="text-muted" style="font-size: 0.7rem;">NET WORKING TIME</span>
+                <div class="fw-bold text-info num-tabular fs-6" id="dispNetHours">0.00 hrs</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="bg-dark p-2 rounded border border-secondary text-center">
+                <span class="text-muted" style="font-size: 0.7rem;">HOURLY RATE</span>
+                <div class="fw-bold text-muted num-tabular fs-6" id="dispHourlyRate">₹0.00</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="bg-dark p-2 rounded border border-success text-center">
+                <span class="text-success" style="font-size: 0.7rem; font-weight: 600;">TOTAL BILL AMOUNT</span>
+                <div class="fw-bold text-emerald num-tabular fs-5" id="dispTotalHarvester">₹0.00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tractor Unit-Based Panel -->
+        <div id="tractorBillingPanel" class="p-3 mb-4 rounded border border-secondary bg-dark-subtle d-none">
+          <div class="row g-3 align-items-end mb-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label small text-muted" id="quantityLabel">Quantity (Acres / Pieces) *</label>
+              {{ form.quantity }}
+              {% if form.quantity.errors %}<div class="text-danger small mt-1">{{ form.quantity.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label small text-muted">Rate per Unit (₹) *</label>
+              {{ form.unit_rate }}
+              {% if form.unit_rate.errors %}<div class="text-danger small mt-1">{{ form.unit_rate.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="bg-dark p-3 rounded border border-success text-center">
+                <span class="text-success small d-block mb-1 font-monospace fw-bold">TOTAL BILL AMOUNT</span>
+                <div class="fw-bold text-emerald num-tabular fs-4" id="dispTotalTractor">₹0.00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Machine Meter - Independent Equipment Tracking -->
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-speedometer2 text-warning"></i>
+            <h5 class="fs-6 fw-bold text-white mb-0">3. MACHINE METER — FOR EQUIPMENT TRACKING</h5>
+          </div>
+          <span class="badge bg-dark-subtle text-warning border border-warning-subtle" style="font-size: 0.7rem;">
+            Separate from commercial billing
+          </span>
+        </div>
+
+        <div class="p-3 mb-4 rounded border border-secondary bg-dark">
+          <div class="row g-3 align-items-center">
+            <div class="col-12 col-md-4">
+              <label class="form-label small text-muted">Start Meter Reading</label>
+              {{ form.start_meter }}
+              {% if form.start_meter.errors %}<div class="text-danger small mt-1">{{ form.start_meter.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label small text-muted">End Meter Reading</label>
+              {{ form.end_meter }}
+              {% if form.end_meter.errors %}<div class="text-danger small mt-1">{{ form.end_meter.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label small text-muted">Meter Difference (Usage)</label>
+              <div class="form-control bg-dark-subtle text-warning fw-bold border-secondary font-tabular" id="dispMeterDiff">
+                +0.00
+              </div>
+              <small class="text-muted" style="font-size: 0.7rem;">Used for machine maintenance and utilization</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Notes & Actions -->
+        <div class="mb-4">
+          <label class="form-label small text-muted">Operational Remarks / Field Notes</label>
+          {{ form.notes }}
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between pt-3 border-top border-secondary">
+          <div class="text-muted small">
+            <i class="bi bi-shield-check text-emerald me-1"></i>
+            Server-side authoritative recalculation and validation enabled.
+          </div>
+          <div class="d-flex gap-2">
+            <a href="{% url 'machines:work_list' %}" class="btn btn-ghost">Cancel</a>
+            <button type="submit" class="btn btn-emerald px-4">
+              <i class="bi bi-check2-circle me-1"></i> Save Work Entry
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const billingTypeSelect = document.getElementById('billingTypeSelect');
+  const harvesterPanel = document.getElementById('harvesterBillingPanel');
+  const tractorPanel = document.getElementById('tractorBillingPanel');
+  const billingBadge = document.getElementById('billingWorkflowBadge');
+  const machineSelect = document.getElementById('machineSelect');
+
+  // Harvester inputs
+  const startTime = document.getElementById('startTime');
+  const endTime = document.getElementById('endTime');
+  const breakHours = document.getElementById('breakHours');
+  const hourlyRate = document.getElementById('hourlyRate');
+
+  // Tractor inputs
+  const quantityInput = document.getElementById('quantityInput');
+  const unitRateInput = document.getElementById('unitRateInput');
+  const quantityLabel = document.getElementById('quantityLabel');
+
+  // Meter inputs
+  const startMeter = document.getElementById('startMeter');
+  const endMeter = document.getElementById('endMeter');
+  const dispMeterDiff = document.getElementById('dispMeterDiff');
+
+  // Display elements
+  const dispElapsedTime = document.getElementById('dispElapsedTime');
+  const dispNetHours = document.getElementById('dispNetHours');
+  const dispHourlyRate = document.getElementById('dispHourlyRate');
+  const dispTotalHarvester = document.getElementById('dispTotalHarvester');
+  const dispTotalTractor = document.getElementById('dispTotalTractor');
+
+  function updateBillingMode() {
+    const mode = billingTypeSelect.value;
+    if (mode === 'TIME_HOURLY') {
+      harvesterPanel.classList.remove('d-none');
+      tractorPanel.classList.add('d-none');
+      billingBadge.innerText = 'Time-Based Harvester';
+      billingBadge.className = 'badge bg-primary-subtle text-primary border border-primary-subtle';
+    } else {
+      harvesterPanel.classList.add('d-none');
+      tractorPanel.classList.remove('d-none');
+      if (mode === 'ACRE') {
+        billingBadge.innerText = 'Acre-Based Tractor';
+        billingBadge.className = 'badge bg-warning-subtle text-warning border border-warning-subtle';
+        quantityLabel.innerText = 'Quantity (Acres) *';
+      } else {
+        billingBadge.innerText = 'Piece-Based Tractor';
+        billingBadge.className = 'badge bg-secondary-subtle text-light border border-secondary-subtle';
+        quantityLabel.innerText = 'Quantity (Pieces) *';
+      }
+    }
+    recalculateAll();
+  }
+
+  function parseTimeToMinutes(timeStr) {
+    if (!timeStr) return null;
+    const parts = timeStr.split(':');
+    if (parts.length < 2) return null;
+    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+  }
+
+  function recalculateHarvester() {
+    const sMin = parseTimeToMinutes(startTime.value);
+    const eMin = parseTimeToMinutes(endTime.value);
+    const bHours = parseFloat(breakHours.value) || 0.0;
+    const rate = parseFloat(hourlyRate.value) || 0.0;
+
+    dispHourlyRate.innerText = '₹' + rate.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    if (sMin !== null && eMin !== null && eMin > sMin) {
+      const elapsedMinutes = eMin - sMin;
+      const elapsedHours = elapsedMinutes / 60.0;
+      const netHours = Math.max(0.0, elapsedHours - bHours);
+      const totalAmount = netHours * rate;
+
+      dispElapsedTime.innerText = elapsedHours.toFixed(2) + ' hrs';
+      dispNetHours.innerText = netHours.toFixed(2) + ' hrs';
+      dispTotalHarvester.innerText = '₹' + totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } else {
+      dispElapsedTime.innerText = '0.00 hrs';
+      dispNetHours.innerText = '0.00 hrs';
+      dispTotalHarvester.innerText = '₹0.00';
+    }
+  }
+
+  function recalculateTractor() {
+    const qty = parseFloat(quantityInput.value) || 0.0;
+    const rate = parseFloat(unitRateInput.value) || 0.0;
+    const total = qty * rate;
+    dispTotalTractor.innerText = '₹' + total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function recalculateMeter() {
+    const sMeter = parseFloat(startMeter.value);
+    const eMeter = parseFloat(endMeter.value);
+    if (!isNaN(sMeter) && !isNaN(eMeter)) {
+      const diff = eMeter - sMeter;
+      if (diff >= 0) {
+        dispMeterDiff.innerText = '+' + diff.toFixed(2);
+        dispMeterDiff.className = 'form-control bg-dark-subtle text-warning fw-bold border-secondary font-tabular';
+      } else {
+        dispMeterDiff.innerText = 'Invalid (End < Start)';
+        dispMeterDiff.className = 'form-control bg-dark-subtle text-danger fw-bold border-danger font-tabular';
+      }
+    } else {
+      dispMeterDiff.innerText = '+0.00';
+      dispMeterDiff.className = 'form-control bg-dark-subtle text-warning fw-bold border-secondary font-tabular';
+    }
+  }
+
+  function recalculateAll() {
+    recalculateHarvester();
+    recalculateTractor();
+    recalculateMeter();
+  }
+
+  // Machine change detection to suggest billing type
+  if (machineSelect) {
+    machineSelect.addEventListener('change', function() {
+      const selectedOption = machineSelect.options[machineSelect.selectedIndex];
+      if (selectedOption) {
+        const text = selectedOption.text.toLowerCase();
+        if (text.includes('harvester')) {
+          billingTypeSelect.value = 'TIME_HOURLY';
+          updateBillingMode();
+        } else if (text.includes('tractor') || text.includes('tiller')) {
+          if (billingTypeSelect.value === 'TIME_HOURLY') {
+            billingTypeSelect.value = 'ACRE';
+            updateBillingMode();
+          }
+        }
+      }
+    });
+  }
+
+  billingTypeSelect.addEventListener('change', updateBillingMode);
+  startTime.addEventListener('input', recalculateHarvester);
+  endTime.addEventListener('input', recalculateHarvester);
+  breakHours.addEventListener('input', recalculateHarvester);
+  hourlyRate.addEventListener('input', recalculateHarvester);
+  quantityInput.addEventListener('input', recalculateTractor);
+  unitRateInput.addEventListener('input', recalculateTractor);
+  startMeter.addEventListener('input', recalculateMeter);
+  endMeter.addEventListener('input', recalculateMeter);
+
+  // Initial calculation
+  updateBillingMode();
+});
+</script>
+{% endblock %}
