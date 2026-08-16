@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}Operational Dispatch Board | AgriBOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-white mb-1"><i class="bi bi-kanban text-info me-2"></i>Machinery Dispatch Board</h2>
+            <p class="text-muted mb-0">Live operational fleet deployment and job execution board.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'machines:booking_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-list-ul me-1"></i> Bookings List
+            </a>
+            <a href="{% url 'machines:work_list' %}" class="btn btn-outline-success">
+                <i class="bi bi-journal-text me-1"></i> Work & Billing Logs
+            </a>
+            {% if request.user.profile.is_owner or request.user.profile.is_manager %}
+            <a href="{% url 'machines:booking_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> New Booking
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Dispatch Lanes (5 Columns) -->
+    <div class="row g-3">
+        <!-- Lane 1: PENDING -->
+        <div class="col-lg">
+            <div class="card bg-dark border-secondary h-100 shadow-sm">
+                <div class="card-header bg-dark border-bottom border-warning d-flex justify-content-between align-items-center py-2">
+                    <span class="fw-bold text-warning small text-uppercase"><i class="bi bi-clock me-1"></i>Pending ({{ pending_list|length }})</span>
+                </div>
+                <div class="card-body p-2 d-flex flex-column gap-2" style="min-height: 600px; max-height: 80vh; overflow-y: auto;">
+                    {% for b in pending_list %}
+                    <div class="card bg-black border-secondary p-2 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <a href="{% url 'machines:booking_detail' b.id %}" class="fw-bold text-info text-decoration-none font-monospace small">{{ b.booking_code }}</a>
+                            <span class="badge bg-secondary small">{{ b.work_date|date:"d M" }}</span>
+                        </div>
+                        <div class="text-white fw-semibold small">{{ b.customer.name }}</div>
+                        <div class="text-muted small mb-2"><i class="bi bi-geo-alt text-danger me-1"></i>{{ b.village|default:"Field" }} ({{ b.machine_type.name }})</div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary">
+                            <span class="badge bg-warning text-dark">{{ b.billing_type }}</span>
+                            <a href="{% url 'machines:booking_detail' b.id %}" class="btn btn-sm btn-outline-primary py-0 px-2 small">Manage</a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5 text-muted small">No pending bookings.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Lane 2: CONFIRMED -->
+        <div class="col-lg">
+            <div class="card bg-dark border-secondary h-100 shadow-sm">
+                <div class="card-header bg-dark border-bottom border-primary d-flex justify-content-between align-items-center py-2">
+                    <span class="fw-bold text-primary small text-uppercase"><i class="bi bi-check2-circle me-1"></i>Confirmed ({{ confirmed_list|length }})</span>
+                </div>
+                <div class="card-body p-2 d-flex flex-column gap-2" style="min-height: 600px; max-height: 80vh; overflow-y: auto;">
+                    {% for b in confirmed_list %}
+                    <div class="card bg-black border-secondary p-2 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <a href="{% url 'machines:booking_detail' b.id %}" class="fw-bold text-info text-decoration-none font-monospace small">{{ b.booking_code }}</a>
+                            <span class="badge bg-primary small">{{ b.work_date|date:"d M" }}</span>
+                        </div>
+                        <div class="text-white fw-semibold small">{{ b.customer.name }}</div>
+                        <div class="text-warning small"><i class="bi bi-gear-fill me-1"></i>{{ b.machine.name }}</div>
+                        <div class="text-muted small mb-2"><i class="bi bi-person me-1"></i>{{ b.operator.full_name }}</div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary">
+                            <span class="badge bg-secondary">{{ b.village|default:"Field" }}</span>
+                            <a href="{% url 'machines:booking_detail' b.id %}" class="btn btn-sm btn-info py-0 px-2 small text-dark fw-bold">Dispatch</a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5 text-muted small">No confirmed bookings.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Lane 3: DISPATCHED -->
+        <div class="col-lg">
+            <div class="card bg-dark border-secondary h-100 shadow-sm">
+                <div class="card-header bg-dark border-bottom border-info d-flex justify-content-between align-items-center py-2">
+                    <span class="fw-bold text-info small text-uppercase"><i class="bi bi-truck me-1"></i>Dispatched ({{ dispatched_list|length }})</span>
+                </div>
+                <div class="card-body p-2 d-flex flex-column gap-2" style="min-height: 600px; max-height: 80vh; overflow-y: auto;">
+                    {% for b in dispatched_list %}
+                    <div class="card bg-black border-secondary p-2 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <a href="{% url 'machines:booking_detail' b.id %}" class="fw-bold text-info text-decoration-none font-monospace small">{{ b.booking_code }}</a>
+                            <span class="badge bg-info text-dark small">En Route</span>
+                        </div>
+                        <div class="text-white fw-semibold small">{{ b.customer.name }}</div>
+                        <div class="text-warning small"><i class="bi bi-gear-fill me-1"></i>{{ b.machine.name }}</div>
+                        <div class="text-muted small mb-2"><i class="bi bi-person me-1"></i>{{ b.operator.full_name }}</div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary">
+                            <small class="text-muted">{{ b.dispatched_at|date:"H:i" }}</small>
+                            <form method="post" action="{% url 'machines:booking_start_work' b.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm text-white py-0 px-2 small fw-bold" style="background-color: #8b5cf6;">Start</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5 text-muted small">No dispatched machines.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Lane 4: IN PROGRESS -->
+        <div class="col-lg">
+            <div class="card bg-dark border-secondary h-100 shadow-sm">
+                <div class="card-header bg-dark border-bottom d-flex justify-content-between align-items-center py-2" style="border-color: #8b5cf6 !important;">
+                    <span class="fw-bold small text-uppercase" style="color: #a78bfa;"><i class="bi bi-gear-wide-connected me-1"></i>In Progress ({{ in_progress_list|length }})</span>
+                </div>
+                <div class="card-body p-2 d-flex flex-column gap-2" style="min-height: 600px; max-height: 80vh; overflow-y: auto;">
+                    {% for b in in_progress_list %}
+                    <div class="card bg-black border-secondary p-2 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <a href="{% url 'machines:booking_detail' b.id %}" class="fw-bold text-info text-decoration-none font-monospace small">{{ b.booking_code }}</a>
+                            <span class="badge small" style="background-color: #8b5cf6;">Working</span>
+                        </div>
+                        <div class="text-white fw-semibold small">{{ b.customer.name }}</div>
+                        <div class="text-warning small"><i class="bi bi-gear-fill me-1"></i>{{ b.machine.name }}</div>
+                        <div class="text-muted small mb-2"><i class="bi bi-person me-1"></i>{{ b.operator.full_name }}</div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary">
+                            <small class="text-muted">{{ b.started_at|date:"H:i" }}</small>
+                            <form method="post" action="{% url 'machines:booking_complete_work' b.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success py-0 px-2 small fw-bold">Complete</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5 text-muted small">No machines currently working.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Lane 5: COMPLETED -->
+        <div class="col-lg">
+            <div class="card bg-dark border-secondary h-100 shadow-sm">
+                <div class="card-header bg-dark border-bottom border-success d-flex justify-content-between align-items-center py-2">
+                    <span class="fw-bold text-success small text-uppercase"><i class="bi bi-check-all me-1"></i>Completed ({{ completed_list|length }})</span>
+                </div>
+                <div class="card-body p-2 d-flex flex-column gap-2" style="min-height: 600px; max-height: 80vh; overflow-y: auto;">
+                    {% for b in completed_list %}
+                    <div class="card bg-black border-secondary p-2 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <a href="{% url 'machines:booking_detail' b.id %}" class="fw-bold text-info text-decoration-none font-monospace small">{{ b.booking_code }}</a>
+                            <span class="badge bg-success small">Done</span>
+                        </div>
+                        <div class="text-white fw-semibold small">{{ b.customer.name }}</div>
+                        <div class="text-muted small mb-2"><i class="bi bi-gear me-1"></i>{{ b.machine.name }}</div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary">
+                            <a href="{% url 'machines:work_create' %}?booking_id={{ b.id }}" class="btn btn-sm btn-outline-success py-0 px-2 small w-100 fw-bold">
+                                <i class="bi bi-receipt me-1"></i> Record Work
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5 text-muted small">No recently completed jobs.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

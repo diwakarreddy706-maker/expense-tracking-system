@@ -102,6 +102,119 @@ class Machine(models.Model):
         return f"{self.machine_code} - {self.name} ({self.get_status_display()})"
 
 
+class MachineBooking(models.Model):
+    """
+    Machine Booking & Dispatch Lifecycle (Phase 12.5).
+    Operational scheduling and assignment for agricultural machinery.
+    Strictly isolated from financial ledgers until Phase 14.
+    """
+    STATUS_PENDING = 'PENDING'
+    STATUS_CONFIRMED = 'CONFIRMED'
+    STATUS_DISPATCHED = 'DISPATCHED'
+    STATUS_IN_PROGRESS = 'IN_PROGRESS'
+    STATUS_COMPLETED = 'COMPLETED'
+    STATUS_CANCELLED = 'CANCELLED'
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending Confirmation'),
+        (STATUS_CONFIRMED, 'Confirmed & Scheduled'),
+        (STATUS_DISPATCHED, 'Dispatched to Field'),
+        (STATUS_IN_PROGRESS, 'Work In Progress'),
+        (STATUS_COMPLETED, 'Work Completed'),
+        (STATUS_CANCELLED, 'Cancelled'),
+    ]
+
+    BILLING_TIME_HOURLY = 'TIME_HOURLY'
+    BILLING_ACRE = 'ACRE'
+    BILLING_PIECE = 'PIECE'
+
+    BILLING_TYPE_CHOICES = [
+        (BILLING_TIME_HOURLY, 'Time-Based (Hourly) - Harvester'),
+        (BILLING_ACRE, 'Acre-Based - Tractor'),
+        (BILLING_PIECE, 'Piece-Based - Tractor'),
+    ]
+
+    booking_code = models.CharField(max_length=30, unique=True, db_index=True)
+    customer = models.ForeignKey(
+        'finance.Customer',
+        on_delete=models.PROTECT,
+        related_name='machine_bookings'
+    )
+    machine_type = models.ForeignKey(
+        MachineType,
+        on_delete=models.PROTECT,
+        related_name='bookings'
+    )
+    machine = models.ForeignKey(
+        'machines.Machine',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='bookings'
+    )
+    operator = models.ForeignKey(
+        'employees.Employee',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='machine_bookings'
+    )
+    work_date = models.DateField(default=timezone.now, db_index=True)
+    requested_start_time = models.TimeField(null=True, blank=True)
+    expected_quantity = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Estimated quantity (Acres or Pieces)"
+    )
+    expected_duration_hours = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Estimated duration in hours"
+    )
+    billing_type = models.CharField(
+        max_length=20,
+        choices=BILLING_TYPE_CHOICES,
+        default=BILLING_TIME_HOURLY,
+        db_index=True
+    )
+    work_location = models.CharField(max_length=200, blank=True, null=True)
+    village = models.CharField(max_length=100, blank=True, null=True)
+    crop_description = models.CharField(max_length=150, blank=True, null=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+        db_index=True
+    )
+    dispatched_at = models.DateTimeField(null=True, blank=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    cancellation_reason = models.TextField(blank=True, null=True)
+    dispatch_notes = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='created_machine_bookings'
+    )
+    is_deleted = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'machine_bookings'
+        verbose_name = 'Machine Booking'
+        verbose_name_plural = 'Machine Bookings'
+        ordering = ['-work_date', '-id']
+
+    def __str__(self):
+        machine_name = self.machine.name if self.machine else f"Requested {self.machine_type.name}"
+        return f"{self.booking_code} - {self.customer.name} ({machine_name}) [{self.get_status_display()}]"
+
+
 class MachineWorkEntry(models.Model):
     """
     Machine Work & Billing Entry (Phase 12.4).
@@ -119,6 +232,13 @@ class MachineWorkEntry(models.Model):
         (BILLING_PIECE, 'Piece-Based - Tractor'),
     ]
 
+    booking = models.ForeignKey(
+        MachineBooking,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='work_entries'
+    )
     work_code = models.CharField(max_length=30, unique=True, db_index=True)
     work_date = models.DateField(default=timezone.now, db_index=True)
     machine = models.ForeignKey(
@@ -228,3 +348,4 @@ class MachineWorkEntry(models.Model):
 
     def __str__(self):
         return f"{self.work_code} - {self.machine.name} ({self.customer.name}) - ₹{self.total_amount}"
+

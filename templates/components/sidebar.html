@@ -51,11 +51,27 @@
     </li>
     {% endif %}
 
+    <!-- Machine Bookings & Dispatch: Owner, Manager, Accountant -->
+    {% if role == 'OWNER' or role == 'MANAGER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
+    <li class="menu-item">
+      <a href="{% url 'machines:booking_list' %}" class="menu-link">
+        <i class="bi bi-calendar-check menu-icon text-primary"></i>
+        <span>Bookings & Dispatch</span>
+      </a>
+    </li>
+    <li class="menu-item">
+      <a href="{% url 'machines:dispatch_board' %}" class="menu-link">
+        <i class="bi bi-kanban menu-icon text-info"></i>
+        <span>Dispatch Board</span>
+      </a>
+    </li>
+    {% endif %}
+
     <!-- Machine Work Entries & Billing: Owner, Manager, Accountant -->
     {% if role == 'OWNER' or role == 'MANAGER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <li class="menu-item">
       <a href="{% url 'machines:work_list' %}" class="menu-link">
-        <i class="bi bi-clock-history menu-icon text-info"></i>
+        <i class="bi bi-clock-history menu-icon text-success"></i>
         <span>Machine Work & Billing</span>
       </a>
     </li>

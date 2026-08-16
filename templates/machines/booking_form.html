@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | AgriBOS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold text-white mb-1"><i class="bi bi-calendar-plus text-primary me-2"></i>{{ title }}</h2>
+                    <p class="text-muted mb-0">Record farmer booking requests, requested machinery type, and operational scheduling parameters.</p>
+                </div>
+                <a href="{% url 'machines:booking_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Bookings
+                </a>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card bg-dark border-secondary shadow">
+                <div class="card-body p-4">
+                    <form method="post" novalidate id="bookingForm">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 mb-4">
+                            {% for error in form.non_field_errors %}
+                            <div><i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Section 1: Customer & Machine Type -->
+                        <h5 class="text-info border-bottom border-secondary pb-2 mb-3">
+                            <i class="bi bi-person-badge me-2"></i>1. Farmer & Machinery Specification
+                        </h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-light small text-uppercase fw-semibold">Customer / Farmer <span class="text-danger">*</span></label>
+                                {{ form.customer }}
+                                {% if form.customer.errors %}<div class="text-danger small mt-1">{{ form.customer.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-light small text-uppercase fw-semibold">Requested Machine Type <span class="text-danger">*</span></label>
+                                {{ form.machine_type }}
+                                {% if form.machine_type.errors %}<div class="text-danger small mt-1">{{ form.machine_type.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Date & Operational Assignment -->
+                        <h5 class="text-info border-bottom border-secondary pb-2 mb-3">
+                            <i class="bi bi-calendar-event me-2"></i>2. Schedule & Resource Assignment
+                        </h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label text-light small text-uppercase fw-semibold">Work Date <span class="text-danger">*</span></label>
+                                {{ form.work_date }}
+                                {% if form.work_date.errors %}<div class="text-danger small mt-1">{{ form.work_date.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-light small text-uppercase fw-semibold">Assign Specific Machine (Optional)</label>
+                                {{ form.machine }}
+                                <small class="text-muted d-block mt-1">Can be assigned now or during Confirmation.</small>
+                                {% if form.machine.errors %}<div class="text-danger small mt-1">{{ form.machine.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-light small text-uppercase fw-semibold">Assign Operator (Optional)</label>
+                                {{ form.operator }}
+                                <small class="text-muted d-block mt-1">Must match machine operation role.</small>
+                                {% if form.operator.errors %}<div class="text-danger small mt-1">{{ form.operator.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Commercial & Work Type Details -->
+                        <h5 class="text-info border-bottom border-secondary pb-2 mb-3">
+                            <i class="bi bi-sliders me-2"></i>3. Commercial Workflow & Operational Estimates
+                        </h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label text-light small text-uppercase fw-semibold">Commercial Billing Model <span class="text-danger">*</span></label>
+                                {{ form.billing_type }}
+                                {% if form.billing_type.errors %}<div class="text-danger small mt-1">{{ form.billing_type.errors.0 }}</div>{% endif %}
+                            </div>
+
+                            <!-- Harvester-Specific Estimated Time -->
+                            <div class="col-md-4" id="harvesterTimeGroup">
+                                <label class="form-label text-light small text-uppercase fw-semibold">Requested Start Time</label>
+                                {{ form.requested_start_time }}
+                                {% if form.requested_start_time.errors %}<div class="text-danger small mt-1">{{ form.requested_start_time.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4" id="harvesterDurationGroup">
+                                <label class="form-label text-light small text-uppercase fw-semibold">Expected Duration (Hours)</label>
+                                {{ form.expected_duration_hours }}
+                                {% if form.expected_duration_hours.errors %}<div class="text-danger small mt-1">{{ form.expected_duration_hours.errors.0 }}</div>{% endif %}
+                            </div>
+
+                            <!-- Tractor-Specific Quantity -->
+                            <div class="col-md-4" id="tractorQuantityGroup">
+                                <label class="form-label text-light small text-uppercase fw-semibold">Expected Quantity (Acres / Pieces)</label>
+                                {{ form.expected_quantity }}
+                                {% if form.expected_quantity.errors %}<div class="text-danger small mt-1">{{ form.expected_quantity.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Section 4: Location & Field Details -->
+                        <h5 class="text-info border-bottom border-secondary pb-2 mb-3">
+                            <i class="bi bi-geo-alt me-2"></i>4. Field Location & Crop Information
+                        </h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label text-light small text-uppercase fw-semibold">Village</label>
+                                {{ form.village }}
+                                {% if form.village.errors %}<div class="text-danger small mt-1">{{ form.village.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-light small text-uppercase fw-semibold">Farm / Field Location</label>
+                                {{ form.work_location }}
+                                {% if form.work_location.errors %}<div class="text-danger small mt-1">{{ form.work_location.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-light small text-uppercase fw-semibold">Crop / Work Description</label>
+                                {{ form.crop_description }}
+                                {% if form.crop_description.errors %}<div class="text-danger small mt-1">{{ form.crop_description.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-light small text-uppercase fw-semibold">Notes / Special Instructions</label>
+                                {{ form.notes }}
+                                {% if form.notes.errors %}<div class="text-danger small mt-1">{{ form.notes.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-flex justify-content-end gap-2 pt-3 border-top border-secondary">
+                            <a href="{% url 'machines:booking_list' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-5 fw-bold">
+                                <i class="bi bi-check-circle me-1"></i> Save Booking
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const billingSelect = document.getElementById('billingTypeSelect');
+    const harvesterTimeGroup = document.getElementById('harvesterTimeGroup');
+    const harvesterDurationGroup = document.getElementById('harvesterDurationGroup');
+    const tractorQuantityGroup = document.getElementById('tractorQuantityGroup');
+
+    function updateBillingVisibility() {
+        if (!billingSelect) return;
+        const val = billingSelect.value;
+        if (val === 'TIME_HOURLY') {
+            if (harvesterTimeGroup) harvesterTimeGroup.style.display = 'block';
+            if (harvesterDurationGroup) harvesterDurationGroup.style.display = 'block';
+            if (tractorQuantityGroup) tractorQuantityGroup.style.display = 'none';
+        } else {
+            if (harvesterTimeGroup) harvesterTimeGroup.style.display = 'none';
+            if (harvesterDurationGroup) harvesterDurationGroup.style.display = 'none';
+            if (tractorQuantityGroup) tractorQuantityGroup.style.display = 'block';
+        }
+    }
+
+    if (billingSelect) {
+        billingSelect.addEventListener('change', updateBillingVisibility);
+        updateBillingVisibility();
+    }
+});
+</script>
+{% endblock %}

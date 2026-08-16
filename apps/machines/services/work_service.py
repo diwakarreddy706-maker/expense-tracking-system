@@ -127,6 +127,7 @@ class WorkService:
         machine: Machine,
         customer,
         operator=None,
+        booking=None,
         billing_type=MachineWorkEntry.BILLING_TIME_HOURLY,
         start_time=None,
         end_time=None,
@@ -177,6 +178,7 @@ class WorkService:
 
         # Instantiate model
         entry = MachineWorkEntry(
+            booking=booking,
             work_code=work_code,
             work_date=work_date,
             machine=machine,
@@ -199,15 +201,12 @@ class WorkService:
         )
         entry.save()
 
-        # Update machine current meter reading if end_meter is higher
-        if end_meter is not None:
-            em = Decimal(str(end_meter))
-            locked_machine = Machine.objects.select_for_update().get(id=machine.id)
-            if em > locked_machine.current_meter_reading:
-                locked_machine.current_meter_reading = em
-                locked_machine.save(update_fields=['current_meter_reading', 'updated_at'])
+        # Update machine's current meter reading if end_meter is higher
+        if end_meter is not None and end_meter > machine.current_meter_reading:
+            machine.current_meter_reading = end_meter
+            machine.save(update_fields=['current_meter_reading', 'updated_at'])
 
-        # Audit Logging
+        # Audit Trail
         log_audit_event(
             user=created_by,
             action=AuditLog.ACTION_CREATE,
@@ -215,15 +214,18 @@ class WorkService:
             entity_id=entry.id,
             changes={
                 'work_code': entry.work_code,
+                'booking_id': booking.id if booking else None,
                 'machine': machine.name,
+                'customer': customer.name,
+                'operator': operator.full_name if operator else None,
                 'billing_type': billing_type,
-                'total_amount': str(total_amount),
                 'net_working_hours': str(net_working_hours),
-                'meter_difference': str(meter_diff),
+                'quantity': str(quantity),
+                'total_amount': str(total_amount),
+                'meter_difference': str(meter_diff)
             },
             request=request
         )
-
         return entry
 
     @classmethod
@@ -236,6 +238,7 @@ class WorkService:
         machine: Machine,
         customer,
         operator=None,
+        booking=None,
         billing_type=MachineWorkEntry.BILLING_TIME_HOURLY,
         start_time=None,
         end_time=None,
@@ -282,6 +285,8 @@ class WorkService:
         else:
             raise ValidationError(f"Invalid billing type: {billing_type}")
 
+        if booking is not None:
+            entry.booking = booking
         entry.work_date = work_date
         entry.machine = machine
         entry.customer = customer

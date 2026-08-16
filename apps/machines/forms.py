@@ -1,10 +1,11 @@
 from django import forms
 from decimal import Decimal
 from django.core.exceptions import ValidationError
-from .models import Machine, MachineType, MachineWorkEntry
+from .models import Machine, MachineType, MachineBooking, MachineWorkEntry
 from apps.finance.models import Customer
 from apps.employees.models import Employee
 from .services.work_service import WorkService
+from .services.booking_service import BookingService
 
 
 class MachineForm(forms.ModelForm):
@@ -42,12 +43,133 @@ class MachineTypeForm(forms.ModelForm):
         }
 
 
+class MachineBookingForm(forms.ModelForm):
+    """
+    Form for Creating and Editing Machine Bookings (Phase 12.5).
+    """
+    customer = forms.ModelChoiceField(
+        queryset=Customer.objects.filter(is_deleted=False, status=Customer.STATUS_ACTIVE),
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary', 'id': 'customerSelect'})
+    )
+    machine_type = forms.ModelChoiceField(
+        queryset=MachineType.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary', 'id': 'machineTypeSelect'})
+    )
+    machine = forms.ModelChoiceField(
+        queryset=Machine.objects.filter(is_deleted=False, is_active=True).exclude(
+            status__in=[Machine.STATUS_UNDER_MAINTENANCE, Machine.STATUS_DECOMMISSIONED]
+        ),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary', 'id': 'machineSelect'})
+    )
+    operator = forms.ModelChoiceField(
+        queryset=Employee.objects.filter(is_deleted=False, status=Employee.STATUS_ACTIVE),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary', 'id': 'operatorSelect'})
+    )
+    requested_start_time = forms.TimeField(
+        required=False,
+        widget=forms.TimeInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'time', 'id': 'requestedStartTime'})
+    )
+    expected_quantity = forms.DecimalField(
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'id': 'expectedQuantity', 'placeholder': '0.00'})
+    )
+    expected_duration_hours = forms.DecimalField(
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'id': 'expectedDurationHours', 'placeholder': '0.00'})
+    )
+
+    class Meta:
+        model = MachineBooking
+        fields = [
+            'customer', 'machine_type', 'machine', 'operator', 'work_date',
+            'requested_start_time', 'expected_quantity', 'expected_duration_hours',
+            'billing_type', 'work_location', 'village', 'crop_description', 'notes'
+        ]
+        widgets = {
+            'work_date': forms.DateInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'date', 'id': 'workDate'}),
+            'billing_type': forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary', 'id': 'billingTypeSelect'}),
+            'work_location': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Farm / Field address'}),
+            'village': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Village Name'}),
+            'crop_description': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'e.g. Paddy Harvesting, Cotton Tillage'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control bg-dark text-white border-secondary', 'rows': 2, 'placeholder': 'Special customer requirements or equipment instructions...'}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not cleaned_data:
+            return cleaned_data
+
+        machine = cleaned_data.get('machine')
+        operator = cleaned_data.get('operator')
+        work_date = cleaned_data.get('work_date')
+        machine_type = cleaned_data.get('machine_type')
+
+        # Validate machine if provided
+        if machine and work_date:
+            try:
+                BookingService.validate_machine_availability(
+                    machine=machine,
+                    work_date=work_date,
+                    exclude_booking_id=self.instance.id if self.instance else None
+                )
+                if machine.machine_type != machine_type:
+                    self.add_error('machine', f"Selected machine '{machine.name}' is not of type '{machine_type.name}'.")
+            except ValidationError as e:
+                self.add_error('machine', e.message if hasattr(e, 'message') else str(e))
+
+        # Validate operator if provided
+        if operator and machine_type:
+            try:
+                BookingService.validate_operator(operator, machine_type)
+            except ValidationError as e:
+                self.add_error('operator', e.message if hasattr(e, 'message') else str(e))
+
+        return cleaned_data
+
+
+class BookingConfirmForm(forms.Form):
+    """Form to confirm and assign machine and operator to a pending booking."""
+    machine = forms.ModelChoiceField(
+        queryset=Machine.objects.filter(is_deleted=False, is_active=True).exclude(
+            status__in=[Machine.STATUS_UNDER_MAINTENANCE, Machine.STATUS_DECOMMISSIONED]
+        ),
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'})
+    )
+    operator = forms.ModelChoiceField(
+        queryset=Employee.objects.filter(is_deleted=False, status=Employee.STATUS_ACTIVE),
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'})
+    )
+
+
+class BookingDispatchForm(forms.Form):
+    """Form to dispatch a confirmed booking to the field."""
+    dispatch_notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control bg-dark text-white border-secondary', 'rows': 2, 'placeholder': 'Dispatch notes, route, or equipment condition...'})
+    )
+
+
+class BookingCancelForm(forms.Form):
+    """Form to cancel a booking."""
+    cancellation_reason = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control bg-dark text-white border-secondary', 'rows': 3, 'placeholder': 'Reason for cancellation...'})
+    )
+
+
 class MachineWorkEntryForm(forms.ModelForm):
     """
-    Form for Machine Work Entry & Billing Workflow (Phase 12.4).
+    Form for Machine Work Entry & Billing Workflow (Phase 12.4 & 12.5).
     Dynamically captures Harvester time-based operations and Tractor unit-based operations
-    with authoritative backend calculation and validation.
+    with authoritative backend calculation, independent meter tracking, and optional booking link.
     """
+    booking = forms.ModelChoiceField(
+        queryset=MachineBooking.objects.filter(is_deleted=False),
+        required=False,
+        widget=forms.HiddenInput()
+    )
     customer = forms.ModelChoiceField(
         queryset=Customer.objects.filter(is_deleted=False, status=Customer.STATUS_ACTIVE),
         widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary', 'id': 'customerSelect'})
@@ -99,7 +221,7 @@ class MachineWorkEntryForm(forms.ModelForm):
     class Meta:
         model = MachineWorkEntry
         fields = [
-            'work_date', 'customer', 'machine', 'operator', 'billing_type',
+            'booking', 'work_date', 'customer', 'machine', 'operator', 'billing_type',
             'start_time', 'end_time', 'break_hours', 'hourly_rate',
             'quantity', 'unit_rate',
             'start_meter', 'end_meter',
