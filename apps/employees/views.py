@@ -382,16 +382,18 @@ def employee_payment_reverse_view(request, payment_id):
     Reverses an employee payment or wage accrual (Owner only).
     """
     reason = request.POST.get('reason', '').strip()
+    payment = get_object_or_404(EmployeePayment, id=payment_id)
+    emp_id = payment.employee_id
     try:
-        payment = EmployeeFinancialService.reverse_payment(
+        rev_payment = EmployeeFinancialService.reverse_payment(
             payment_id=payment_id,
             user=request.user,
             reason=reason,
             request=request
         )
-        messages.success(request, f"Payment '{payment.payment_code}' successfully reversed.")
+        messages.success(request, f"Payment '{rev_payment.payment_code}' successfully reversed.")
     except (ValidationError, Exception) as e:
         messages.error(request, f"Reversal failed: {str(e)}")
 
-    return redirect('employees:financial_profile', employee_id=payment.employee.id if 'payment' in locals() else 1)
+    return redirect('employees:financial_profile', employee_id=emp_id)
 

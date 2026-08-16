@@ -48,6 +48,8 @@ class FuelEntryForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        if not cleaned_data:
+            return cleaned_data
         qty = cleaned_data.get('quantity')
         price = cleaned_data.get('unit_price')
         meter = cleaned_data.get('meter_reading')

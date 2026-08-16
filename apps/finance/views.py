@@ -635,7 +635,8 @@ def daily_closing_view(request):
     today = timezone.now().date()
     if date_str:
         try:
-            closing_date = timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
+            from datetime import datetime as dt
+            closing_date = dt.strptime(date_str, '%Y-%m-%d').date()
             if closing_date > today:
                 closing_date = today
                 messages.warning(request, "Future dates are not permitted for daily closing. Adjusted to today.")

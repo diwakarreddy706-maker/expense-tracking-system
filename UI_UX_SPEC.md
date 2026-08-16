@@ -1,7 +1,7 @@
 # EXPENSE TRACKING & MANAGEMENT SYSTEM
 ## UI/UX Design System & Frontend Specification
 
----
+--- 
 
 ## 1. Design Philosophy & Visual Identity
 **Expense Tracking & Management System** is designed with a sleek, high-contrast, dark-themed financial interface optimized for agricultural enterprise management. The visual hierarchy combines deep charcoal slate surfaces (`#0D1117`), elevated card panels (`#161B22`), crisp emerald accents (`#10B981`), and monospace tabular numerals (`JetBrains Mono`) for instantaneous, jitter-free financial readability across mobile field devices and desktop monitors.

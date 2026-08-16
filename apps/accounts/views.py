@@ -60,17 +60,18 @@ def profile_view(request):
     Allows authenticated users to view profile details and update password.
     """
     profile = request.user.profile
+    profile_form = UserProfileUpdateForm(instance=profile)
+    password_form = PasswordChangeForm(request.user)
+
     if request.method == 'POST':
         if 'update_profile' in request.POST:
             profile_form = UserProfileUpdateForm(request.POST, instance=profile)
-            password_form = PasswordChangeForm(request.user)
             if profile_form.is_valid():
                 profile_form.save()
                 log_audit_event(request.user, AuditLog.ACTION_UPDATE, 'UserProfile', profile.id, request=request)
                 messages.success(request, "Profile updated successfully.")
                 return redirect('accounts:profile')
         elif 'change_password' in request.POST:
-            profile_form = UserProfileUpdateForm(instance=profile)
             password_form = PasswordChangeForm(request.user, request.POST)
             if password_form.is_valid():
                 user = password_form.save()
@@ -80,9 +81,6 @@ def profile_view(request):
                 return redirect('accounts:profile')
             else:
                 messages.error(request, "Please correct the password errors below.")
-    else:
-        profile_form = UserProfileUpdateForm(instance=profile)
-        password_form = PasswordChangeForm(request.user)
 
     return render(request, 'accounts/profile.html', {
         'profile_form': profile_form,

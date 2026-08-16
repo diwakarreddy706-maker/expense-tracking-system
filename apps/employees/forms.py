@@ -84,6 +84,8 @@ class SalaryAccrualForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
+        if not cleaned_data:
+            return cleaned_data
         compensation = cleaned_data.get('compensation')
         units = cleaned_data.get('units_logged')
         amount = cleaned_data.get('amount')
