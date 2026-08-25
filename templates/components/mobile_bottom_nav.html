@@ -1,0 +1,87 @@
+{% comment %}
+  Mobile Bottom Navigation Bar
+  Optimized for 320px–1023px viewports. Fixed to bottom with safe-area support.
+  Minimum 48px touch targets, active state indication, and accessible ARIA attributes.
+{% endcomment %}
+
+<nav
+  class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[#111827]/95 backdrop-blur-md border-t border-[#28354A] transition-transform duration-200 print:hidden"
+  style="padding-bottom: env(safe-area-inset-bottom, 0px);"
+  aria-label="Mobile Bottom Navigation"
+>
+  <div class="grid grid-cols-5 h-16 max-w-md mx-auto items-center px-1">
+    
+    <!-- 1. Dashboard -->
+    <a
+      href="{% url 'dashboard:index' %}"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none focus:text-emerald-400 {% if request.resolver_match.app_name == 'dashboard' or request.path == '/' %}text-emerald-400 font-semibold{% else %}text-gray-400 hover:text-gray-200{% endif %}"
+      {% if request.resolver_match.app_name == 'dashboard' or request.path == '/' %}aria-current="page"{% endif %}
+    >
+      <div class="relative flex items-center justify-center">
+        <i class="bi bi-grid-1x2-fill text-lg"></i>
+        {% if request.resolver_match.app_name == 'dashboard' or request.path == '/' %}
+          <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        {% endif %}
+      </div>
+      <span class="text-[10px] mt-0.5 tracking-tight truncate">Home</span>
+    </a>
+
+    <!-- 2. Machines -->
+    <a
+      href="{% url 'machines:list' %}"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none focus:text-emerald-400 {% if request.resolver_match.app_name == 'machines' %}text-emerald-400 font-semibold{% else %}text-gray-400 hover:text-gray-200{% endif %}"
+      {% if request.resolver_match.app_name == 'machines' %}aria-current="page"{% endif %}
+    >
+      <div class="relative flex items-center justify-center">
+        <i class="bi bi-truck-front-fill text-lg"></i>
+        {% if request.resolver_match.app_name == 'machines' %}
+          <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        {% endif %}
+      </div>
+      <span class="text-[10px] mt-0.5 tracking-tight truncate">Fleet</span>
+    </a>
+
+    <!-- 3. Quick Add (Center Action Button) -->
+    <div class="flex items-center justify-center">
+      <button
+        type="button"
+        @click="quickAddOpen = true"
+        class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-lg shadow-emerald-950/60 flex items-center justify-center transition-transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#111827]"
+        aria-label="Open Quick Add Action Sheet"
+      >
+        <i class="bi bi-plus-lg text-xl font-bold"></i>
+      </button>
+    </div>
+
+    <!-- 4. Fuel -->
+    <a
+      href="{% url 'fuel:list' %}"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none focus:text-emerald-400 {% if request.resolver_match.app_name == 'fuel' %}text-emerald-400 font-semibold{% else %}text-gray-400 hover:text-gray-200{% endif %}"
+      {% if request.resolver_match.app_name == 'fuel' %}aria-current="page"{% endif %}
+    >
+      <div class="relative flex items-center justify-center">
+        <i class="bi bi-fuel-pump-fill text-lg"></i>
+        {% if request.resolver_match.app_name == 'fuel' %}
+          <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        {% endif %}
+      </div>
+      <span class="text-[10px] mt-0.5 tracking-tight truncate">Fuel</span>
+    </a>
+
+    <!-- 5. Profile & More -->
+    <a
+      href="{% url 'accounts:profile' %}"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none focus:text-emerald-400 {% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name == 'profile' %}text-emerald-400 font-semibold{% else %}text-gray-400 hover:text-gray-200{% endif %}"
+      {% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name == 'profile' %}aria-current="page"{% endif %}
+    >
+      <div class="relative flex items-center justify-center">
+        <i class="bi bi-person-circle text-lg"></i>
+        {% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name == 'profile' %}
+          <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        {% endif %}
+      </div>
+      <span class="text-[10px] mt-0.5 tracking-tight truncate">Profile</span>
+    </a>
+
+  </div>
+</nav>

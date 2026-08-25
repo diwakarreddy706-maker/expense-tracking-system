@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="agriGrad192" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="bgGrad192" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#131A26"/>
+      <stop offset="100%" stop-color="#0B0F17"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="42" fill="url(#bgGrad192)"/>
+  <rect width="186" height="186" x="3" y="3" rx="39" fill="none" stroke="#28354A" stroke-width="4"/>
+  <path d="M96 34 L142 52 C142 98 96 135 96 135 C96 135 50 98 50 52 Z" fill="url(#agriGrad192)" opacity="0.95"/>
+  <path d="M96 45 L131 59 C131 94 96 124 96 124 C96 124 61 94 61 59 Z" fill="#0B0F17" opacity="0.4"/>
+  <path d="M79 86 L92 99 L116 73" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

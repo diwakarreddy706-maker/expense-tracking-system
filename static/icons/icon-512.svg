@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="agriGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#131A26"/>
+      <stop offset="100%" stop-color="#0B0F17"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Rounded Rect -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <rect width="504" height="504" x="4" y="4" rx="108" fill="none" stroke="#28354A" stroke-width="8"/>
+  
+  <!-- Shield Icon -->
+  <path d="M256 90 L380 140 C380 260 256 360 256 360 C256 360 132 260 132 140 Z" fill="url(#agriGrad)" opacity="0.95"/>
+  <path d="M256 120 L350 158 C350 250 256 330 256 330 C256 330 162 250 162 158 Z" fill="#0B0F17" opacity="0.4"/>
+  
+  <!-- Checkmark / Sprout Inside Shield -->
+  <path d="M210 230 L245 265 L310 195" fill="none" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

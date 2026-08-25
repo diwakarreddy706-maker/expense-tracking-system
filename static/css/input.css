@@ -33,6 +33,14 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* Safe area utility classes for modern mobile displays */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
   /* Hide element visually while keeping accessible for screen readers */
   .sr-only {
     position: absolute;

@@ -3,8 +3,15 @@
 <html lang="en" class="dark h-full">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
   <title>{% block title %}{{ title|default:"AgriBOS ERP" }}{% endblock %}</title>
+
+  <!-- PWA & Mobile Meta Tags -->
+  <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
+  <meta name="theme-color" content="#10B981">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="{% static 'icons/icon-192.svg' %}">
 
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,12 +37,12 @@
 
 <body
   class="min-h-full bg-[#0B0F17] text-gray-100 font-sans antialiased selection:bg-emerald-500 selection:text-white"
-  x-data="{ sidebarOpen: false, quickExpenseOpen: false }"
-  @keydown.escape.window="sidebarOpen = false; quickExpenseOpen = false"
+  x-data="{ sidebarOpen: false, quickExpenseOpen: false, quickAddOpen: false }"
+  @keydown.escape.window="sidebarOpen = false; quickExpenseOpen = false; quickAddOpen = false"
   hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
 >
   <div class="min-h-screen flex flex-col lg:flex-row">
-    <!-- Sidebar Navigation -->
+    <!-- Sidebar Navigation (Desktop Persistent / Mobile Slide-Over) -->
     {% include 'components/sidebar.html' %}
 
     <!-- Main Content Area -->
@@ -46,13 +53,16 @@
       <!-- Toast Feedback Notifications -->
       {% include 'components/toasts.html' %}
 
+      <!-- PWA Connectivity & Install Alerts -->
+      {% include 'components/pwa_banner.html' %}
+
       <!-- Page Content Viewport -->
-      <main class="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl w-full mx-auto">
+      <main class="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-6 max-w-7xl w-full mx-auto">
         {% block content %}{% endblock %}
       </main>
 
       <!-- Global Modern Footer -->
-      <footer class="border-t border-[#28354A] bg-[#111827]/40 px-4 sm:px-6 lg:px-8 py-3 text-xs text-gray-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <footer class="border-t border-[#28354A] bg-[#111827]/40 px-4 sm:px-6 lg:px-8 py-3 text-xs text-gray-500 flex flex-col sm:flex-row justify-between items-center gap-2 mb-16 lg:mb-0 print:hidden">
         <div class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
           <span>AgriBOS ERP &bull; Operational &amp; Financial Ledger</span>
@@ -63,6 +73,12 @@
       </footer>
     </div>
   </div>
+
+  <!-- Mobile Bottom Navigation (Visible on <1024px Viewports) -->
+  {% include 'components/mobile_bottom_nav.html' %}
+
+  <!-- Mobile-First Quick Add Action Sheet -->
+  {% include 'components/quick_add_modal.html' %}
 
   <!-- Global Modals -->
   {% include 'components/quick_expense_modal.html' %}
@@ -76,6 +92,21 @@
         event.detail.headers['X-CSRFToken'] = token;
       }
     });
+  </script>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/static/js/service-worker.js')
+          .then((reg) => {
+            console.log('[AgriBOS] PWA Service Worker active:', reg.scope);
+          })
+          .catch((err) => {
+            console.warn('[AgriBOS] PWA Service Worker notice:', err);
+          });
+      });
+    }
   </script>
 
   {% block extra_js %}{% endblock %}
