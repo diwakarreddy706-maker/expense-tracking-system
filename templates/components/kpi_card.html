@@ -1,0 +1,78 @@
+{# Reusable KPI Card Component #}
+{# Parameters: title, value, icon, color (emerald|amber|danger|rose|blue|purple|cyan), subtitle, trend, badge #}
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-sm hover:border-[#374761] hover:shadow-lg transition-all duration-200 relative overflow-hidden group">
+  <!-- Accent Glow / Background Hint -->
+  {% if color == 'emerald' %}
+    <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full blur-2xl opacity-10 pointer-events-none bg-emerald-500"></div>
+  {% elif color == 'amber' or color == 'warning' %}
+    <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full blur-2xl opacity-10 pointer-events-none bg-amber-500"></div>
+  {% elif color == 'danger' or color == 'rose' or color == 'crimson' %}
+    <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full blur-2xl opacity-10 pointer-events-none bg-rose-500"></div>
+  {% elif color == 'purple' %}
+    <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full blur-2xl opacity-10 pointer-events-none bg-purple-500"></div>
+  {% elif color == 'cyan' %}
+    <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full blur-2xl opacity-10 pointer-events-none bg-cyan-500"></div>
+  {% else %}
+    <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full blur-2xl opacity-10 pointer-events-none bg-blue-500"></div>
+  {% endif %}
+
+  <div class="flex items-start justify-between gap-3 mb-3">
+    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ title }}</span>
+    {% if icon %}
+      {% if color == 'emerald' %}
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <i class="{{ icon }}"></i>
+        </div>
+      {% elif color == 'amber' or color == 'warning' %}
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <i class="{{ icon }}"></i>
+        </div>
+      {% elif color == 'danger' or color == 'rose' or color == 'crimson' %}
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0 bg-rose-500/10 text-rose-400 border border-rose-500/20">
+          <i class="{{ icon }}"></i>
+        </div>
+      {% elif color == 'purple' %}
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0 bg-purple-500/10 text-purple-400 border border-purple-500/20">
+          <i class="{{ icon }}"></i>
+        </div>
+      {% elif color == 'cyan' %}
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+          <i class="{{ icon }}"></i>
+        </div>
+      {% else %}
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0 bg-blue-500/10 text-blue-400 border border-blue-500/20">
+          <i class="{{ icon }}"></i>
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <div class="text-2xl font-extrabold tracking-tight num-tabular">
+    {% if color == 'emerald' %}
+      <span class="text-emerald-400">{{ value }}</span>
+    {% elif color == 'amber' or color == 'warning' %}
+      <span class="text-amber-400">{{ value }}</span>
+    {% elif color == 'danger' or color == 'rose' or color == 'crimson' %}
+      <span class="text-rose-400">{{ value }}</span>
+    {% elif color == 'purple' %}
+      <span class="text-purple-400">{{ value }}</span>
+    {% elif color == 'cyan' %}
+      <span class="text-cyan-400">{{ value }}</span>
+    {% else %}
+      <span class="text-white">{{ value }}</span>
+    {% endif %}
+  </div>
+
+  {% if subtitle or badge %}
+    <div class="mt-2.5 flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-[#1E293B]">
+      {% if subtitle %}
+        <span class="truncate">{{ subtitle }}</span>
+      {% endif %}
+      {% if badge %}
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-300 border border-gray-700">
+          {{ badge }}
+        </span>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>

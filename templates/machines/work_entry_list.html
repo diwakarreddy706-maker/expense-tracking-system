@@ -1,18 +1,19 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ title }} | Expense Tracking{% endblock %}
+{% block title %}{{ title }} | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
-    <p class="text-muted small mb-0">Harvester time calculation, tractor acre/piece billing, and independent machine meter tracking</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">{{ title }}</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Harvester time calculation, tractor acre/piece billing, and independent machine meter tracking</p>
   </div>
-  <div class="d-flex gap-2">
-    <a href="{% url 'machines:list' %}" class="btn btn-ghost btn-sm">
-      <i class="bi bi-truck me-1"></i> Machines Registry
+  <div class="flex items-center gap-2.5">
+    <a href="{% url 'machines:list' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-gray-300 font-semibold text-xs border border-[#28354A] transition-all no-underline shadow-sm">
+      <i class="bi bi-truck"></i>
+      <span>Machines Registry</span>
     </a>
-    <a href="{% url 'machines:work_create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+    <a href="{% url 'machines:work_create' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
       <i class="bi bi-plus-lg"></i>
       <span>Record Work Entry</span>
     </a>
@@ -20,190 +21,211 @@
 </div>
 
 <!-- KPI Summary Cards -->
-<div class="row g-3 mb-4">
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="theme-card p-3 border-start border-4 border-success">
-      <span class="text-muted small d-block mb-1 font-monospace">TOTAL BILLED VALUE</span>
-      <h3 class="fs-4 fw-bold text-emerald mb-0 num-tabular">₹{{ total_billed|floatformat:2 }}</h3>
-      <span class="text-muted" style="font-size: 0.75rem;">Commercial field revenue</span>
-    </div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-[#131A26] border border-[#28354A] border-l-4 border-l-emerald-500 rounded-2xl p-4 sm:p-5 shadow-sm">
+    <span class="text-xs text-gray-400 font-mono block">TOTAL BILLED VALUE</span>
+    <div class="text-2xl font-extrabold text-emerald-400 font-mono mt-1">₹{{ total_billed|floatformat:2 }}</div>
+    <span class="text-[11px] text-gray-500 block mt-1">Commercial field revenue</span>
   </div>
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="theme-card p-3 border-start border-4 border-info">
-      <span class="text-muted small d-block mb-1 font-monospace">HARVESTER HOURS</span>
-      <h3 class="fs-4 fw-bold text-info mb-0 num-tabular">{{ total_harvester_hours|floatformat:2 }} <span class="fs-6 fw-normal text-muted">hrs</span></h3>
-      <span class="text-muted" style="font-size: 0.75rem;">Total net billable time</span>
+
+  <div class="bg-[#131A26] border border-[#28354A] border-l-4 border-l-cyan-500 rounded-2xl p-4 sm:p-5 shadow-sm">
+    <span class="text-xs text-gray-400 font-mono block">HARVESTER HOURS</span>
+    <div class="text-2xl font-extrabold text-cyan-400 font-mono mt-1">
+      {{ total_harvester_hours|floatformat:2 }} <span class="text-sm font-normal text-gray-400">hrs</span>
     </div>
+    <span class="text-[11px] text-gray-500 block mt-1">Total net billable time</span>
   </div>
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="theme-card p-3 border-start border-4 border-warning">
-      <span class="text-muted small d-block mb-1 font-monospace">TRACTOR COVERAGE</span>
-      <h3 class="fs-4 fw-bold text-warning mb-0 num-tabular">{{ total_tractor_acres|floatformat:2 }} <span class="fs-6 fw-normal text-muted">acres</span></h3>
-      <span class="text-muted" style="font-size: 0.75rem;">Acre-based tillage & operations</span>
+
+  <div class="bg-[#131A26] border border-[#28354A] border-l-4 border-l-amber-500 rounded-2xl p-4 sm:p-5 shadow-sm">
+    <span class="text-xs text-gray-400 font-mono block">TRACTOR COVERAGE</span>
+    <div class="text-2xl font-extrabold text-amber-400 font-mono mt-1">
+      {{ total_tractor_acres|floatformat:2 }} <span class="text-sm font-normal text-gray-400">acres</span>
     </div>
+    <span class="text-[11px] text-gray-500 block mt-1">Acre-based tillage &amp; operations</span>
   </div>
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="theme-card p-3 border-start border-4 border-secondary">
-      <span class="text-muted small d-block mb-1 font-monospace">WORK LOGS</span>
-      <h3 class="fs-4 fw-bold text-white mb-0 num-tabular">{{ entries.count }}</h3>
-      <span class="text-muted" style="font-size: 0.75rem;">Recorded operations</span>
-    </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] border-l-4 border-l-gray-600 rounded-2xl p-4 sm:p-5 shadow-sm">
+    <span class="text-xs text-gray-400 font-mono block">WORK LOGS</span>
+    <div class="text-2xl font-extrabold text-white font-mono mt-1">{{ entries.count }}</div>
+    <span class="text-[11px] text-gray-500 block mt-1">Recorded operations</span>
   </div>
 </div>
 
 <!-- Search & Multi-Filter Bar -->
-<div class="theme-card p-3 mb-4">
-  <form method="get" class="row g-2 align-items-center">
-    <div class="col-12 col-md-3">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
-        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search code, machine, customer...">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-center">
+    <div class="md:col-span-2">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+          <i class="bi bi-search text-xs"></i>
+        </span>
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none"
+          placeholder="Search code, machine, customer..."
+        >
       </div>
     </div>
-    <div class="col-6 col-md-2">
-      <select name="machine" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div>
+      <select name="machine" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Machines</option>
         {% for m in machines %}
-          <option value="{{ m.id }}" {% if selected_machine == m.id|stringformat:"s" %}selected{% endif %}>{{ m.machine_code }} - {{ m.name }}</option>
+          {% if selected_machine == m.id|stringformat:"s" %}
+            <option value="{{ m.id }}" selected>{{ m.machine_code }} - {{ m.name }}</option>
+          {% else %}
+            <option value="{{ m.id }}">{{ m.machine_code }} - {{ m.name }}</option>
+          {% endif %}
         {% endfor %}
       </select>
     </div>
-    <div class="col-6 col-md-2">
-      <select name="customer" class="form-select form-select-sm bg-dark text-white border-secondary">
-        <option value="">All Customers / Farmers</option>
+
+    <div>
+      <select name="customer" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
+        <option value="">All Customers</option>
         {% for c in customers %}
-          <option value="{{ c.id }}" {% if selected_customer == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+          {% if selected_customer == c.id|stringformat:"s" %}
+            <option value="{{ c.id }}" selected>{{ c.name }}</option>
+          {% else %}
+            <option value="{{ c.id }}">{{ c.name }}</option>
+          {% endif %}
         {% endfor %}
       </select>
     </div>
-    <div class="col-6 col-md-2">
-      <select name="billing_type" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div class="flex items-center gap-2">
+      <select name="billing_type" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Billing Types</option>
-        <option value="TIME_HOURLY" {% if selected_billing_type == 'TIME_HOURLY' %}selected{% endif %}>Hourly (Harvester)</option>
-        <option value="ACRE" {% if selected_billing_type == 'ACRE' %}selected{% endif %}>Acre-Based (Tractor)</option>
-        <option value="PIECE" {% if selected_billing_type == 'PIECE' %}selected{% endif %}>Piece-Based (Tractor)</option>
+        {% if selected_billing_type == 'TIME_HOURLY' %}<option value="TIME_HOURLY" selected>Hourly (Harvester)</option>{% else %}<option value="TIME_HOURLY">Hourly (Harvester)</option>{% endif %}
+        {% if selected_billing_type == 'ACRE' %}<option value="ACRE" selected>Acre-Based (Tractor)</option>{% else %}<option value="ACRE">Acre-Based (Tractor)</option>{% endif %}
+        {% if selected_billing_type == 'PIECE' %}<option value="PIECE" selected>Piece-Based (Tractor)</option>{% else %}<option value="PIECE">Piece-Based (Tractor)</option>{% endif %}
       </select>
-    </div>
-    <div class="col-6 col-md-3 d-flex gap-2">
-      <button type="submit" class="btn btn-ghost btn-sm flex-grow-1">Filter</button>
+      <button type="submit" class="px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors text-xs" title="Apply Filter" aria-label="Apply Filter">
+        <i class="bi bi-funnel-fill"></i>
+      </button>
       {% if query or selected_machine or selected_customer or selected_billing_type or start_date or end_date %}
-        <a href="{% url 'machines:work_list' %}" class="btn btn-ghost btn-sm" title="Clear Filters"><i class="bi bi-x-lg"></i></a>
+        <a href="{% url 'machines:work_list' %}" class="px-2.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 border border-[#28354A] transition-colors text-xs no-underline" title="Clear" aria-label="Clear Search">
+          <i class="bi bi-x-lg"></i>
+        </a>
       {% endif %}
     </div>
   </form>
 </div>
 
 <!-- Work Entries Table -->
-<div class="theme-card">
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Work Code</th>
-          <th>Date</th>
-          <th>Machine</th>
-          <th>Customer / Farmer</th>
-          <th>Operator</th>
-          <th>Billing Type</th>
-          <th>Usage & Calculation</th>
-          <th class="text-end">Meter Δ</th>
-          <th class="text-end">Total Amount</th>
-          <th class="text-end">Actions</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th scope="col" class="py-3.5 px-4">Work Code</th>
+          <th scope="col" class="py-3.5 px-4">Date</th>
+          <th scope="col" class="py-3.5 px-4">Machine</th>
+          <th scope="col" class="py-3.5 px-4">Customer / Farmer</th>
+          <th scope="col" class="py-3.5 px-4">Operator</th>
+          <th scope="col" class="py-3.5 px-4">Billing Type</th>
+          <th scope="col" class="py-3.5 px-4">Usage &amp; Calculation</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Meter &Delta;</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Total Amount</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for e in entries %}
-        <tr class="border-secondary">
-          <td class="font-monospace text-warning fw-semibold">{{ e.work_code }}</td>
-          <td class="text-muted small">{{ e.work_date|date:"d M Y" }}</td>
-          <td>
-            <div class="fw-semibold text-white">{{ e.machine.name }}</div>
-            <span class="badge bg-dark-subtle text-info border border-info-subtle" style="font-size: 0.7rem;">
-              {{ e.machine.machine_type.name }}
-            </span>
-          </td>
-          <td>
-            <div class="text-white">{{ e.customer.name }}</div>
-            {% if e.customer.phone %}<small class="text-muted">{{ e.customer.phone }}</small>{% endif %}
-          </td>
-          <td>
-            {% if e.operator %}
-              <span class="badge bg-dark text-muted border border-secondary">{{ e.operator.full_name }}</span>
-            {% else %}
-              <span class="text-muted small">--</span>
-            {% endif %}
-          </td>
-          <td>
-            {% if e.billing_type == 'TIME_HOURLY' %}
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
-                <i class="bi bi-clock-history me-1"></i> Hourly
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 font-mono font-bold text-amber-400 whitespace-nowrap">{{ e.work_code }}</td>
+            <td class="py-3.5 px-4 text-gray-400 font-mono text-[11px] whitespace-nowrap">{{ e.work_date|date:"d M Y" }}</td>
+            <td class="py-3.5 px-4">
+              <div class="font-semibold text-white">{{ e.machine.name }}</div>
+              <span class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-gray-800 text-cyan-400 border border-[#28354A]">
+                {{ e.machine.machine_type.name }}
               </span>
-            {% elif e.billing_type == 'ACRE' %}
-              <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
-                <i class="bi bi-bounding-box-circles me-1"></i> Acre
-              </span>
-            {% else %}
-              <span class="badge bg-secondary-subtle text-light border border-secondary-subtle">
-                <i class="bi bi-grid-3x3 me-1"></i> Piece
-              </span>
-            {% endif %}
-          </td>
-          <td>
-            {% if e.billing_type == 'TIME_HOURLY' %}
-              <div class="font-tabular small text-white">
-                <span class="text-info fw-semibold">{{ e.net_working_hours }} hrs</span>
-                <span class="text-muted">× ₹{{ e.hourly_rate|floatformat:2 }}/hr</span>
-              </div>
-              <div class="text-muted" style="font-size: 0.7rem;">
-                {{ e.start_time|time:"h:i A" }} - {{ e.end_time|time:"h:i A" }} (Break: {{ e.break_hours }}h)
-              </div>
-            {% else %}
-              <div class="font-tabular small text-white">
-                <span class="text-warning fw-semibold">{{ e.quantity }} {{ e.get_billing_type_display }}</span>
-                <span class="text-muted">× ₹{{ e.unit_rate|floatformat:2 }}/unit</span>
-              </div>
-            {% endif %}
-          </td>
-          <td class="text-end font-tabular">
-            {% if e.meter_difference > 0 %}
-              <span class="badge bg-dark text-emerald border border-secondary" title="Start: {{ e.start_meter }} | End: {{ e.end_meter }}">
-                +{{ e.meter_difference }} {{ e.machine.get_meter_unit_display }}
-              </span>
-            {% else %}
-              <span class="text-muted small">--</span>
-            {% endif %}
-          </td>
-          <td class="text-end font-tabular fw-bold text-emerald fs-6">
-            ₹{{ e.total_amount|floatformat:2 }}
-          </td>
-          <td class="text-end">
-            <div class="btn-group btn-group-sm">
-              <a href="{% url 'machines:work_edit' e.id %}" class="btn btn-ghost" title="Edit Entry">
-                <i class="bi bi-pencil"></i>
-              </a>
-              {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
-                <form method="post" action="{% url 'machines:work_delete' e.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete work entry {{ e.work_code }}?');">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-ghost text-danger" title="Delete Entry">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </form>
+            </td>
+            <td class="py-3.5 px-4">
+              <div class="font-medium text-white">{{ e.customer.name }}</div>
+              {% if e.customer.phone %}<div class="text-[10px] text-gray-400">{{ e.customer.phone }}</div>{% endif %}
+            </td>
+            <td class="py-3.5 px-4">
+              {% if e.operator %}
+                <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-gray-800 text-gray-300 border border-gray-700">{{ e.operator.full_name }}</span>
+              {% else %}
+                <span class="text-gray-500">--</span>
               {% endif %}
-            </div>
-          </td>
-        </tr>
+            </td>
+            <td class="py-3.5 px-4">
+              {% if e.billing_type == 'TIME_HOURLY' %}
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                  <i class="bi bi-clock-history mr-1"></i> Hourly
+                </span>
+              {% elif e.billing_type == 'ACRE' %}
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <i class="bi bi-bounding-box-circles mr-1"></i> Acre
+                </span>
+              {% else %}
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-300 border border-gray-700">
+                  <i class="bi bi-grid-3x3 mr-1"></i> Piece
+                </span>
+              {% endif %}
+            </td>
+            <td class="py-3.5 px-4">
+              {% if e.billing_type == 'TIME_HOURLY' %}
+                <div class="font-mono text-white text-xs">
+                  <span class="text-cyan-400 font-bold">{{ e.net_working_hours }} hrs</span>
+                  <span class="text-gray-400">&times; ₹{{ e.hourly_rate|floatformat:2 }}/hr</span>
+                </div>
+                <div class="text-[10px] text-gray-400">
+                  {{ e.start_time|time:"h:i A" }} - {{ e.end_time|time:"h:i A" }} (Break: {{ e.break_hours }}h)
+                </div>
+              {% else %}
+                <div class="font-mono text-white text-xs">
+                  <span class="text-amber-400 font-bold">{{ e.quantity }} {{ e.get_billing_type_display }}</span>
+                  <span class="text-gray-400">&times; ₹{{ e.unit_rate|floatformat:2 }}/unit</span>
+                </div>
+              {% endif %}
+            </td>
+            <td class="py-3.5 px-4 text-right font-mono">
+              {% if e.meter_difference > 0 %}
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" title="Start: {{ e.start_meter }} | End: {{ e.end_meter }}">
+                  +{{ e.meter_difference }} {{ e.machine.get_meter_unit_display }}
+                </span>
+              {% else %}
+                <span class="text-gray-500">--</span>
+              {% endif %}
+            </td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-emerald-400 text-sm whitespace-nowrap">
+              ₹{{ e.total_amount|floatformat:2 }}
+            </td>
+            <td class="py-3.5 px-4 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <a href="{% url 'machines:work_edit' e.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="Edit Entry" aria-label="Edit Entry">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+                  <form method="post" action="{% url 'machines:work_delete' e.id %}" class="inline" onsubmit="return confirm('Are you sure you want to delete work entry {{ e.work_code }}?');">
+                    {% csrf_token %}
+                    <button type="submit" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors text-xs" title="Delete Entry" aria-label="Delete Entry">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
         {% empty %}
-        <tr>
-          <td colspan="10" class="text-center py-5 text-muted">
-            <i class="bi bi-clipboard-x display-6 d-block mb-2 text-dim"></i>
-            No machine work entries found matching your criteria.
-            <div class="mt-3">
-              <a href="{% url 'machines:work_create' %}" class="btn btn-emerald btn-sm">
-                <i class="bi bi-plus-lg me-1"></i> Record First Work Entry
-              </a>
-            </div>
-          </td>
-        </tr>
+          <tr>
+            <td colspan="10" class="py-12 text-center text-gray-500">
+              <i class="bi bi-clipboard-x text-3xl d-block mb-2 text-gray-600"></i>
+              No machine work entries found matching your criteria.
+              <div class="mt-4">
+                <a href="{% url 'machines:work_create' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all no-underline">
+                  <i class="bi bi-plus-lg"></i>
+                  <span>Record First Work Entry</span>
+                </a>
+              </div>
+            </td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>

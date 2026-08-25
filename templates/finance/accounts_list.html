@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 
-{% block title %}Business Accounts | Expense Tracking{% endblock %}
+{% block title %}Business Accounts | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">Business Accounts</h2>
-    <p class="text-muted small mb-0">Manage cash boxes, bank accounts, and digital wallets</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Business Accounts</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Manage cash boxes, bank accounts, and digital wallets</p>
   </div>
   <div>
-    <a href="{% url 'finance:account_create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+    <a href="{% url 'finance:account_create' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
       <i class="bi bi-plus-lg"></i>
       <span>Add Account</span>
     </a>
@@ -17,16 +17,25 @@
 </div>
 
 <!-- Search & Filter Bar -->
-<div class="theme-card p-3 mb-4">
-  <form method="get" class="row g-2 align-items-center">
-    <div class="col-12 col-md-6">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
-        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search by account name, bank, or number...">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-center">
+    <div class="md:col-span-2">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+          <i class="bi bi-search text-xs"></i>
+        </span>
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none"
+          placeholder="Search by account name, bank, or number..."
+        >
       </div>
     </div>
-    <div class="col-12 col-sm-6 col-md-4">
-      <select name="type" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div>
+      <select name="type" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Account Types</option>
         <option value="CASH" {% if acc_type == 'CASH' %}selected{% endif %}>Cash In Hand</option>
         <option value="BANK_CURRENT" {% if acc_type == 'BANK_CURRENT' %}selected{% endif %}>Bank Current</option>
@@ -35,61 +44,78 @@
         <option value="PETTY_CASH" {% if acc_type == 'PETTY_CASH' %}selected{% endif %}>Petty Cash</option>
       </select>
     </div>
-    <div class="col-12 col-sm-6 col-md-2 d-flex gap-2">
-      <button type="submit" class="btn btn-ghost btn-sm w-100">Filter</button>
+
+    <div class="flex items-center gap-2">
+      <button type="submit" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors text-xs font-semibold" title="Apply Filter">
+        Filter
+      </button>
       {% if query or acc_type %}
-        <a href="{% url 'finance:accounts' %}" class="btn btn-ghost btn-sm" title="Clear Filters"><i class="bi bi-x-lg"></i></a>
+        <a href="{% url 'finance:accounts' %}" class="px-2.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 border border-[#28354A] transition-colors text-xs no-underline" title="Clear Filters">
+          <i class="bi bi-x-lg"></i>
+        </a>
       {% endif %}
     </div>
   </form>
 </div>
 
 <!-- Accounts Table -->
-<div class="theme-card">
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Account Name</th>
-          <th>Type</th>
-          <th>Account Ref / No. (Masked)</th>
-          <th>Bank / IFSC</th>
-          <th class="text-end">Opening Balance</th>
-          <th class="text-center">Status</th>
-          <th class="text-end">Actions</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th class="py-3.5 px-4">Account Name</th>
+          <th class="py-3.5 px-4">Type</th>
+          <th class="py-3.5 px-4">Account Ref / No. (Masked)</th>
+          <th class="py-3.5 px-4">Bank / IFSC</th>
+          <th class="py-3.5 px-4 text-right">Opening Balance</th>
+          <th class="py-3.5 px-4 text-center">Status</th>
+          <th class="py-3.5 px-4 text-right">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for acc in accounts %}
-          <tr class="border-secondary">
-            <td class="fw-semibold text-white">
-              <i class="bi bi-bank me-2 text-emerald"></i>{{ acc.account_name }}
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 font-semibold text-white">
+              <div class="flex items-center gap-2">
+                <i class="bi bi-bank text-emerald-400"></i>
+                <span>{{ acc.account_name }}</span>
+              </div>
             </td>
-            <td>
-              <span class="badge bg-dark border border-secondary text-info">{{ acc.get_account_type_display }}</span>
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                {{ acc.get_account_type_display }}
+              </span>
             </td>
-            <td class="font-tabular text-muted">{{ acc.masked_account_number }}</td>
-            <td class="text-muted small">{{ acc.bank_name|default:"--" }} {% if acc.ifsc_code %}({{ acc.ifsc_code }}){% endif %}</td>
-            <td class="text-end font-tabular text-emerald fw-semibold">₹{{ acc.opening_balance }}</td>
-            <td class="text-center">
+            <td class="py-3.5 px-4 font-mono text-gray-400">{{ acc.masked_account_number }}</td>
+            <td class="py-3.5 px-4 text-gray-300">
+              {{ acc.bank_name|default:"--" }} {% if acc.ifsc_code %}<span class="text-gray-500 font-mono">({{ acc.ifsc_code }})</span>{% endif %}
+            </td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-emerald-400">₹{{ acc.opening_balance }}</td>
+            <td class="py-3.5 px-4 text-center">
               {% if acc.is_active %}
-                <span class="badge bg-success">Active</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
               {% else %}
-                <span class="badge bg-secondary">Inactive</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-400 border border-gray-700">Inactive</span>
               {% endif %}
             </td>
-            <td class="text-end">
-              <a href="{% url 'finance:account_edit' acc.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Edit Account">
-                <i class="bi bi-pencil-square"></i>
-              </a>
-              <a href="{% url 'finance:account_toggle' acc.id %}" class="btn btn-ghost btn-sm py-1 px-2 text-warning" title="Toggle Active Status">
-                <i class="bi bi-power"></i>
-              </a>
+            <td class="py-3.5 px-4 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <a href="{% url 'finance:account_edit' acc.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="Edit Account">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+                <a href="{% url 'finance:account_toggle' acc.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-amber-400 hover:text-amber-300 border border-[#28354A] transition-colors no-underline text-xs" title="Toggle Active Status">
+                  <i class="bi bi-power"></i>
+                </a>
+              </div>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="7" class="text-center py-4 text-muted">No business accounts found. Click "Add Account" to create your first money location.</td>
+            <td colspan="7" class="py-12 text-center text-gray-500">
+              <i class="bi bi-bank text-3xl d-block mb-2 text-gray-600"></i>
+              No business accounts found. Click "Add Account" to create your first money location.
+            </td>
           </tr>
         {% endfor %}
       </tbody>

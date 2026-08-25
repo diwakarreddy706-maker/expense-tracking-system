@@ -1,167 +1,181 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ title }} | Expense Tracking{% endblock %}
+{% block title %}Budget Detail: {{ budget.budget_code }} | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <div class="d-flex align-items-center gap-2">
-      <h2 class="fs-4 fw-bold text-white mb-0">{{ budget.title }}</h2>
-      {% if budget.status == 'ACTIVE' %}
-        <span class="badge bg-success">Active</span>
-      {% elif budget.status == 'DRAFT' %}
-        <span class="badge bg-secondary">Draft</span>
-      {% elif budget.status == 'CLOSED' %}
-        <span class="badge bg-dark border border-secondary text-muted">Closed</span>
-      {% else %}
-        <span class="badge bg-danger">Cancelled</span>
-      {% endif %}
+    <div class="flex items-center gap-2 mb-1">
+      <a href="{% url 'budgets:list' %}" class="text-xs text-gray-400 hover:text-white no-underline">Budgets</a>
+      <span class="text-xs text-gray-600">/</span>
+      <span class="text-xs font-mono text-cyan-400 font-bold">{{ budget.budget_code }}</span>
     </div>
-    <p class="text-muted small mb-0 mt-1">
-      Period: <strong>{{ budget.period_month|stringformat:"02d" }}/{{ budget.period_year }}</strong> | Segment: <strong>{{ budget.get_business_segment_display }}</strong>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">{{ budget.name }}</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0 font-mono">
+      Period: {{ budget.start_date|date:"d M Y" }} &rarr; {{ budget.end_date|date:"d M Y" }}
     </p>
   </div>
-  <div class="d-flex gap-2">
-    <a href="{% url 'budgets:list' %}" class="btn btn-ghost btn-sm">
-      <i class="bi bi-arrow-left me-1"></i> Back to Budgets
-    </a>
+  <div class="flex items-center gap-2">
     {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
-      <a href="{% url 'budgets:edit' budget.id %}" class="btn btn-ghost btn-sm">
-        <i class="bi bi-pencil me-1"></i> Edit Metadata
-      </a>
-      <button type="button" class="btn btn-emerald btn-sm" data-bs-toggle="modal" data-bs-target="#addItemModal">
-        <i class="bi bi-plus-lg me-1"></i> Add Allocation Item
+      <button
+        type="button"
+        data-bs-toggle="modal"
+        data-bs-target="#addItemModal"
+        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400"
+      >
+        <i class="bi bi-plus-lg"></i>
+        <span>Add Allocation Item</span>
       </button>
+      <a href="{% url 'budgets:edit' budget.id %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors text-xs font-semibold no-underline">
+        <i class="bi bi-pencil-square"></i>
+        <span>Edit Budget</span>
+      </a>
     {% endif %}
   </div>
 </div>
 
-<!-- Overall Budget Metric Cards -->
-<div class="row g-3 mb-4">
-  <div class="col-6 col-lg-3">
-    <div class="theme-card p-3">
-      <span class="text-muted small">Total Allocated Budget</span>
-      <h3 class="fs-4 fw-bold text-white mt-1 mb-0 font-tabular">₹{{ calc.total_allocated }}</h3>
+<!-- KPI Summary Row -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 shadow-sm">
+    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Total Allocated</span>
+    <div class="text-xl sm:text-2xl font-extrabold font-mono text-white mt-1">
+      ₹{{ calc.total_allocated }}
     </div>
   </div>
-  <div class="col-6 col-lg-3">
-    <div class="theme-card p-3">
-      <span class="text-muted small">Actual Expenses (Spent)</span>
-      <h3 class="fs-4 fw-bold text-emerald mt-1 mb-0 font-tabular">₹{{ calc.total_actual }}</h3>
+
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 shadow-sm">
+    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Actual Total Spent</span>
+    <div class="text-xl sm:text-2xl font-extrabold font-mono text-emerald-400 mt-1">
+      ₹{{ calc.total_actual }}
     </div>
   </div>
-  <div class="col-6 col-lg-3">
-    <div class="theme-card p-3">
-      <span class="text-muted small">Remaining Balance</span>
-      <h3 class="fs-4 fw-bold {% if calc.total_remaining < 0 %}text-crimson{% else %}text-white{% endif %} mt-1 mb-0 font-tabular">
-        ₹{{ calc.total_remaining }}
-      </h3>
+
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 shadow-sm">
+    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Remaining Balance</span>
+    <div class="text-xl sm:text-2xl font-extrabold font-mono mt-1 {% if calc.total_remaining < 0 %}text-rose-400{% else %}text-cyan-400{% endif %}">
+      ₹{{ calc.total_remaining }}
     </div>
   </div>
-  <div class="col-6 col-lg-3">
-    <div class="theme-card p-3">
-      <div class="d-flex justify-content-between align-items-center">
-        <span class="text-muted small">Utilization Level</span>
-        {% if calc.overall_status == 'NORMAL' %}
-          <span class="badge bg-success">Normal (<80%)</span>
-        {% elif calc.overall_status == 'WARNING' %}
-          <span class="badge bg-warning text-dark">Warning (80-99%)</span>
-        {% else %}
-          <span class="badge bg-danger">Exceeded (≥100%)</span>
-        {% endif %}
-      </div>
-      <h3 class="fs-4 fw-bold {% if calc.overall_status == 'EXCEEDED' %}text-crimson{% elif calc.overall_status == 'WARNING' %}text-warning{% else %}text-emerald{% endif %} mt-1 mb-0 font-tabular">
-        {{ calc.overall_utilization }}%
-      </h3>
+
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 shadow-sm">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Overall Utilization</span>
+      {% if calc.overall_status == 'EXCEEDED' %}
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">Exceeded</span>
+      {% elif calc.overall_status == 'WARNING' %}
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Warning</span>
+      {% else %}
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Normal</span>
+      {% endif %}
+    </div>
+    <div class="text-xl sm:text-2xl font-extrabold font-mono mt-1">
+      {% if calc.overall_status == 'EXCEEDED' %}
+        <span class="text-rose-400">{{ calc.overall_utilization }}%</span>
+      {% elif calc.overall_status == 'WARNING' %}
+        <span class="text-amber-400">{{ calc.overall_utilization }}%</span>
+      {% else %}
+        <span class="text-emerald-400">{{ calc.overall_utilization }}%</span>
+      {% endif %}
     </div>
   </div>
 </div>
 
 <!-- Overall Progress Bar -->
-<div class="theme-card p-3 mb-4">
-  <div class="d-flex justify-content-between text-muted small mb-1">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <div class="flex justify-between text-xs text-gray-400 mb-2">
     <span>Budget Burn Rate</span>
-    <span class="font-tabular text-light">₹{{ calc.total_actual }} of ₹{{ calc.total_allocated }}</span>
+    <span class="font-mono text-gray-300">₹{{ calc.total_actual }} of ₹{{ calc.total_allocated }}</span>
   </div>
-  <div class="progress bg-dark border border-secondary" style="height: 12px;">
-    <div class="progress-bar {% if calc.overall_status == 'EXCEEDED' %}bg-danger{% elif calc.overall_status == 'WARNING' %}bg-warning{% else %}bg-success{% endif %}"
-         role="progressbar"
-         style="width: {% if calc.overall_utilization > 100 %}100{% else %}{{ calc.overall_utilization }}{% endif %}%;"
-         aria-valuenow="{{ calc.overall_utilization }}" aria-valuemin="0" aria-valuemax="100">
-    </div>
+  <div class="w-full bg-[#0B0F17] rounded-full h-3 overflow-hidden border border-[#28354A]">
+    {% if calc.overall_status == 'EXCEEDED' %}
+      <div class="h-full rounded-full transition-all bg-rose-500" style="width: {% if calc.overall_utilization > 100 %}100{% else %}{{ calc.overall_utilization }}{% endif %}%;"></div>
+    {% elif calc.overall_status == 'WARNING' %}
+      <div class="h-full rounded-full transition-all bg-amber-500" style="width: {% if calc.overall_utilization > 100 %}100{% else %}{{ calc.overall_utilization }}{% endif %}%;"></div>
+    {% else %}
+      <div class="h-full rounded-full transition-all bg-emerald-500" style="width: {% if calc.overall_utilization > 100 %}100{% else %}{{ calc.overall_utilization }}{% endif %}%;"></div>
+    {% endif %}
   </div>
 </div>
 
 <!-- Allocations Table -->
-<div class="theme-card">
-  <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
-    <h3 class="fs-6 fw-bold text-white mb-0">
-      <i class="bi bi-diagram-3-fill me-2 text-info"></i>Category & Machine Specific Spending Limits
-    </h3>
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+        <i class="bi bi-diagram-3-fill text-base"></i>
+      </div>
+      <h3 class="text-sm font-bold text-white tracking-tight m-0">Category &amp; Machine Specific Spending Limits</h3>
+    </div>
   </div>
 
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Expense Category</th>
-          <th>Machine / Fleet Target</th>
-          <th class="text-end">Allocated Limit</th>
-          <th class="text-end">Actual Spent</th>
-          <th class="text-end">Remaining</th>
-          <th style="min-width: 140px;">Utilization Progress</th>
-          <th class="text-center">Control State</th>
-          <th class="text-end">Actions</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th scope="col" class="py-3.5 px-4">Expense Category</th>
+          <th scope="col" class="py-3.5 px-4">Machine / Target</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Allocated Limit</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Actual Spent</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Remaining</th>
+          <th scope="col" class="py-3.5 px-4 min-w-[140px]">Utilization Progress</th>
+          <th scope="col" class="py-3.5 px-4 text-center">Control State</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for it in calc.items %}
-          <tr class="border-secondary">
-            <td class="text-white fw-semibold">
-              <span class="badge bg-dark border border-secondary text-info me-1">{{ it.category.code }}</span>
-              {{ it.category.name }}
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 font-semibold text-white">
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mr-1.5">{{ it.category.code }}</span>
+              <span>{{ it.category.name }}</span>
             </td>
-            <td>
+            <td class="py-3.5 px-4">
               {% if it.machine %}
-                <span class="badge bg-dark border border-warning text-warning">{{ it.machine.machine_code }}</span>
-                <span class="text-light small ms-1">{{ it.machine.name }}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">{{ it.machine.machine_code }}</span>
+                <span class="text-gray-300 ml-1">{{ it.machine.name }}</span>
               {% else %}
-                <span class="text-muted small">All Fleet / General</span>
+                <span class="text-gray-500">All Fleet / General</span>
               {% endif %}
             </td>
-            <td class="text-end font-tabular text-white fw-semibold">₹{{ it.allocated_amount }}</td>
-            <td class="text-end font-tabular text-emerald">₹{{ it.actual_amount }}</td>
-            <td class="text-end font-tabular fw-bold {% if it.remaining_amount < 0 %}text-crimson{% else %}text-muted{% endif %}">
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-white">₹{{ it.allocated_amount }}</td>
+            <td class="py-3.5 px-4 text-right font-mono text-emerald-400">₹{{ it.actual_amount }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold {% if it.remaining_amount < 0 %}text-rose-400{% else %}text-gray-400{% endif %}">
               ₹{{ it.remaining_amount }}
             </td>
-            <td>
-              <div class="d-flex align-items-center gap-2">
-                <div class="progress flex-grow-1 bg-dark border border-secondary" style="height: 8px;">
-                  <div class="progress-bar {% if it.status == 'EXCEEDED' %}bg-danger{% elif it.status == 'WARNING' %}bg-warning{% else %}bg-success{% endif %}"
-                       role="progressbar"
-                       style="width: {% if it.utilization_pct > 100 %}100{% else %}{{ it.utilization_pct }}{% endif %}%;"
-                       aria-valuenow="{{ it.utilization_pct }}" aria-valuemin="0" aria-valuemax="100">
-                  </div>
+            <td class="py-3.5 px-4">
+              <div class="flex items-center gap-2">
+                <div class="w-full bg-[#0B0F17] rounded-full h-2 overflow-hidden border border-[#28354A]">
+                  {% if it.status == 'EXCEEDED' %}
+                    <div class="h-full rounded-full transition-all bg-rose-500" style="width: {% if it.utilization_pct > 100 %}100{% else %}{{ it.utilization_pct }}{% endif %}%;"></div>
+                  {% elif it.status == 'WARNING' %}
+                    <div class="h-full rounded-full transition-all bg-amber-500" style="width: {% if it.utilization_pct > 100 %}100{% else %}{{ it.utilization_pct }}{% endif %}%;"></div>
+                  {% else %}
+                    <div class="h-full rounded-full transition-all bg-emerald-500" style="width: {% if it.utilization_pct > 100 %}100{% else %}{{ it.utilization_pct }}{% endif %}%;"></div>
+                  {% endif %}
                 </div>
-                <span class="small font-tabular {% if it.status == 'EXCEEDED' %}text-crimson fw-bold{% elif it.status == 'WARNING' %}text-warning{% else %}text-muted{% endif %}">
-                  {{ it.utilization_pct }}%
-                </span>
+                {% if it.status == 'EXCEEDED' %}
+                  <span class="font-mono text-[11px] font-semibold text-rose-400">{{ it.utilization_pct }}%</span>
+                {% elif it.status == 'WARNING' %}
+                  <span class="font-mono text-[11px] font-semibold text-amber-400">{{ it.utilization_pct }}%</span>
+                {% else %}
+                  <span class="font-mono text-[11px] font-semibold text-gray-400">{{ it.utilization_pct }}%</span>
+                {% endif %}
               </div>
             </td>
-            <td class="text-center">
+            <td class="py-3.5 px-4 text-center">
               {% if it.status == 'NORMAL' %}
-                <span class="badge bg-success">Normal</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Normal</span>
               {% elif it.status == 'WARNING' %}
-                <span class="badge bg-warning text-dark">Warning</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Warning</span>
               {% else %}
-                <span class="badge bg-danger">Exceeded</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Exceeded</span>
               {% endif %}
             </td>
-            <td class="text-end">
+            <td class="py-3.5 px-4 text-right">
               {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
-                <form method="post" action="{% url 'budgets:item_delete' it.item_id %}" class="d-inline" onsubmit="return confirm('Remove this budget allocation limit?');">
+                <form method="post" action="{% url 'budgets:item_delete' it.item_id %}" class="inline" onsubmit="return confirm('Remove this budget allocation limit?');">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn-ghost btn-sm py-1 px-2 text-danger" title="Delete Item">
+                  <button type="submit" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors text-xs" title="Delete Item" aria-label="Delete Item">
                     <i class="bi bi-trash"></i>
                   </button>
                 </form>
@@ -170,7 +184,7 @@
           </tr>
         {% empty %}
           <tr>
-            <td colspan="8" class="text-center py-4 text-muted">
+            <td colspan="8" class="py-10 text-center text-gray-500">
               No allocation limits defined yet. Click "Add Allocation Item" to assign spending caps to categories.
             </td>
           </tr>
@@ -181,36 +195,38 @@
 </div>
 
 <!-- Modal: Add Allocation Item -->
-<div class="modal fade" id="addItemModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered text-start">
-    <div class="modal-content bg-dark border-secondary text-white">
-      <form method="post" action="{% url 'budgets:item_add' budget.id %}">
+<div class="modal fade fixed inset-0 z-50 overflow-y-auto" id="addItemModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-center justify-center p-4">
+    <div class="modal-content relative w-full max-w-md bg-[#131A26] border border-[#28354A] rounded-2xl shadow-2xl overflow-hidden text-gray-100 text-left">
+      <form method="post" action="{% url 'budgets:item_add' budget.id %}" class="space-y-4">
         {% csrf_token %}
-        <div class="modal-header border-secondary">
-          <h5 class="modal-title fs-6 fw-bold text-white">Add Spending Allocation Item</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+          <h5 class="text-sm font-bold text-white tracking-tight m-0">Add Spending Allocation Item</h5>
+          <button type="button" class="btn-close text-gray-400 hover:text-white p-1 rounded-lg focus:outline-none" data-bs-dismiss="modal" aria-label="Close">
+            <i class="bi bi-x-lg text-sm"></i>
+          </button>
         </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label small text-muted">Expense Category *</label>
+        <div class="p-6 space-y-4 text-xs">
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Expense Category <span class="text-rose-400">*</span></label>
             {{ item_form.category }}
           </div>
-          <div class="mb-3">
-            <label class="form-label small text-muted">Target Machinery / Asset (Optional)</label>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Target Machinery / Asset (Optional)</label>
             {{ item_form.machine }}
           </div>
-          <div class="mb-3">
-            <label class="form-label small text-muted">Allocated Spending Cap (₹) *</label>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Allocated Spending Cap (₹) <span class="text-rose-400">*</span></label>
             {{ item_form.allocated_amount }}
           </div>
-          <div class="mb-3">
-            <label class="form-label small text-muted">Item Scope / Remarks</label>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Item Scope / Remarks</label>
             {{ item_form.notes }}
           </div>
         </div>
-        <div class="modal-footer border-secondary">
-          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-emerald btn-sm">Add Allocation</button>
+        <div class="px-6 py-4 border-t border-[#28354A] flex items-center justify-end gap-3 bg-[#162030]">
+          <button type="button" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-md shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400">Add Allocation</button>
         </div>
       </form>
     </div>

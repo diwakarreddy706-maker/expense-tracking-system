@@ -1,92 +1,100 @@
 {% extends 'base.html' %}
 
-{% block title %}Expense Analysis Report | Expense Tracking{% endblock %}
+{% block title %}Expense Analysis Report | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">Comprehensive Expense Analysis</h2>
-    <p class="text-muted small mb-0">Multi-dimensional operational expense filtering, categorization, and CSV export</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Comprehensive Expense Analysis</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Multi-dimensional operational expense filtering, categorization, and CSV export</p>
   </div>
-  <div class="d-flex gap-2">
-    <a href="{% url 'reports:index' %}" class="btn btn-ghost btn-sm">
-      <i class="bi bi-arrow-left me-1"></i> Back to Hub
+  <div class="flex items-center gap-2.5">
+    <a href="{% url 'reports:index' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Hub</span>
     </a>
-    <a href="?format=csv&start_date={{ start_date }}&end_date={{ end_date }}&category={{ selected_category }}&machine={{ selected_machine }}&payment_method={{ selected_method }}" class="btn btn-emerald btn-sm">
-      <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
+    <a href="?format=csv&start_date={{ start_date }}&end_date={{ end_date }}&category={{ selected_category }}&machine={{ selected_machine }}&payment_method={{ selected_method }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all no-underline">
+      <i class="bi bi-file-earmark-spreadsheet"></i>
+      <span>Export CSV</span>
     </a>
   </div>
 </div>
 
 <!-- Summary Metrics -->
-<div class="row g-3 mb-4">
-  <div class="col-6 col-md-4">
-    <div class="theme-card p-3">
-      <span class="text-muted small">Total Expense Filtered</span>
-      <h3 class="fs-4 fw-bold text-crimson mt-1 mb-0 font-tabular">₹{{ report_data.total_amount }}</h3>
-    </div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-sm">
+    <span class="text-xs text-gray-400 block">Total Expense Filtered</span>
+    <div class="text-2xl font-extrabold text-rose-400 font-mono mt-1">-₹{{ report_data.total_amount }}</div>
   </div>
-  <div class="col-6 col-md-4">
-    <div class="theme-card p-3">
-      <span class="text-muted small">Total Expense Entries</span>
-      <h3 class="fs-4 fw-bold text-white mt-1 mb-0 font-tabular">{{ report_data.total_count }}</h3>
-    </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-sm">
+    <span class="text-xs text-gray-400 block">Total Expense Entries</span>
+    <div class="text-2xl font-extrabold text-white font-mono mt-1">{{ report_data.total_count }}</div>
   </div>
-  <div class="col-12 col-md-4">
-    <div class="theme-card p-3">
-      <span class="text-muted small">Top Expense Category</span>
-      <h3 class="fs-5 fw-bold text-info mt-1 mb-0">
-        {% if report_data.category_breakdown %}{{ report_data.category_breakdown.0.category__name }}{% else %}--{% endif %}
-      </h3>
+
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-sm">
+    <span class="text-xs text-gray-400 block">Top Expense Category</span>
+    <div class="text-xl font-extrabold text-cyan-400 mt-1 truncate">
+      {% if report_data.category_breakdown %}{{ report_data.category_breakdown.0.category__name }}{% else %}--{% endif %}
     </div>
   </div>
 </div>
 
 <!-- Multi-filter bar -->
-<div class="theme-card p-3 mb-4">
-  <form method="get" class="row g-2 align-items-center">
-    <div class="col-6 col-md-2">
-      <label class="form-label text-muted" style="font-size: 0.7rem;">From Date</label>
-      <input type="date" name="start_date" value="{{ start_date }}" class="form-control form-control-sm bg-dark text-white border-secondary">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-end">
+    <div>
+      <label class="block text-[11px] font-semibold text-gray-400 mb-1.5">From Date</label>
+      <input type="date" name="start_date" value="{{ start_date }}" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-mono focus:outline-none">
     </div>
-    <div class="col-6 col-md-2">
-      <label class="form-label text-muted" style="font-size: 0.7rem;">To Date</label>
-      <input type="date" name="end_date" value="{{ end_date }}" class="form-control form-control-sm bg-dark text-white border-secondary">
+    <div>
+      <label class="block text-[11px] font-semibold text-gray-400 mb-1.5">To Date</label>
+      <input type="date" name="end_date" value="{{ end_date }}" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-mono focus:outline-none">
     </div>
-    <div class="col-6 col-md-3">
-      <label class="form-label text-muted" style="font-size: 0.7rem;">Category</label>
-      <select name="category" class="form-select form-select-sm bg-dark text-white border-secondary">
+    <div>
+      <label class="block text-[11px] font-semibold text-gray-400 mb-1.5">Category</label>
+      <select name="category" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Categories</option>
         {% for cat in categories %}
-          <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
+          {% if selected_category == cat.id|stringformat:"i" %}
+            <option value="{{ cat.id }}" selected>{{ cat.name }}</option>
+          {% else %}
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
+          {% endif %}
         {% endfor %}
       </select>
     </div>
-    <div class="col-6 col-md-3">
-      <label class="form-label text-muted" style="font-size: 0.7rem;">Machine Asset</label>
-      <select name="machine" class="form-select form-select-sm bg-dark text-white border-secondary">
+    <div>
+      <label class="block text-[11px] font-semibold text-gray-400 mb-1.5">Machine Asset</label>
+      <select name="machine" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Machinery</option>
         {% for m in machines %}
-          <option value="{{ m.id }}" {% if selected_machine == m.id|stringformat:"i" %}selected{% endif %}>{{ m.machine_code }} - {{ m.name }}</option>
+          {% if selected_machine == m.id|stringformat:"i" %}
+            <option value="{{ m.id }}" selected>{{ m.machine_code }} - {{ m.name }}</option>
+          {% else %}
+            <option value="{{ m.id }}">{{ m.machine_code }} - {{ m.name }}</option>
+          {% endif %}
         {% endfor %}
       </select>
     </div>
-    <div class="col-12 col-md-2 d-flex align-items-end">
-      <button type="submit" class="btn btn-ghost btn-sm w-100 mt-auto">Apply Filter</button>
+    <div>
+      <button type="submit" class="w-full py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors text-xs font-semibold">
+        Apply Filter
+      </button>
     </div>
   </form>
 </div>
 
 <!-- Category Breakdown Pills -->
 {% if report_data.category_breakdown %}
-<div class="theme-card mb-4">
-  <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-2 mb-3">Spending Distribution by Category</h3>
-  <div class="d-flex flex-wrap gap-2">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 mb-6 shadow-sm">
+  <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-[#28354A] pb-2 mb-3">Spending Distribution by Category</h3>
+  <div class="flex flex-wrap gap-2.5">
     {% for cat in report_data.category_breakdown %}
-      <div class="p-2 px-3 bg-dark rounded border border-secondary">
-        <span class="text-muted small">{{ cat.category__name }}:</span>
-        <strong class="text-white font-tabular ms-1">₹{{ cat.total }}</strong>
-        <span class="badge bg-secondary ms-1" style="font-size: 0.65rem;">{{ cat.count }} bills</span>
+      <div class="p-2.5 px-3 bg-[#0B0F17] rounded-xl border border-[#28354A] flex items-center gap-2 text-xs">
+        <span class="text-gray-400">{{ cat.category__name }}:</span>
+        <strong class="text-white font-mono">₹{{ cat.total }}</strong>
+        <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-800 text-gray-400 border border-gray-700">{{ cat.count }} bills</span>
       </div>
     {% endfor %}
   </div>
@@ -94,42 +102,46 @@
 {% endif %}
 
 <!-- Expenses Table -->
-<div class="theme-card">
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Date</th>
-          <th>Code</th>
-          <th>Category</th>
-          <th>Machinery Target</th>
-          <th>Payment Mode</th>
-          <th>Account / Supplier</th>
-          <th class="text-end">Amount (INR)</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th scope="col" class="py-3.5 px-4">Date</th>
+          <th scope="col" class="py-3.5 px-4">Code</th>
+          <th scope="col" class="py-3.5 px-4">Category</th>
+          <th scope="col" class="py-3.5 px-4">Machinery Target</th>
+          <th scope="col" class="py-3.5 px-4">Payment Mode</th>
+          <th scope="col" class="py-3.5 px-4">Account / Supplier</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Amount (INR)</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for exp in report_data.expenses %}
-          <tr class="border-secondary">
-            <td class="text-muted small">{{ exp.expense_date|date:"d M Y" }}</td>
-            <td class="font-tabular text-info fw-semibold">{{ exp.expense_code }}</td>
-            <td class="text-white">{{ exp.category.name }}</td>
-            <td>
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 text-gray-400 font-mono text-[11px] whitespace-nowrap">{{ exp.expense_date|date:"d M Y" }}</td>
+            <td class="py-3.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">{{ exp.expense_code }}</td>
+            <td class="py-3.5 px-4 font-semibold text-white">{{ exp.category.name }}</td>
+            <td class="py-3.5 px-4">
               {% if exp.machine %}
-                <span class="badge bg-dark border border-warning text-warning">{{ exp.machine.machine_code }}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">{{ exp.machine.machine_code }}</span>
               {% else %}
-                <span class="text-muted small">--</span>
+                <span class="text-gray-500">--</span>
               {% endif %}
             </td>
-            <td><span class="badge bg-dark border border-secondary text-light">{{ exp.get_payment_method_display }}</span></td>
-            <td class="text-muted small">
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-300 border border-gray-700">
+                {{ exp.get_payment_method_display }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-gray-300">
               {% if exp.account %}{{ exp.account.account_name }}{% elif exp.supplier %}{{ exp.supplier.name }} (Credit){% else %}--{% endif %}
             </td>
-            <td class="text-end font-tabular text-crimson fw-bold">₹{{ exp.amount }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-rose-400 text-sm whitespace-nowrap">-₹{{ exp.amount }}</td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="7" class="text-center py-5 text-muted">No expenses found matching the criteria.</td>
+            <td colspan="7" class="py-10 text-center text-gray-500">No expenses found matching the criteria.</td>
           </tr>
         {% endfor %}
       </tbody>

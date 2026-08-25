@@ -1,82 +1,80 @@
 {% extends 'base.html' %}
 
-{% block title %}Business Reports & Analytics Hub | Expense Tracking{% endblock %}
+{% block title %}Business Reports &amp; Analytics Hub | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">Business Reports & Analytics Hub</h2>
-    <p class="text-muted small mb-0">Multi-dimensional operational cost sheets, fuel intelligence, and financial audits</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Business Reports &amp; Analytics Hub</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Multi-dimensional operational cost sheets, fuel intelligence, and financial audits</p>
   </div>
 </div>
 
-<div class="row g-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
   <!-- Card 1: Expense Analysis -->
-  <div class="col-12 col-md-6 col-lg-3">
-    <div class="theme-card h-100 p-4 d-flex flex-column justify-content-between">
-      <div>
-        <div class="rounded p-3 bg-dark border border-secondary text-danger d-inline-flex mb-3">
-          <i class="bi bi-receipt fs-3"></i>
-        </div>
-        <h3 class="fs-5 fw-bold text-white mb-2">Expense Analysis</h3>
-        <p class="text-muted small mb-3">Detailed categorization by machinery, supplier, payment method, and custom date windows.</p>
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:border-emerald-500/40 transition-colors group">
+    <div>
+      <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 mb-4 group-hover:scale-105 transition-transform">
+        <i class="bi bi-receipt text-xl"></i>
       </div>
-      <a href="{% url 'reports:expenses' %}" class="btn btn-emerald btn-sm w-100">
-        Launch Report <i class="bi bi-arrow-right ms-1"></i>
-      </a>
+      <h3 class="text-base font-bold text-white tracking-tight m-0 mb-2">Expense Analysis</h3>
+      <p class="text-xs text-gray-400 leading-relaxed m-0 mb-4">Detailed categorization by machinery, supplier, payment method, and custom date windows.</p>
     </div>
+    <a href="{% url 'reports:expenses' %}" class="inline-flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all no-underline">
+      <span>Launch Report</span>
+      <i class="bi bi-arrow-right"></i>
+    </a>
   </div>
 
   <!-- Card 2: Operational & Fleet Costs -->
-  <div class="col-12 col-md-6 col-lg-3">
-    <div class="theme-card h-100 p-4 d-flex flex-column justify-content-between">
-      <div>
-        <div class="rounded p-3 bg-dark border border-secondary text-warning d-inline-flex mb-3">
-          <i class="bi bi-truck fs-3"></i>
-        </div>
-        <h3 class="fs-5 fw-bold text-white mb-2">Fleet Machinery Costs</h3>
-        <p class="text-muted small mb-3">Operating cost comparison, fuel efficiency, repairs cost per hour, and kilometer metrics.</p>
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:border-emerald-500/40 transition-colors group">
+    <div>
+      <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-4 group-hover:scale-105 transition-transform">
+        <i class="bi bi-truck text-xl"></i>
       </div>
-      <a href="{% url 'reports:operational' %}" class="btn btn-emerald btn-sm w-100">
-        Launch Report <i class="bi bi-arrow-right ms-1"></i>
-      </a>
+      <h3 class="text-base font-bold text-white tracking-tight m-0 mb-2">Fleet Machinery Costs</h3>
+      <p class="text-xs text-gray-400 leading-relaxed m-0 mb-4">Operating cost comparison, fuel efficiency, repairs cost per hour, and kilometer metrics.</p>
     </div>
+    <a href="{% url 'reports:operational' %}" class="inline-flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all no-underline">
+      <span>Launch Report</span>
+      <i class="bi bi-arrow-right"></i>
+    </a>
   </div>
 
   <!-- Card 3: Budgets & Control Variance -->
-  <div class="col-12 col-md-6 col-lg-3">
-    <div class="theme-card h-100 p-4 d-flex flex-column justify-content-between">
-      <div>
-        <div class="rounded p-3 bg-dark border border-secondary text-info d-inline-flex mb-3">
-          <i class="bi bi-bullseye fs-3"></i>
-        </div>
-        <h3 class="fs-5 fw-bold text-white mb-2">Budget Variance</h3>
-        <p class="text-muted small mb-3">Planned vs actual variance tracking, segment allocations, and over-budget control alerts.</p>
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:border-emerald-500/40 transition-colors group">
+    <div>
+      <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 group-hover:scale-105 transition-transform">
+        <i class="bi bi-bullseye text-xl"></i>
       </div>
-      <a href="{% url 'budgets:list' %}" class="btn btn-emerald btn-sm w-100">
-        Launch Report <i class="bi bi-arrow-right ms-1"></i>
-      </a>
+      <h3 class="text-base font-bold text-white tracking-tight m-0 mb-2">Budget Variance</h3>
+      <p class="text-xs text-gray-400 leading-relaxed m-0 mb-4">Planned vs actual variance tracking, segment allocations, and over-budget control alerts.</p>
     </div>
+    <a href="{% url 'budgets:list' %}" class="inline-flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all no-underline">
+      <span>Launch Report</span>
+      <i class="bi bi-arrow-right"></i>
+    </a>
   </div>
 
   <!-- Card 4: Financial Statements & Audit -->
-  <div class="col-12 col-md-6 col-lg-3">
-    <div class="theme-card h-100 p-4 d-flex flex-column justify-content-between">
-      <div>
-        <div class="rounded p-3 bg-dark border border-secondary text-emerald d-inline-flex mb-3">
-          <i class="bi bi-journal-text fs-3"></i>
-        </div>
-        <h3 class="fs-5 fw-bold text-white mb-2">Financial Audits</h3>
-        <p class="text-muted small mb-3">Central ledger journals, historical daily closings, and liquid account balance reconciliation audit.</p>
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:border-emerald-500/40 transition-colors group">
+    <div>
+      <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4 group-hover:scale-105 transition-transform">
+        <i class="bi bi-journal-text text-xl"></i>
       </div>
-      {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
-        <a href="{% url 'reports:financial' %}" class="btn btn-emerald btn-sm w-100">
-          Launch Report <i class="bi bi-arrow-right ms-1"></i>
-        </a>
-      {% else %}
-        <span class="badge bg-secondary w-100 py-2">Owner / Accountant Only</span>
-      {% endif %}
+      <h3 class="text-base font-bold text-white tracking-tight m-0 mb-2">Financial Audits</h3>
+      <p class="text-xs text-gray-400 leading-relaxed m-0 mb-4">Central ledger journals, historical daily closings, and liquid account balance reconciliation audit.</p>
     </div>
+    {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
+      <a href="{% url 'reports:financial' %}" class="inline-flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all no-underline">
+        <span>Launch Report</span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
+    {% else %}
+      <span class="inline-flex items-center justify-center w-full py-2 rounded-xl bg-gray-800 text-gray-500 font-semibold text-xs border border-[#28354A]">
+        Owner / Accountant Only
+      </span>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

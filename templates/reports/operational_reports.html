@@ -1,56 +1,66 @@
 {% extends 'base.html' %}
 
-{% block title %}Operational Machinery Reports | Expense Tracking{% endblock %}
+{% block title %}Operational Machinery Reports | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">Machinery & Fleet Operational Reports</h2>
-    <p class="text-muted small mb-0">Fleet running cost comparison, fuel efficiency, repairs cost per hour, and kilometer metrics</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Machinery &amp; Fleet Operational Reports</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Fleet running cost comparison, fuel efficiency, repairs cost per hour, and kilometer metrics</p>
   </div>
   <div>
-    <a href="{% url 'reports:index' %}" class="btn btn-ghost btn-sm">
-      <i class="bi bi-arrow-left me-1"></i> Back to Hub
+    <a href="{% url 'reports:index' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Hub</span>
     </a>
   </div>
 </div>
 
 <!-- Fleet Operating Cost Sheet -->
-<div class="theme-card mb-4">
-  <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
-    <i class="bi bi-truck me-2 text-warning"></i>Fleet Machinery Operating Cost Sheet
-  </h3>
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden mb-6">
+  <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+        <i class="bi bi-truck text-base"></i>
+      </div>
+      <h3 class="text-sm font-bold text-white tracking-tight m-0">Fleet Machinery Operating Cost Sheet</h3>
+    </div>
+  </div>
 
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Code</th>
-          <th>Equipment Name</th>
-          <th>Type</th>
-          <th class="text-end">Fuel Cost</th>
-          <th class="text-end">Maintenance / Parts</th>
-          <th class="text-end">Total Operating Cost</th>
-          <th class="text-end">Current Meter</th>
-          <th class="text-end">Cost / Hour or KM</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th class="py-3.5 px-4">Code</th>
+          <th class="py-3.5 px-4">Equipment Name</th>
+          <th class="py-3.5 px-4">Type</th>
+          <th class="py-3.5 px-4 text-right">Fuel Cost</th>
+          <th class="py-3.5 px-4 text-right">Maintenance / Parts</th>
+          <th class="py-3.5 px-4 text-right">Total Operating Cost</th>
+          <th class="py-3.5 px-4 text-right">Current Meter</th>
+          <th class="py-3.5 px-4 text-right">Cost / Hour or KM</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for m in machine_costs %}
-          <tr class="border-secondary">
-            <td class="font-tabular text-info fw-bold">{{ m.machine_code }}</td>
-            <td class="text-white fw-semibold">{{ m.name }}</td>
-            <td><span class="badge bg-dark border border-secondary text-light">{{ m.machine_type }}</span></td>
-            <td class="text-end font-tabular text-warning">₹{{ m.fuel_cost }}</td>
-            <td class="text-end font-tabular text-info">₹{{ m.maintenance_cost }}</td>
-            <td class="text-end font-tabular text-white fw-bold">₹{{ m.total_cost }}</td>
-            <td class="text-end font-tabular text-muted">{{ m.meter_reading }} {{ m.meter_unit }}</td>
-            <td class="text-end font-tabular text-emerald fw-bold">
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">{{ m.machine_code }}</td>
+            <td class="py-3.5 px-4 font-semibold text-white">{{ m.name }}</td>
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-300 border border-gray-700">
+                {{ m.machine_type }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-right font-mono text-amber-400">₹{{ m.fuel_cost }}</td>
+            <td class="py-3.5 px-4 text-right font-mono text-cyan-400">₹{{ m.maintenance_cost }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-rose-400">₹{{ m.total_cost }}</td>
+            <td class="py-3.5 px-4 text-right font-mono text-gray-400">{{ m.meter_reading }} {{ m.meter_unit }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-emerald-400">
               {% if m.cost_per_unit > 0 %}₹{{ m.cost_per_unit }}{% else %}--{% endif %}
             </td>
           </tr>
         {% empty %}
-          <tr><td colspan="8" class="text-center py-4 text-muted">No machinery records found.</td></tr>
+          <tr><td colspan="8" class="py-10 text-center text-gray-500">No machinery records found.</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -58,44 +68,47 @@
 </div>
 
 <!-- Fuel Consumption Analytics Table -->
-<div class="theme-card">
-  <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
-    <h3 class="fs-6 fw-bold text-white mb-0">
-      <i class="bi bi-fuel-pump me-2 text-danger"></i>Fuel Consumption & Dispensing Logs
-    </h3>
-    <div class="d-flex gap-3 text-muted small">
-      <span>Total Dispensed: <strong class="text-white font-tabular">{{ fuel_data.total_liters }} L</strong></span>
-      <span>Total Cost: <strong class="text-warning font-tabular">₹{{ fuel_data.total_cost }}</strong></span>
-      <span>Avg Rate: <strong class="text-info font-tabular">₹{{ fuel_data.avg_rate }}/L</strong></span>
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-[#28354A] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#162030]">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+        <i class="bi bi-fuel-pump text-base"></i>
+      </div>
+      <h3 class="text-sm font-bold text-white tracking-tight m-0">Fuel Consumption &amp; Dispensing Logs</h3>
+    </div>
+    <div class="flex flex-wrap items-center gap-3 text-xs">
+      <span class="text-gray-400">Total Dispensed: <strong class="text-white font-mono">{{ fuel_data.total_liters }} L</strong></span>
+      <span class="text-gray-400">Total Cost: <strong class="text-rose-400 font-mono">₹{{ fuel_data.total_cost }}</strong></span>
+      <span class="text-gray-400">Avg Rate: <strong class="text-cyan-400 font-mono">₹{{ fuel_data.avg_rate }}/L</strong></span>
     </div>
   </div>
 
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Date</th>
-          <th>Machine</th>
-          <th>Fuel Pump / Supplier</th>
-          <th class="text-end">Quantity (L)</th>
-          <th class="text-end">Rate / L</th>
-          <th class="text-end">Total Cost (₹)</th>
-          <th>Driver / Operator</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th class="py-3.5 px-4">Date</th>
+          <th class="py-3.5 px-4">Machine</th>
+          <th class="py-3.5 px-4">Fuel Pump / Supplier</th>
+          <th class="py-3.5 px-4 text-right">Quantity (L)</th>
+          <th class="py-3.5 px-4 text-right">Rate / L</th>
+          <th class="py-3.5 px-4 text-right">Total Cost (₹)</th>
+          <th class="py-3.5 px-4">Driver / Operator</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for f in fuel_data.entries %}
-          <tr class="border-secondary">
-            <td class="text-muted small">{{ f.date|date:"d M Y" }}</td>
-            <td class="text-white fw-semibold">{{ f.machine.machine_code }}</td>
-            <td class="text-muted small">{{ f.supplier.name|default:"-- (Direct Cash)" }}</td>
-            <td class="text-end font-tabular text-info fw-semibold">{{ f.quantity }} L</td>
-            <td class="text-end font-tabular text-muted">₹{{ f.unit_price }}</td>
-            <td class="text-end font-tabular text-warning fw-bold">₹{{ f.total_amount }}</td>
-            <td class="text-muted small">{{ f.operator.name|default:"--" }}</td>
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 text-gray-400 font-mono text-[11px] whitespace-nowrap">{{ f.date|date:"d M Y" }}</td>
+            <td class="py-3.5 px-4 font-semibold text-white font-mono">{{ f.machine.machine_code }}</td>
+            <td class="py-3.5 px-4 text-gray-300">{{ f.supplier.name|default:"-- (Direct Cash)" }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-cyan-400">{{ f.quantity }} L</td>
+            <td class="py-3.5 px-4 text-right font-mono text-gray-400">₹{{ f.unit_price }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-rose-400">-₹{{ f.total_amount }}</td>
+            <td class="py-3.5 px-4 text-gray-300">{{ f.operator.name|default:"--" }}</td>
           </tr>
         {% empty %}
-          <tr><td colspan="7" class="text-center py-4 text-muted">No fuel logs found.</td></tr>
+          <tr><td colspan="7" class="py-10 text-center text-gray-500">No fuel logs found.</td></tr>
         {% endfor %}
       </tbody>
     </table>

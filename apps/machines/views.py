@@ -2,19 +2,27 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Q, Sum, Count
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from decimal import Decimal
 from apps.accounts.decorators import role_required, owner_required
 from apps.audit.utils import log_audit_event
 from apps.audit.models import AuditLog
-from .models import Machine, MachineType, MachineBooking, MachineWorkEntry
+from .models import (
+    Machine, MachineType, MachineBooking, MachineWorkEntry,
+    MachineMaintenanceSchedule, MaintenanceJob, MaintenancePartUsage
+)
 from .forms import (
     MachineForm, MachineTypeForm, MachineBookingForm,
     BookingConfirmForm, BookingDispatchForm, BookingCancelForm,
-    MachineWorkEntryForm
+    MachineWorkEntryForm, MachineMaintenanceScheduleForm,
+    MaintenanceJobForm, MaintenancePartUsageForm,
+    MaintenanceCompleteForm, MaintenanceExpensePostForm
 )
 from .services.work_service import WorkService
 from .services.booking_service import BookingService
-from apps.finance.models import Customer
+from .services.maintenance_service import MaintenanceService
+from apps.finance.models import Customer, Supplier, Account
+from apps.expenses.models import Expense, ExpenseCategory
 from apps.employees.models import Employee
 
 
@@ -537,3 +545,504 @@ def work_entry_delete_view(request, entry_id):
     WorkService.soft_delete_work_entry(entry, request.user, request=request)
     messages.warning(request, f"Work Entry '{entry.work_code}' deleted.")
     return redirect('machines:work_list')
+
+
+# ==============================================================================
+# PHASE 15: MACHINERY MAINTENANCE & SERVICE MANAGEMENT VIEWS
+# ==============================================================================
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def maintenance_dashboard_view(request):
+    """
+    Machinery Maintenance & Service Operations Dashboard (Phase 15).
+    Provides KPI summary cards, active workshop repairs, due schedules, and recent completed jobs.
+    """
+    # 1. KPI Cards
+    under_maintenance_count = Machine.objects.filter(is_deleted=False, status=Machine.STATUS_UNDER_MAINTENANCE).count()
+    open_jobs_count = MaintenanceJob.objects.filter(is_deleted=False).exclude(status__in=[MaintenanceJob.STATUS_COMPLETED, MaintenanceJob.STATUS_CANCELLED]).count()
+    breakdowns_count = MaintenanceJob.objects.filter(is_deleted=False, maintenance_type=MaintenanceJob.TYPE_BREAKDOWN_REPAIR).count()
+
+    today = timezone.now().date()
+    month_start = today.replace(day=1)
+    cost_this_month = MaintenanceJob.objects.filter(
+        is_deleted=False,
+        status=MaintenanceJob.STATUS_COMPLETED,
+        completed_date__gte=month_start
+    ).aggregate(total=Sum('total_maintenance_cost'))['total'] or Decimal('0.00')
+
+    # Evaluate schedules for Due Soon & Overdue
+    all_schedules = MachineMaintenanceSchedule.objects.filter(is_active=True, machine__is_deleted=False).select_related('machine')
+    schedules_due_soon = []
+    schedules_overdue = []
+
+    for sch in all_schedules:
+        status_info = sch.evaluate_status()
+        sch.eval_status = status_info
+        if status_info['status'] == MachineMaintenanceSchedule.STATUS_DUE_SOON:
+            schedules_due_soon.append(sch)
+        elif status_info['status'] in [MachineMaintenanceSchedule.STATUS_DUE, MachineMaintenanceSchedule.STATUS_OVERDUE]:
+            schedules_overdue.append(sch)
+
+    # Active Workshop Repairs
+    active_repairs = MaintenanceJob.objects.filter(
+        is_deleted=False
+    ).exclude(
+        status__in=[MaintenanceJob.STATUS_COMPLETED, MaintenanceJob.STATUS_CANCELLED]
+    ).select_related('machine', 'supplier').order_by('-reported_date')[:10]
+
+    # Recent Completed Maintenance
+    recent_completed = MaintenanceJob.objects.filter(
+        is_deleted=False,
+        status=MaintenanceJob.STATUS_COMPLETED
+    ).select_related('machine', 'supplier', 'linked_expense').order_by('-completed_date')[:10]
+
+    return render(request, 'machines/maintenance_dashboard.html', {
+        'under_maintenance_count': under_maintenance_count,
+        'open_jobs_count': open_jobs_count,
+        'breakdowns_count': breakdowns_count,
+        'cost_this_month': cost_this_month,
+        'due_soon_count': len(schedules_due_soon),
+        'overdue_count': len(schedules_overdue),
+        'schedules_due_soon': schedules_due_soon,
+        'schedules_overdue': schedules_overdue,
+        'active_repairs': active_repairs,
+        'recent_completed': recent_completed,
+        'title': 'Machinery Maintenance Dashboard',
+    })
+
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def maintenance_job_list_view(request):
+    """
+    List & Multi-filter Registry for all Maintenance and Breakdown Jobs.
+    """
+    machine_id = request.GET.get('machine', '').strip()
+    m_type = request.GET.get('type', '').strip()
+    status = request.GET.get('status', '').strip()
+    supplier_id = request.GET.get('supplier', '').strip()
+    query = request.GET.get('q', '').strip()
+
+    jobs = MaintenanceJob.objects.filter(is_deleted=False).select_related('machine', 'supplier', 'linked_expense', 'created_by')
+
+    if machine_id:
+        jobs = jobs.filter(machine_id=machine_id)
+    if m_type:
+        jobs = jobs.filter(maintenance_type=m_type)
+    if status:
+        jobs = jobs.filter(status=status)
+    if supplier_id:
+        jobs = jobs.filter(supplier_id=supplier_id)
+    if query:
+        jobs = jobs.filter(
+            Q(maintenance_code__icontains=query) |
+            Q(problem_description__icontains=query) |
+            Q(work_performed__icontains=query) |
+            Q(breakdown_location__icontains=query) |
+            Q(machine__name__icontains=query) |
+            Q(machine__machine_code__icontains=query)
+        )
+
+    # Total cost of filtered jobs
+    total_filtered_cost = jobs.aggregate(total=Sum('total_maintenance_cost'))['total'] or Decimal('0.00')
+
+    return render(request, 'machines/maintenance_job_list.html', {
+        'jobs': jobs,
+        'machines': Machine.objects.filter(is_deleted=False),
+        'suppliers': Supplier.objects.filter(is_deleted=False),
+        'type_choices': MaintenanceJob.MAINTENANCE_TYPE_CHOICES,
+        'status_choices': MaintenanceJob.STATUS_CHOICES,
+        'selected_machine': machine_id,
+        'selected_type': m_type,
+        'selected_status': status,
+        'selected_supplier': supplier_id,
+        'query': query,
+        'total_filtered_cost': total_filtered_cost,
+        'title': 'Maintenance & Breakdown Jobs',
+    })
+
+
+@role_required(['OWNER', 'MANAGER'])
+def maintenance_job_create_view(request):
+    """Creates a new Maintenance or Breakdown Job."""
+    initial = {}
+    if request.GET.get('machine_id'):
+        initial['machine'] = request.GET.get('machine_id')
+    if request.GET.get('schedule_id'):
+        initial['maintenance_schedule'] = request.GET.get('schedule_id')
+        initial['maintenance_type'] = MaintenanceJob.TYPE_PREVENTIVE_SERVICE
+    if request.GET.get('type'):
+        initial['maintenance_type'] = request.GET.get('type')
+
+    if request.method == 'POST':
+        form = MaintenanceJobForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            try:
+                job = MaintenanceService.create_maintenance_job(
+                    machine=cd['machine'],
+                    maintenance_type=cd['maintenance_type'],
+                    problem_description=cd['problem_description'],
+                    reported_date=cd.get('reported_date'),
+                    maintenance_schedule=cd.get('maintenance_schedule'),
+                    meter_reading=cd.get('meter_reading'),
+                    breakdown_location=cd.get('breakdown_location'),
+                    breakdown_time=cd.get('breakdown_time'),
+                    machine_stopped=cd.get('machine_stopped', False),
+                    severity=cd.get('severity', MaintenanceJob.SEVERITY_MEDIUM),
+                    supplier=cd.get('supplier'),
+                    external_workshop_name=cd.get('external_workshop_name'),
+                    labor_cost=cd.get('labor_cost', Decimal('0.00')),
+                    external_service_cost=cd.get('external_service_cost', Decimal('0.00')),
+                    other_cost=cd.get('other_cost', Decimal('0.00')),
+                    diagnosis=cd.get('diagnosis'),
+                    notes=cd.get('notes'),
+                    created_by=request.user,
+                    request=request
+                )
+                messages.success(request, f"Maintenance Job '{job.maintenance_code}' reported successfully.")
+                return redirect('machines:maintenance_job_detail', job_id=job.id)
+            except ValidationError as e:
+                messages.error(request, e.message if hasattr(e, 'message') else str(e))
+    else:
+        form = MaintenanceJobForm(initial=initial)
+
+    return render(request, 'machines/maintenance_job_form.html', {
+        'form': form,
+        'title': 'Report Maintenance / Breakdown Job',
+    })
+
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def maintenance_job_detail_view(request, job_id):
+    """
+    Detailed interactive page for MaintenanceJob.
+    Shows problem, diagnosis, parts usage table, cost summary, and action modals.
+    """
+    job = get_object_or_404(
+        MaintenanceJob.objects.select_related('machine', 'maintenance_schedule', 'supplier', 'linked_expense', 'created_by'),
+        id=job_id,
+        is_deleted=False
+    )
+    part_usages = job.part_usages.select_related('supplier').all()
+    part_form = MaintenancePartUsageForm()
+    complete_form = MaintenanceCompleteForm(initial={
+        'completed_date': timezone.now().strftime('%Y-%m-%dT%H:%M'),
+        'meter_reading': job.meter_reading or job.machine.current_meter_reading,
+        'labor_cost': job.labor_cost,
+        'external_service_cost': job.external_service_cost,
+        'other_cost': job.other_cost,
+        'work_performed': job.work_performed or '',
+    })
+    expense_post_form = MaintenanceExpensePostForm(initial={
+        'payment_method': Expense.METHOD_CASH
+    })
+
+    audit_logs = AuditLog.objects.filter(entity_type='MaintenanceJob', entity_id=str(job.id)).order_by('-timestamp')[:10]
+
+    return render(request, 'machines/maintenance_job_detail.html', {
+        'job': job,
+        'part_usages': part_usages,
+        'part_form': part_form,
+        'complete_form': complete_form,
+        'expense_post_form': expense_post_form,
+        'audit_logs': audit_logs,
+        'title': f"Maintenance Job: {job.maintenance_code}",
+    })
+
+
+@role_required(['OWNER', 'MANAGER'])
+def maintenance_job_edit_view(request, job_id):
+    """Edits an existing maintenance job."""
+    job = get_object_or_404(MaintenanceJob, id=job_id, is_deleted=False)
+    if job.status == MaintenanceJob.STATUS_COMPLETED:
+        messages.warning(request, "Completed maintenance jobs cannot be modified.")
+        return redirect('machines:maintenance_job_detail', job_id=job.id)
+
+    if request.method == 'POST':
+        form = MaintenanceJobForm(request.POST, instance=job)
+        if form.is_valid():
+            form.save()
+            MaintenanceService.recalculate_job_costs(job)
+            log_audit_event(
+                request.user,
+                AuditLog.ACTION_UPDATE,
+                'MaintenanceJob',
+                job.id,
+                changes={'maintenance_code': job.maintenance_code},
+                request=request
+            )
+            messages.success(request, f"Maintenance Job '{job.maintenance_code}' updated.")
+            return redirect('machines:maintenance_job_detail', job_id=job.id)
+    else:
+        form = MaintenanceJobForm(instance=job)
+
+    return render(request, 'machines/maintenance_job_form.html', {
+        'form': form,
+        'job': job,
+        'title': f"Edit Maintenance Job: {job.maintenance_code}",
+    })
+
+
+@role_required(['OWNER', 'MANAGER'])
+def maintenance_job_start_view(request, job_id):
+    """Transitions a job to IN_REPAIR and marks machine UNDER_MAINTENANCE."""
+    if request.method == 'POST':
+        job = get_object_or_404(MaintenanceJob, id=job_id, is_deleted=False)
+        diagnosis = request.POST.get('diagnosis', '').strip()
+        try:
+            MaintenanceService.start_maintenance_job(job, request.user, diagnosis=diagnosis, request=request)
+            messages.success(request, f"Maintenance '{job.maintenance_code}' is now IN REPAIR. Machine set to UNDER MAINTENANCE.")
+        except ValidationError as e:
+            messages.error(request, e.message if hasattr(e, 'message') else str(e))
+    return redirect('machines:maintenance_job_detail', job_id=job_id)
+
+
+@role_required(['OWNER', 'MANAGER'])
+def maintenance_job_complete_view(request, job_id):
+    """Completes maintenance and safely returns machine to ACTIVE."""
+    if request.method == 'POST':
+        job = get_object_or_404(MaintenanceJob, id=job_id, is_deleted=False)
+        form = MaintenanceCompleteForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            try:
+                completed = MaintenanceService.complete_maintenance_job(
+                    job=job,
+                    user=request.user,
+                    completed_date=cd['completed_date'],
+                    meter_reading=cd.get('meter_reading'),
+                    work_performed=cd['work_performed'],
+                    labor_cost=cd.get('labor_cost'),
+                    external_service_cost=cd.get('external_service_cost'),
+                    other_cost=cd.get('other_cost'),
+                    request=request
+                )
+                messages.success(request, f"Maintenance Job '{completed.maintenance_code}' COMPLETED. Total Cost: ₹{completed.total_maintenance_cost:,.2f}")
+            except ValidationError as e:
+                messages.error(request, e.message if hasattr(e, 'message') else str(e))
+        else:
+            for field, errs in form.errors.items():
+                messages.error(request, f"{field}: {errs[0]}")
+    return redirect('machines:maintenance_job_detail', job_id=job_id)
+
+
+@role_required(['OWNER', 'MANAGER'])
+def maintenance_job_cancel_view(request, job_id):
+    """Cancels a maintenance job."""
+    if request.method == 'POST':
+        job = get_object_or_404(MaintenanceJob, id=job_id, is_deleted=False)
+        reason = request.POST.get('cancellation_reason', '').strip()
+        try:
+            MaintenanceService.cancel_maintenance_job(job, request.user, cancellation_reason=reason, request=request)
+            messages.warning(request, f"Maintenance Job '{job.maintenance_code}' was CANCELLED.")
+        except ValidationError as e:
+            messages.error(request, e.message if hasattr(e, 'message') else str(e))
+    return redirect('machines:maintenance_job_detail', job_id=job_id)
+
+
+@owner_required
+def maintenance_job_delete_view(request, job_id):
+    """Soft deletes a maintenance job (Owner only)."""
+    if request.method == 'POST':
+        job = get_object_or_404(MaintenanceJob, id=job_id, is_deleted=False)
+        MaintenanceService.soft_delete_maintenance_job(job, request.user, request=request)
+        messages.warning(request, f"Maintenance Job '{job.maintenance_code}' deleted.")
+        return redirect('machines:maintenance_job_list')
+    return redirect('machines:maintenance_job_detail', job_id=job_id)
+
+
+@role_required(['OWNER', 'MANAGER'])
+def maintenance_part_add_view(request, job_id):
+    """Adds a spare part item to an editable maintenance job."""
+    job = get_object_or_404(MaintenanceJob, id=job_id, is_deleted=False)
+    if request.method == 'POST':
+        form = MaintenancePartUsageForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            try:
+                part = MaintenanceService.add_part_usage(
+                    job=job,
+                    part_name=cd['part_name'],
+                    quantity=cd['quantity'],
+                    unit_cost=cd['unit_cost'],
+                    part_number=cd.get('part_number'),
+                    supplier=cd.get('supplier'),
+                    notes=cd.get('notes'),
+                    user=request.user,
+                    request=request
+                )
+                messages.success(request, f"Spare Part '{part.part_name}' added (₹{part.total_cost:,.2f}). Total Parts: ₹{job.parts_cost:,.2f}")
+            except ValidationError as e:
+                messages.error(request, e.message if hasattr(e, 'message') else str(e))
+        else:
+            for field, errs in form.errors.items():
+                messages.error(request, f"{field}: {errs[0]}")
+    return redirect('machines:maintenance_job_detail', job_id=job_id)
+
+
+@role_required(['OWNER', 'MANAGER'])
+def maintenance_part_delete_view(request, job_id, part_id):
+    """Deletes a spare part item from a maintenance job."""
+    if request.method == 'POST':
+        part = get_object_or_404(MaintenancePartUsage, id=part_id, maintenance_job_id=job_id)
+        try:
+            MaintenanceService.delete_part_usage(part, user=request.user, request=request)
+            messages.warning(request, f"Part '{part.part_name}' removed.")
+        except ValidationError as e:
+            messages.error(request, e.message if hasattr(e, 'message') else str(e))
+    return redirect('machines:maintenance_job_detail', job_id=job_id)
+
+
+@role_required(['OWNER', 'ACCOUNTANT'])
+def maintenance_job_post_expense_view(request, job_id):
+    """
+    Explicit action by Owner / Accountant to post a completed MaintenanceJob to Expenses.
+    """
+    if request.method == 'POST':
+        job = get_object_or_404(MaintenanceJob, id=job_id, is_deleted=False)
+        form = MaintenanceExpensePostForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            try:
+                expense = MaintenanceService.post_maintenance_expense(
+                    job=job,
+                    account=cd['account'],
+                    category=cd['category'],
+                    user=request.user,
+                    payment_method=cd['payment_method'],
+                    request=request
+                )
+                messages.success(request, f"Maintenance Job posted to Expense '{expense.expense_code}' (₹{expense.amount:,.2f}).")
+            except ValidationError as e:
+                messages.error(request, e.message if hasattr(e, 'message') else str(e))
+        else:
+            for field, errs in form.errors.items():
+                messages.error(request, f"{field}: {errs[0]}")
+    return redirect('machines:maintenance_job_detail', job_id=job_id)
+
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def maintenance_schedule_list_view(request):
+    """Lists all preventive maintenance schedules with live evaluation status."""
+    schedules = MachineMaintenanceSchedule.objects.filter(machine__is_deleted=False).select_related('machine')
+    machine_id = request.GET.get('machine', '').strip()
+    if machine_id:
+        schedules = schedules.filter(machine_id=machine_id)
+
+    evaluated_schedules = []
+    for s in schedules:
+        s.eval_status = s.evaluate_status()
+        evaluated_schedules.append(s)
+
+    return render(request, 'machines/maintenance_schedule_list.html', {
+        'schedules': evaluated_schedules,
+        'machines': Machine.objects.filter(is_deleted=False),
+        'selected_machine': machine_id,
+        'title': 'Preventive Maintenance Schedules',
+    })
+
+
+@role_required(['OWNER', 'MANAGER'])
+def maintenance_schedule_create_view(request):
+    """Creates a new preventive maintenance schedule."""
+    if request.method == 'POST':
+        form = MachineMaintenanceScheduleForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            try:
+                schedule = MaintenanceService.create_schedule(
+                    machine=cd['machine'],
+                    schedule_name=cd['schedule_name'],
+                    service_basis=cd['service_basis'],
+                    service_interval_meter=cd.get('service_interval_meter'),
+                    service_interval_days=cd.get('service_interval_days'),
+                    last_service_date=cd.get('last_service_date'),
+                    last_service_meter=cd.get('last_service_meter'),
+                    warning_meter_before=cd.get('warning_meter_before', Decimal('25.00')),
+                    warning_days_before=cd.get('warning_days_before', 7),
+                    notes=cd.get('notes'),
+                    created_by=request.user,
+                    request=request
+                )
+                messages.success(request, f"Maintenance Schedule '{schedule.schedule_name}' created for {schedule.machine.name}.")
+                return redirect('machines:maintenance_schedule_list')
+            except ValidationError as e:
+                messages.error(request, e.message if hasattr(e, 'message') else str(e))
+    else:
+        initial = {}
+        if request.GET.get('machine_id'):
+            initial['machine'] = request.GET.get('machine_id')
+        form = MachineMaintenanceScheduleForm(initial=initial)
+
+    return render(request, 'machines/maintenance_schedule_form.html', {
+        'form': form,
+        'title': 'Create Maintenance Schedule',
+    })
+
+
+@role_required(['OWNER', 'MANAGER'])
+def maintenance_schedule_edit_view(request, schedule_id):
+    """Edits a preventive maintenance schedule."""
+    schedule = get_object_or_404(MachineMaintenanceSchedule, id=schedule_id)
+    if request.method == 'POST':
+        form = MachineMaintenanceScheduleForm(request.POST, instance=schedule)
+        if form.is_valid():
+            cd = form.cleaned_data
+            try:
+                updated = MaintenanceService.update_schedule(
+                    schedule=schedule,
+                    schedule_name=cd['schedule_name'],
+                    service_basis=cd['service_basis'],
+                    service_interval_meter=cd.get('service_interval_meter'),
+                    service_interval_days=cd.get('service_interval_days'),
+                    last_service_date=cd.get('last_service_date'),
+                    last_service_meter=cd.get('last_service_meter'),
+                    warning_meter_before=cd.get('warning_meter_before', Decimal('25.00')),
+                    warning_days_before=cd.get('warning_days_before', 7),
+                    notes=cd.get('notes'),
+                    is_active=cd.get('is_active', True),
+                    user=request.user,
+                    request=request
+                )
+                messages.success(request, f"Maintenance Schedule '{updated.schedule_name}' updated.")
+                return redirect('machines:maintenance_schedule_list')
+            except ValidationError as e:
+                messages.error(request, e.message if hasattr(e, 'message') else str(e))
+    else:
+        form = MachineMaintenanceScheduleForm(instance=schedule)
+
+    return render(request, 'machines/maintenance_schedule_form.html', {
+        'form': form,
+        'schedule': schedule,
+        'title': f"Edit Schedule: {schedule.schedule_name}",
+    })
+
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def machine_service_history_view(request, machine_id):
+    """
+    Dedicated Service & Breakdown History Timeline for a specific Machine.
+    """
+    machine = get_object_or_404(Machine, id=machine_id, is_deleted=False)
+    jobs = machine.maintenance_jobs.filter(is_deleted=False).select_related('supplier', 'linked_expense').order_by('-reported_date', '-id')
+    schedules = machine.maintenance_schedules.filter(is_active=True)
+
+    # Statistics
+    total_jobs = jobs.count()
+    preventive_count = jobs.filter(maintenance_type=MaintenanceJob.TYPE_PREVENTIVE_SERVICE).count()
+    breakdown_count = jobs.filter(maintenance_type=MaintenanceJob.TYPE_BREAKDOWN_REPAIR).count()
+    total_maintenance_cost = jobs.filter(status=MaintenanceJob.STATUS_COMPLETED).aggregate(total=Sum('total_maintenance_cost'))['total'] or Decimal('0.00')
+
+    for s in schedules:
+        s.eval_status = s.evaluate_status()
+
+    return render(request, 'machines/maintenance_history.html', {
+        'machine': machine,
+        'jobs': jobs,
+        'schedules': schedules,
+        'total_jobs': total_jobs,
+        'preventive_count': preventive_count,
+        'breakdown_count': breakdown_count,
+        'total_maintenance_cost': total_maintenance_cost,
+        'title': f"Service History: {machine.name} ({machine.machine_code})",
+    })

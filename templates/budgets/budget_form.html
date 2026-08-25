@@ -1,73 +1,79 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ title }} | Expense Tracking{% endblock %}
+{% block title %}{{ title }} | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
-    <p class="text-muted small mb-0">Set monthly financial spending controls by business segment</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">{{ title }}</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Set monthly financial spending controls by business segment</p>
   </div>
   <div>
-    <a href="{% url 'budgets:list' %}" class="btn btn-ghost btn-sm">
-      <i class="bi bi-arrow-left me-1"></i> Back to Budgets
+    <a href="{% url 'budgets:list' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Budgets</span>
     </a>
   </div>
 </div>
 
-<div class="row justify-content-center">
-  <div class="col-12 col-lg-8">
-    <div class="theme-card">
-      <form method="post" novalidate>
-        {% csrf_token %}
+<div class="max-w-2xl mx-auto">
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 sm:p-8 shadow-sm">
+    <form method="post" novalidate class="space-y-4">
+      {% csrf_token %}
 
-        {% if form.non_field_errors %}
-          <div class="alert alert-danger py-2 small mb-3">{{ form.non_field_errors }}</div>
-        {% endif %}
-
-        <div class="mb-3">
-          <label class="form-label small text-muted">Budget Title *</label>
-          {{ form.title }}
-          {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+      {% if form.non_field_errors %}
+        <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium">
+          {{ form.non_field_errors }}
         </div>
+      {% endif %}
 
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Budget Month *</label>
-            {{ form.period_month }}
-            {% if form.period_month.errors %}<div class="text-danger small mt-1">{{ form.period_month.errors.0 }}</div>{% endif %}
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Budget Year *</label>
-            {{ form.period_year }}
-            {% if form.period_year.errors %}<div class="text-danger small mt-1">{{ form.period_year.errors.0 }}</div>{% endif %}
-          </div>
-        </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-300 mb-1.5">Budget Title <span class="text-rose-400">*</span></label>
+        {{ form.title }}
+        {% if form.title.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.title.errors.0 }}</div>{% endif %}
+      </div>
 
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Business Segment *</label>
-            {{ form.business_segment }}
-            {% if form.business_segment.errors %}<div class="text-danger small mt-1">{{ form.business_segment.errors.0 }}</div>{% endif %}
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Lifecycle Status *</label>
-            {{ form.status }}
-            {% if form.status.errors %}<div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>{% endif %}
-          </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Budget Month <span class="text-rose-400">*</span></label>
+          {{ form.period_month }}
+          {% if form.period_month.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.period_month.errors.0 }}</div>{% endif %}
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Budget Year <span class="text-rose-400">*</span></label>
+          {{ form.period_year }}
+          {% if form.period_year.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.period_year.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
 
-        <div class="mb-4">
-          <label class="form-label small text-muted">Notes / Strategic Goals</label>
-          {{ form.notes }}
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Business Segment <span class="text-rose-400">*</span></label>
+          {{ form.business_segment }}
+          {% if form.business_segment.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.business_segment.errors.0 }}</div>{% endif %}
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Lifecycle Status <span class="text-rose-400">*</span></label>
+          {{ form.status }}
+          {% if form.status.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.status.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
 
-        <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-3">
-          <a href="{% url 'budgets:list' %}" class="btn btn-ghost btn-sm">Cancel</a>
-          <button type="submit" class="btn btn-emerald btn-sm">Save Budget</button>
-        </div>
-      </form>
-    </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-300 mb-1.5">Notes / Strategic Goals</label>
+        {{ form.notes }}
+      </div>
+
+      <div class="flex items-center justify-end gap-3 border-t border-[#28354A] pt-4 mt-6">
+        <a href="{% url 'budgets:list' %}" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+          Cancel
+        </a>
+        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400">
+          <i class="bi bi-check-lg"></i>
+          <span>Save Budget</span>
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 {% endblock %}

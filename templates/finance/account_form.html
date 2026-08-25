@@ -1,81 +1,89 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ title }} | Expense Tracking{% endblock %}
+{% block title %}{{ title }} | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
-    <p class="text-muted small mb-0">Financial account setup and opening balance definition</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">{{ title }}</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Financial account setup and opening balance definition</p>
   </div>
   <div>
-    <a href="{% url 'finance:accounts' %}" class="btn btn-ghost btn-sm">
-      <i class="bi bi-arrow-left me-1"></i> Back to Accounts
+    <a href="{% url 'finance:accounts' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Accounts</span>
     </a>
   </div>
 </div>
 
-<div class="row justify-content-center">
-  <div class="col-12 col-lg-8">
-    <div class="theme-card">
-      <form method="post" novalidate>
-        {% csrf_token %}
+<div class="max-w-2xl mx-auto">
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 sm:p-8 shadow-sm">
+    <form method="post" novalidate class="space-y-4">
+      {% csrf_token %}
 
-        {% if form.non_field_errors %}
-          <div class="alert alert-danger py-2 small mb-3">{{ form.non_field_errors }}</div>
-        {% endif %}
-
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-8">
-            <label class="form-label small text-muted">Account Name *</label>
-            {{ form.account_name }}
-            {% if form.account_name.errors %}<div class="text-danger small mt-1">{{ form.account_name.errors.0 }}</div>{% endif %}
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Account Type *</label>
-            {{ form.account_type }}
-            {% if form.account_type.errors %}<div class="text-danger small mt-1">{{ form.account_type.errors.0 }}</div>{% endif %}
-          </div>
+      {% if form.non_field_errors %}
+        <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium">
+          {{ form.non_field_errors }}
         </div>
+      {% endif %}
 
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Account Number / UPI ID</label>
-            {{ form.account_number }}
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Bank Name</label>
-            {{ form.bank_name }}
-          </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Account Name <span class="text-rose-400">*</span></label>
+          {{ form.account_name }}
+          {% if form.account_name.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.account_name.errors.0 }}</div>{% endif %}
         </div>
-
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">IFSC Code</label>
-            {{ form.ifsc_code }}
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Opening Balance (₹) *</label>
-            {{ form.opening_balance }}
-            {% if form.opening_balance.errors %}<div class="text-danger small mt-1">{{ form.opening_balance.errors.0 }}</div>{% endif %}
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Opening Balance Date *</label>
-            {{ form.opening_balance_date }}
-          </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Account Type <span class="text-rose-400">*</span></label>
+          {{ form.account_type }}
+          {% if form.account_type.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.account_type.errors.0 }}</div>{% endif %}
         </div>
+      </div>
 
-        <div class="form-check form-switch mb-4 mt-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Account Number / UPI ID</label>
+          {{ form.account_number }}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Bank Name</label>
+          {{ form.bank_name }}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">IFSC Code</label>
+          {{ form.ifsc_code }}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Opening Balance (₹) <span class="text-rose-400">*</span></label>
+          {{ form.opening_balance }}
+          {% if form.opening_balance.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.opening_balance.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Balance Date <span class="text-rose-400">*</span></label>
+          {{ form.opening_balance_date }}
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <label class="flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-gray-300">
           {{ form.is_active }}
-          <label class="form-check-label text-white small ms-2" for="{{ form.is_active.id_for_label }}">Active for Financial Transactions</label>
-        </div>
+          <span>Active for Financial Transactions &amp; Ledgers</span>
+        </label>
+      </div>
 
-        <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-3">
-          <a href="{% url 'finance:accounts' %}" class="btn btn-ghost btn-sm">Cancel</a>
-          <button type="submit" class="btn btn-emerald btn-sm">Save Business Account</button>
-        </div>
-      </form>
-    </div>
+      <div class="flex items-center justify-end gap-3 border-t border-[#28354A] pt-4 mt-6">
+        <a href="{% url 'finance:accounts' %}" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+          Cancel
+        </a>
+        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400">
+          <i class="bi bi-check-lg"></i>
+          <span>Save Business Account</span>
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 {% endblock %}

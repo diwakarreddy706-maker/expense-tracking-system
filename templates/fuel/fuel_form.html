@@ -1,110 +1,115 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ title }} | Expense Tracking{% endblock %}
+{% block title %}{{ title }} | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
-    <p class="text-muted small mb-0">Record machinery refueling, meter readings, and automatic expense posting</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">{{ title }}</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Record machinery refueling, meter readings, and automatic expense posting</p>
   </div>
   <div>
-    <a href="{% url 'fuel:list' %}" class="btn btn-ghost btn-sm">
-      <i class="bi bi-arrow-left me-1"></i> Back to Fuel Logs
+    <a href="{% url 'fuel:list' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Fuel Logs</span>
     </a>
   </div>
 </div>
 
-<div class="row justify-content-center">
-  <div class="col-12 col-lg-9">
-    <div class="theme-card">
-      <form method="post" novalidate id="fuelEntryForm">
-        {% csrf_token %}
+<div class="max-w-3xl mx-auto">
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 sm:p-8 shadow-sm">
+    <form method="post" novalidate id="fuelEntryForm" class="space-y-4">
+      {% csrf_token %}
 
-        {% if form.non_field_errors %}
-          <div class="alert alert-danger py-2 small mb-3">{{ form.non_field_errors }}</div>
-        {% endif %}
+      {% if form.non_field_errors %}
+        <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
 
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Fueling Date *</label>
-            {{ form.date }}
-            {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>{% endif %}
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Machine / Equipment *</label>
-            {{ form.machine }}
-            {% if form.machine.errors %}<div class="text-danger small mt-1">{{ form.machine.errors.0 }}</div>{% endif %}
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Fuel / Lubricant Type *</label>
-            {{ form.fuel_type }}
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Fueling Date <span class="text-rose-400">*</span></label>
+          {{ form.date }}
+          {% if form.date.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.date.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Machine / Equipment <span class="text-rose-400">*</span></label>
+          {{ form.machine }}
+          {% if form.machine.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.machine.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Fuel / Lubricant Type <span class="text-rose-400">*</span></label>
+          {{ form.fuel_type }}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Quantity (Litres) <span class="text-rose-400">*</span></label>
+          {{ form.quantity }}
+          {% if form.quantity.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.quantity.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Unit Rate (₹/L) <span class="text-rose-400">*</span></label>
+          {{ form.unit_price }}
+          {% if form.unit_price.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.unit_price.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Calculated Total</label>
+          <div class="w-full px-3.5 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] text-rose-400 font-bold font-mono text-sm" id="displaySubtotal">
+            ₹0.00
           </div>
         </div>
+      </div>
 
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Quantity (Litres) *</label>
-            {{ form.quantity }}
-            {% if form.quantity.errors %}<div class="text-danger small mt-1">{{ form.quantity.errors.0 }}</div>{% endif %}
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Unit Rate (₹ per Litre) *</label>
-            {{ form.unit_price }}
-            {% if form.unit_price.errors %}<div class="text-danger small mt-1">{{ form.unit_price.errors.0 }}</div>{% endif %}
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Calculated Total (₹)</label>
-            <div class="form-control bg-dark text-crimson fw-bold border-secondary font-tabular" id="displaySubtotal">
-              ₹0.00
-            </div>
-            <small class="text-muted" style="font-size: 0.7rem;">Authoritative total calculated server-side</small>
-          </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Current Meter Reading <span class="text-rose-400">*</span></label>
+          {{ form.meter_reading }}
+          {% if form.meter_reading.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.meter_reading.errors.0 }}</div>{% endif %}
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Assigned Operator</label>
+          {{ form.operator }}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Slip / Bill / Invoice #</label>
+          {{ form.reference_no }}
+        </div>
+      </div>
 
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Current Meter Reading *</label>
-            {{ form.meter_reading }}
-            {% if form.meter_reading.errors %}<div class="text-danger small mt-1">{{ form.meter_reading.errors.0 }}</div>{% endif %}
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Assigned Operator</label>
-            {{ form.operator }}
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Slip / Bill / Invoice No.</label>
-            {{ form.reference_no }}
-          </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Fuel Pump / Supplier</label>
+          {{ form.supplier }}
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Payment Method <span class="text-rose-400">*</span></label>
+          {{ form.payment_method }}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Debited Account</label>
+          {{ form.account }}
+          {% if form.account.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.account.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
 
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Fuel Pump / Supplier</label>
-            {{ form.supplier }}
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Payment Method *</label>
-            {{ form.payment_method }}
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Debited Account (Non-credit)</label>
-            {{ form.account }}
-            {% if form.account.errors %}<div class="text-danger small mt-1">{{ form.account.errors.0 }}</div>{% endif %}
-          </div>
-        </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-300 mb-1.5">Notes / Dispenser Remarks</label>
+        {{ form.notes }}
+      </div>
 
-        <div class="mb-4">
-          <label class="form-label small text-muted">Notes / Dispenser Remarks</label>
-          {{ form.notes }}
-        </div>
-
-        <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-3">
-          <a href="{% url 'fuel:list' %}" class="btn btn-ghost btn-sm">Cancel</a>
-          <button type="submit" class="btn btn-emerald btn-sm">Save Fuel Log & Post Ledger</button>
-        </div>
-      </form>
-    </div>
+      <div class="flex items-center justify-end gap-3 border-t border-[#28354A] pt-4 mt-6">
+        <a href="{% url 'fuel:list' %}" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+          Cancel
+        </a>
+        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400">
+          <i class="bi bi-check-lg"></i>
+          <span>Save Fuel Log &amp; Post Ledger</span>
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 {% endblock %}

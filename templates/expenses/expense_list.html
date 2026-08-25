@@ -1,53 +1,72 @@
 {% extends 'base.html' %}
 
-{% block title %}Expenses | Expense Tracking{% endblock %}
+{% block title %}Operational Expenses | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">Operational Expenses</h2>
-    <p class="text-muted small mb-0">Record and track operational costs, machine maintenance, and farm supplies</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Operational Expenses</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Record and monitor field operating costs, machine parts, and vendor supplies</p>
   </div>
-  <div class="d-flex gap-2">
-    <button class="btn btn-ghost btn-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#quickExpenseModal">
-      <i class="bi bi-lightning-fill text-warning"></i>
-      <span>Quick Expense</span>
-    </button>
-    <a href="{% url 'expenses:create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+  <div class="flex items-center gap-2.5">
+    {% if request.user.profile.role != 'EMPLOYEE' %}
+      <button
+        type="button"
+        @click="quickExpenseOpen = true"
+        data-bs-toggle="modal"
+        data-bs-target="#quickExpenseModal"
+        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-amber-300 font-semibold text-xs border border-[#28354A] transition-all shadow-sm"
+      >
+        <i class="bi bi-lightning-fill text-amber-400"></i>
+        <span>Quick Expense</span>
+      </button>
+    {% endif %}
+    <a href="{% url 'expenses:create' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
       <i class="bi bi-plus-lg"></i>
       <span>Record Expense</span>
     </a>
   </div>
 </div>
 
-<!-- Multi-Parameter Filter Bar -->
-<div class="theme-card p-3 mb-4">
-  <form method="get" class="row g-2 align-items-center">
-    <div class="col-12 col-md-3">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
-        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search code, notes, bill no...">
+<!-- Multi-Parameter Search & Filter Bar -->
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 items-center">
+    <div class="lg:col-span-2">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+          <i class="bi bi-search text-xs"></i>
+        </span>
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none"
+          placeholder="Search code, notes, bill no..."
+        >
       </div>
     </div>
-    <div class="col-6 col-md-2">
-      <select name="category" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div>
+      <select name="category" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Categories</option>
         {% for cat in categories %}
           <option value="{{ cat.id }}" {% if cat_id == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
         {% endfor %}
       </select>
     </div>
-    <div class="col-6 col-md-2">
-      <select name="account" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div>
+      <select name="account" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Accounts</option>
         {% for acc in accounts %}
           <option value="{{ acc.id }}" {% if acc_id == acc.id|stringformat:"i" %}selected{% endif %}>{{ acc.account_name }}</option>
         {% endfor %}
       </select>
     </div>
-    <div class="col-6 col-md-2">
-      <select name="method" class="form-select form-select-sm bg-dark text-white border-secondary">
-        <option value="">All Payment Methods</option>
+
+    <div>
+      <select name="method" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
+        <option value="">All Methods</option>
         <option value="CASH" {% if method == 'CASH' %}selected{% endif %}>Cash</option>
         <option value="UPI" {% if method == 'UPI' %}selected{% endif %}>UPI</option>
         <option value="BANK_TRANSFER" {% if method == 'BANK_TRANSFER' %}selected{% endif %}>Bank Transfer</option>
@@ -55,96 +74,98 @@
         <option value="CREDIT" {% if method == 'CREDIT' %}selected{% endif %}>Credit / Payable</option>
       </select>
     </div>
-    <div class="col-6 col-md-2">
-      <select name="machine" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div class="flex items-center gap-2">
+      <select name="machine" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Machines</option>
         {% for m in machines %}
           <option value="{{ m.id }}" {% if mch_id == m.id|stringformat:"i" %}selected{% endif %}>{{ m.name }}</option>
         {% endfor %}
       </select>
-    </div>
-    <div class="col-12 col-md-1 d-flex gap-1">
-      <button type="submit" class="btn btn-ghost btn-sm w-100" title="Apply Filters">
+      <button type="submit" class="px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors text-xs" title="Apply Filter">
         <i class="bi bi-funnel-fill"></i>
       </button>
       {% if query or cat_id or acc_id or method or mch_id or segment or start_date or end_date %}
-        <a href="{% url 'expenses:list' %}" class="btn btn-ghost btn-sm" title="Clear Filters"><i class="bi bi-x-lg"></i></a>
+        <a href="{% url 'expenses:list' %}" class="px-2.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 border border-[#28354A] transition-colors text-xs no-underline" title="Clear Filters">
+          <i class="bi bi-x-lg"></i>
+        </a>
       {% endif %}
     </div>
   </form>
 </div>
 
 <!-- Expenses Table -->
-<div class="theme-card">
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Date</th>
-          <th>Code</th>
-          <th>Category</th>
-          <th>Account / Method</th>
-          <th>Machine / Tag</th>
-          <th class="text-end">Amount</th>
-          <th class="text-center">Status</th>
-          <th class="text-end">Actions</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th class="py-3.5 px-4">Date</th>
+          <th class="py-3.5 px-4">Code</th>
+          <th class="py-3.5 px-4">Category</th>
+          <th class="py-3.5 px-4">Account / Method</th>
+          <th class="py-3.5 px-4">Linked Resource</th>
+          <th class="py-3.5 px-4 text-right">Amount</th>
+          <th class="py-3.5 px-4 text-center">Status</th>
+          <th class="py-3.5 px-4 text-right">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for exp in expenses %}
-          <tr class="border-secondary">
-            <td class="text-muted small">{{ exp.expense_date|date:"d M Y" }}</td>
-            <td class="font-tabular text-info fw-semibold">
-              <a href="{% url 'expenses:detail' exp.id %}" class="text-decoration-none text-info">
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 text-gray-400 font-mono text-[11px] whitespace-nowrap">{{ exp.expense_date|date:"d M Y" }}</td>
+            <td class="py-3.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">
+              <a href="{% url 'expenses:detail' exp.id %}" class="text-cyan-400 hover:text-cyan-300 no-underline">
                 {{ exp.expense_code }}
               </a>
               {% if exp.is_quick_expense %}
-                <span class="badge bg-dark border border-warning text-warning ms-1" style="font-size: 0.65rem;">Quick</span>
+                <span class="ml-1 px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Quick</span>
               {% endif %}
             </td>
-            <td>
-              <div class="d-flex align-items-center gap-2">
-                <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: {{ exp.category.color_hex }};"></span>
-                <span class="text-white fw-medium">{{ exp.category.name }}</span>
+            <td class="py-3.5 px-4">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: {{ exp.category.color_hex|default:'#10B981' }};"></span>
+                <span class="text-white font-medium">{{ exp.category.name }}</span>
               </div>
             </td>
-            <td>
-              <div class="text-white small">{{ exp.account.account_name|default:"Credit Obligation" }}</div>
-              <div class="text-muted" style="font-size: 0.75rem;">{{ exp.get_payment_method_display }}</div>
+            <td class="py-3.5 px-4">
+              <div class="text-gray-200 font-medium">{{ exp.account.account_name|default:"Credit Obligation" }}</div>
+              <div class="text-[10px] text-gray-400">{{ exp.get_payment_method_display }}</div>
             </td>
-            <td>
+            <td class="py-3.5 px-4">
               {% if exp.machine %}
-                <span class="badge bg-dark border border-secondary text-light">
-                  <i class="bi bi-truck me-1"></i>{{ exp.machine.name }}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#182234] border border-[#28354A] text-cyan-300 text-[11px]">
+                  <i class="bi bi-truck text-[10px]"></i> {{ exp.machine.name }}
                 </span>
               {% elif exp.employee %}
-                <span class="badge bg-dark border border-secondary text-primary">
-                  <i class="bi bi-person me-1"></i>{{ exp.employee.full_name }}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#182234] border border-[#28354A] text-purple-300 text-[11px]">
+                  <i class="bi bi-person text-[10px]"></i> {{ exp.employee.full_name }}
                 </span>
               {% else %}
-                <span class="text-muted small">--</span>
+                <span class="text-gray-500">--</span>
               {% endif %}
             </td>
-            <td class="text-end font-tabular text-crimson fw-bold">
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-rose-400 text-sm whitespace-nowrap">
               -₹{{ exp.amount }}
             </td>
-            <td class="text-center">
+            <td class="py-3.5 px-4 text-center">
               {% if exp.is_reversed %}
-                <span class="badge bg-danger">Reversed</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Reversed</span>
               {% else %}
-                <span class="badge bg-success">Posted</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Posted</span>
               {% endif %}
             </td>
-            <td class="text-end">
-              <a href="{% url 'expenses:detail' exp.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="View Detail & Ledger">
+            <td class="py-3.5 px-4 text-right">
+              <a href="{% url 'expenses:detail' exp.id %}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="View Expense Details">
                 <i class="bi bi-eye"></i>
+                <span class="hidden sm:inline">View</span>
               </a>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="8" class="text-center py-5 text-muted">
-              <i class="bi bi-receipt fs-1 d-block mb-2 text-secondary"></i>
+            <td colspan="8" class="py-12 text-center text-gray-500">
+              <i class="bi bi-receipt text-3xl d-block mb-2 text-gray-600"></i>
               No expenses found matching the criteria. Click "Record Expense" or "Quick Expense" to log your first transaction.
             </td>
           </tr>

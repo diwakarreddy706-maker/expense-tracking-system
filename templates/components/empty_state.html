@@ -1,0 +1,15 @@
+{# Reusable Empty State Component #}
+{# Parameters: icon, title, message, action_url, action_text #}
+<div class="py-12 px-4 text-center flex flex-col items-center justify-center">
+  <div class="w-16 h-16 rounded-2xl bg-gray-800/80 border border-[#28354A] flex items-center justify-center text-2xl text-gray-400 mb-4 shadow-inner">
+    <i class="{{ icon|default:'bi bi-inbox' }}"></i>
+  </div>
+  <h3 class="text-base font-bold text-white mb-1">{{ title|default:"No records found" }}</h3>
+  <p class="text-xs text-gray-400 max-w-sm mb-5 leading-relaxed">{{ message|default:"There is currently no data available for this query or category." }}</p>
+  {% if action_url and action_text %}
+    <a href="{{ action_url }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-400">
+      <i class="bi bi-plus-lg"></i>
+      <span>{{ action_text }}</span>
+    </a>
+  {% endif %}
+</div>

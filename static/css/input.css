@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#0B0F17] text-gray-100 font-sans antialiased min-h-screen selection:bg-emerald-500 selection:text-white;
+  }
+
+  /* Custom scrollbar for ERP density */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0B0F17;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #28354A;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #374761;
+  }
+}
+
+@layer utilities {
+  .num-tabular,
+  .tabular-nums {
+    font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Hide element visually while keeping accessible for screen readers */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}

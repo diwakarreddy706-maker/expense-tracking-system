@@ -1,213 +1,268 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ title }} | Expense Tracking{% endblock %}
+{% block title %}Fuel Entry {{ entry.fuel_code }} | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <div class="d-flex align-items-center gap-2">
-      <h2 class="fs-4 fw-bold text-white mb-0">{{ entry.fuel_code }}</h2>
-      {% if entry.linked_expense.is_reversed %}
-        <span class="badge bg-danger">Reversed</span>
+    <div class="flex items-center gap-2 mb-1">
+      <a href="{% url 'fuel:list' %}" class="text-xs text-gray-400 hover:text-white no-underline">Fuel Registry</a>
+      <span class="text-xs text-gray-600">/</span>
+      <span class="text-xs font-mono text-cyan-400 font-bold">{{ entry.fuel_code }}</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0 font-mono">{{ entry.fuel_code }}</h2>
+      {% if entry.is_reversed %}
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">REVERSED</span>
       {% else %}
-        <span class="badge bg-success">Posted</span>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ACTIVE</span>
       {% endif %}
     </div>
-    <p class="text-muted small mb-0 mt-1">Refueled on {{ entry.date|date:"d M Y" }} for {{ entry.machine.name }}</p>
   </div>
-  <div class="d-flex gap-2">
-    <a href="{% url 'fuel:list' %}" class="btn btn-ghost btn-sm">
-      <i class="bi bi-arrow-left me-1"></i> Back to Fuel Logs
+
+  <div class="flex items-center gap-2">
+    <a href="{% url 'fuel:list' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-gray-300 hover:text-white font-semibold text-xs border border-[#28354A] transition-all no-underline">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back</span>
     </a>
-    {% if not entry.linked_expense.is_reversed and request.user.profile.role == 'OWNER' or request.user.is_superuser %}
-      <button class="btn btn-outline-danger btn-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#fuelReversalModal">
+    {% if not entry.is_reversed and request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+      <button
+        type="button"
+        data-bs-toggle="modal"
+        data-bs-target="#fuelReversalModal"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-rose-500"
+      >
         <i class="bi bi-arrow-counterclockwise"></i>
-        <span>Reverse Fuel Entry</span>
+        <span>Reverse Entry</span>
       </button>
     {% endif %}
   </div>
 </div>
 
-<div class="row g-4">
-  <!-- Left Column: Fuel & Operational Details -->
-  <div class="col-12 col-lg-7">
-    <div class="theme-card mb-4">
-      <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
-        <i class="bi bi-fuel-pump-fill me-2 text-warning"></i>Fueling Information
-      </h3>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+  <!-- Left 2 Cols: Main Slip Information -->
+  <div class="lg:col-span-2 space-y-6">
+    <!-- Primary Fuel Details Card -->
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center gap-2.5 border-b border-[#28354A] pb-3 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+          <i class="bi bi-fuel-pump-fill text-base"></i>
+        </div>
+        <h3 class="text-sm font-bold text-white tracking-tight m-0">Fuel Dispensing Information</h3>
+      </div>
 
-      <div class="row g-3">
-        <div class="col-6">
-          <div class="text-muted small">Machine / Equipment</div>
-          <div class="text-white fw-bold d-flex align-items-center gap-2 mt-1">
-            <i class="bi bi-truck text-emerald"></i>
-            {{ entry.machine.name }} ({{ entry.machine.machine_code }})
-          </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#28354A]">
+          <span class="text-gray-400 block mb-1">Target Machine</span>
+          <span class="text-white font-bold text-sm block">{{ entry.machine.name }}</span>
+          <span class="text-cyan-400 font-mono text-[11px]">{{ entry.machine.machine_code }} &bull; {{ entry.machine.machine_type.name }}</span>
         </div>
-        <div class="col-6">
-          <div class="text-muted small">Meter Reading at Fueling</div>
-          <div class="text-white font-tabular fw-semibold mt-1">
-            {{ entry.meter_reading }} {{ entry.machine.get_meter_unit_display }}
-          </div>
+
+        <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#28354A]">
+          <span class="text-gray-400 block mb-1">Fuel Type &amp; Date</span>
+          <span class="text-white font-bold text-sm block">{{ entry.get_fuel_type_display }}</span>
+          <span class="text-gray-300 font-mono text-[11px]">{{ entry.entry_date|date:"d M Y" }}</span>
         </div>
-        <div class="col-6">
-          <div class="text-muted small">Fuel / Lubricant Type</div>
-          <div class="text-info fw-medium mt-1">{{ entry.get_fuel_type_display }}</div>
+
+        <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#28354A]">
+          <span class="text-gray-400 block mb-1">Quantity Dispensed</span>
+          <span class="text-xl font-extrabold font-mono text-cyan-400">{{ entry.quantity_liters }} Liters</span>
         </div>
-        <div class="col-6">
-          <div class="text-muted small">Volume Dispensed</div>
-          <div class="text-white font-tabular fs-5 fw-bold mt-1">{{ entry.quantity }} Litres</div>
+
+        <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#28354A]">
+          <span class="text-gray-400 block mb-1">Rate per Liter</span>
+          <span class="text-xl font-extrabold font-mono text-white">₹{{ entry.rate_per_liter }}</span>
         </div>
-        <div class="col-6">
-          <div class="text-muted small">Unit Price Rate</div>
-          <div class="text-muted font-tabular mt-1">₹{{ entry.unit_price }} / L</div>
+
+        <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#28354A]">
+          <span class="text-gray-400 block mb-1">Machine Meter Reading</span>
+          {% if entry.meter_reading %}
+            <span class="text-lg font-bold font-mono text-white">{{ entry.meter_reading }} {{ entry.machine.meter_unit }}</span>
+          {% else %}
+            <span class="text-gray-500 italic">Not recorded</span>
+          {% endif %}
         </div>
-        <div class="col-6">
-          <div class="text-muted small">Total Cost</div>
-          <div class="text-crimson font-tabular fs-4 fw-bold mt-1">₹{{ entry.total_amount }}</div>
-        </div>
-        <div class="col-6">
-          <div class="text-muted small">Payment Method</div>
-          <div class="text-white mt-1">{{ entry.get_payment_method_display }}</div>
-        </div>
-        <div class="col-6">
-          <div class="text-muted small">Debited Account</div>
-          <div class="text-white mt-1">{{ entry.account.account_name|default:"Credit Obligation" }}</div>
+
+        <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-emerald-500/30 bg-emerald-950/10">
+          <span class="text-gray-400 block mb-1 font-semibold">Total Fuel Cost</span>
+          <span class="text-2xl font-extrabold font-mono text-emerald-400">₹{{ entry.total_amount }}</span>
         </div>
       </div>
 
-      {% if entry.notes %}
-      <div class="border-top border-secondary pt-3 mt-3">
-        <div class="text-muted small">Notes / Remarks</div>
-        <div class="text-light small mt-1">{{ entry.notes }}</div>
-      </div>
-      {% endif %}
-    </div>
-
-    <!-- Linked Entities -->
-    <div class="theme-card">
-      <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
-        <i class="bi bi-people me-2 text-info"></i>Operator & Supplier
-      </h3>
-      <div class="row g-3">
-        <div class="col-6">
-          <div class="text-muted small">Assigned Operator</div>
-          <div class="text-white small fw-medium mt-1">
-            {% if entry.operator %}
-              <i class="bi bi-person me-1 text-primary"></i>{{ entry.operator.full_name }}
-            {% else %}
-              <span class="text-muted">None</span>
-            {% endif %}
-          </div>
+      <!-- Notes / Vendor Info -->
+      <div class="mt-4 pt-4 border-t border-[#28354A] grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <div>
+          <span class="text-gray-400 font-semibold block mb-1">Supplier / Petrol Pump</span>
+          {% if entry.supplier %}
+            <span class="text-white font-medium">{{ entry.supplier.name }}</span>
+            <span class="text-gray-400 text-[11px] block">{{ entry.supplier.supplier_code }}</span>
+          {% else %}
+            <span class="text-gray-500">Unspecified Pump / Local Vendor</span>
+          {% endif %}
         </div>
-        <div class="col-6">
-          <div class="text-muted small">Fuel Pump / Supplier</div>
-          <div class="text-white small fw-medium mt-1">
-            {% if entry.supplier %}
-              <i class="bi bi-shop me-1 text-warning"></i>{{ entry.supplier.name }}
-            {% else %}
-              <span class="text-muted">Direct / Retail Pump</span>
-            {% endif %}
-          </div>
+        <div>
+          <span class="text-gray-400 font-semibold block mb-1">Operator / Driver</span>
+          <span class="text-white font-medium">{{ entry.operator_name|default:"Direct Machine Fill" }}</span>
         </div>
+        {% if entry.notes %}
+          <div class="sm:col-span-2">
+            <span class="text-gray-400 font-semibold block mb-1">Remarks &amp; Slip Notes</span>
+            <p class="text-gray-300 bg-[#0B0F17] p-2.5 rounded-xl border border-[#28354A] m-0">{{ entry.notes }}</p>
+          </div>
+        {% endif %}
       </div>
     </div>
+
+    <!-- Reversal Record (if reversed) -->
+    {% if entry.is_reversed %}
+      <div class="bg-rose-950/20 border border-rose-600/30 rounded-2xl p-6 shadow-sm">
+        <div class="flex items-center gap-2.5 border-b border-rose-600/30 pb-3 mb-3">
+          <div class="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
+            <i class="bi bi-x-octagon-fill text-base"></i>
+          </div>
+          <h3 class="text-sm font-bold text-rose-300 tracking-tight m-0">Reversal Audit Data</h3>
+        </div>
+        <div class="text-xs text-rose-200 space-y-1.5">
+          <div>Reversed On: <strong class="text-white font-mono">{{ entry.reversed_at|date:"d M Y, H:i" }}</strong></div>
+          <div>Reversed By: <strong class="text-white">{{ entry.reversed_by.username }}</strong></div>
+          <div>Reason: <span class="italic text-rose-100">{{ entry.reversal_reason|default:"No reason stated." }}</span></div>
+        </div>
+      </div>
+    {% endif %}
   </div>
 
-  <!-- Right Column: 1:1 Financial Expense & Ledger Inspector -->
-  <div class="col-12 col-lg-5">
-    <div class="theme-card mb-4">
-      <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
-        <i class="bi bi-link-45deg me-2 text-emerald"></i>Linked Financial Pipeline
-      </h3>
+  <!-- Right 1 Col: Financial Linkages & Audit -->
+  <div class="space-y-6">
+    <!-- Linked Financial Ledger Card -->
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center gap-2.5 border-b border-[#28354A] pb-3 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+          <i class="bi bi-receipt text-base"></i>
+        </div>
+        <h3 class="text-sm font-bold text-white tracking-tight m-0">Double-Entry Linkages</h3>
+      </div>
 
-      <!-- Linked Expense Card -->
-      <div class="p-3 rounded bg-dark border border-secondary mb-3">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="badge bg-primary">1:1 Linked Expense</span>
-          <span class="font-tabular text-info">{{ entry.linked_expense.expense_code }}</span>
+      <!-- Linked Expense -->
+      <div class="p-4 rounded-xl bg-[#0B0F17] border border-[#28354A] space-y-3 text-xs mb-4">
+        <div class="flex items-center justify-between">
+          <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold text-[10px]">1:1 Linked Expense</span>
+          <span class="font-mono text-cyan-400 font-bold">{{ entry.linked_expense.expense_code }}</span>
         </div>
-        <div class="d-flex justify-content-between text-muted small mb-1">
-          <span>Expense Category:</span>
-          <span class="text-white fw-semibold">{{ entry.linked_expense.category.name }}</span>
+
+        <div class="flex justify-between text-gray-400">
+          <span>Category:</span>
+          <span class="text-white font-medium">{{ entry.linked_expense.category.name }}</span>
         </div>
-        <div class="d-flex justify-content-between text-muted small mb-1">
-          <span>Financial Status:</span>
-          <span class="badge {% if entry.linked_expense.is_reversed %}bg-danger{% else %}bg-success{% endif %}">
+
+        <div class="flex justify-between text-gray-400">
+          <span>Status:</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold {% if entry.linked_expense.is_reversed %}bg-rose-500/10 text-rose-400 border-rose-500/20{% else %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20{% endif %} border">
             {{ entry.linked_expense.is_reversed|yesno:"Reversed,Posted" }}
           </span>
         </div>
-        <div class="d-flex justify-content-between border-top border-secondary pt-2 mt-2">
-          <span class="text-muted">Expense Amount:</span>
-          <span class="font-tabular text-crimson fw-bold">₹{{ entry.linked_expense.amount }}</span>
+
+        <div class="flex justify-between border-t border-[#28354A] pt-3 text-sm">
+          <span class="text-gray-300 font-semibold">Expense Amount:</span>
+          <span class="font-mono font-extrabold text-rose-400">-₹{{ entry.linked_expense.amount }}</span>
         </div>
       </div>
 
-      <!-- Linked Ledger Transaction Card -->
+      <!-- Linked Ledger Transaction -->
       {% if ledger_tx %}
-      <div class="p-3 rounded bg-dark border border-secondary">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="badge bg-secondary">Ledger Entry #{{ ledger_tx.id }}</span>
-          <span class="badge bg-danger">{{ ledger_tx.get_direction_display }}</span>
+        <div class="p-4 rounded-xl bg-[#0B0F17] border border-[#28354A] space-y-3 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded bg-gray-800 text-gray-300 font-mono text-[10px]">Ledger Entry #{{ ledger_tx.id }}</span>
+            <span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold text-[10px]">{{ ledger_tx.get_direction_display }}</span>
+          </div>
+
+          <div class="flex justify-between text-gray-400">
+            <span>Debited Account:</span>
+            <span class="text-white font-medium">{{ ledger_tx.account.account_name }}</span>
+          </div>
+
+          <div class="flex justify-between text-gray-400">
+            <span>Posting Date:</span>
+            <span class="text-white font-mono">{{ ledger_tx.transaction_date|date:"d M Y" }}</span>
+          </div>
+
+          <div class="flex justify-between border-t border-[#28354A] pt-3 text-sm">
+            <span class="text-gray-300 font-semibold">Debited Amount:</span>
+            <span class="font-mono font-extrabold text-rose-400">-₹{{ ledger_tx.amount }}</span>
+          </div>
         </div>
-        <div class="d-flex justify-content-between text-muted small mb-1">
-          <span>Debited Account:</span>
-          <span class="text-white fw-semibold">{{ ledger_tx.account.account_name }}</span>
-        </div>
-        <div class="d-flex justify-content-between text-muted small mb-1">
-          <span>Transaction Date:</span>
-          <span class="text-white font-tabular">{{ ledger_tx.transaction_date|date:"d M Y" }}</span>
-        </div>
-        <div class="d-flex justify-content-between border-top border-secondary pt-2 mt-2">
-          <span class="text-muted">Debited Amount:</span>
-          <span class="font-tabular text-crimson fw-bold">₹{{ ledger_tx.amount }}</span>
-        </div>
-      </div>
       {% else %}
-        <div class="text-muted small py-2">Credit purchase — settled via supplier payable obligation.</div>
+        <div class="text-xs text-gray-400 py-3 text-center">Credit purchase &mdash; settled via supplier payable obligation.</div>
       {% endif %}
     </div>
 
     <!-- Metadata Card -->
-    <div class="theme-card">
-      <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
-        <i class="bi bi-clock-history me-2 text-info"></i>Audit Trail
-      </h3>
-      <div class="text-muted small mb-2">Recorded: <span class="text-white font-tabular">{{ entry.created_at|date:"d M Y, H:i" }}</span></div>
-      <div class="text-muted small mb-2">Logged By: <span class="text-white">{{ entry.created_by.username }}</span></div>
-      <div class="text-muted small">Last Update: <span class="text-white font-tabular">{{ entry.updated_at|date:"d M Y, H:i" }}</span></div>
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm text-xs">
+      <div class="flex items-center gap-2.5 border-b border-[#28354A] pb-3 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+          <i class="bi bi-clock-history text-base"></i>
+        </div>
+        <h3 class="text-sm font-bold text-white tracking-tight m-0">Audit Trail</h3>
+      </div>
+
+      <div class="space-y-2.5 text-gray-400">
+        <div class="flex justify-between">
+          <span>Recorded:</span>
+          <span class="text-white font-mono">{{ entry.created_at|date:"d M Y, H:i" }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Logged By:</span>
+          <span class="text-white font-medium">{{ entry.created_by.username }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Last Update:</span>
+          <span class="text-white font-mono">{{ entry.updated_at|date:"d M Y, H:i" }}</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- Fuel Reversal Modal -->
 {% if not entry.linked_expense.is_reversed and request.user.profile.role == 'OWNER' or request.user.is_superuser %}
-<div class="modal fade" id="fuelReversalModal" tabindex="-1" aria-labelledby="fuelReversalModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content bg-dark border-secondary text-white">
+<div class="modal fade fixed inset-0 z-50 overflow-y-auto" id="fuelReversalModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-center justify-center p-4">
+    <div class="modal-content relative w-full max-w-md bg-[#131A26] border border-[#28354A] rounded-2xl shadow-2xl overflow-hidden text-gray-100">
       <form method="post" action="{% url 'fuel:reverse' entry.id %}">
         {% csrf_token %}
-        <div class="modal-header border-secondary">
-          <h5 class="modal-title fs-6 fw-bold text-danger" id="fuelReversalModalLabel">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Fuel Entry Reversal
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
+              <i class="bi bi-exclamation-triangle-fill text-base"></i>
+            </div>
+            <h5 class="text-sm font-bold text-white tracking-tight m-0" id="fuelReversalModalLabel">
+              Confirm Fuel Reversal
+            </h5>
+          </div>
+          <button type="button" class="btn-close text-gray-400 hover:text-white p-1 rounded-lg focus:outline-none" data-bs-dismiss="modal" aria-label="Close">
+            <i class="bi bi-x-lg text-sm"></i>
+          </button>
         </div>
-        <div class="modal-body">
-          <p class="small text-light">
-            You are about to reverse fuel log <strong>{{ entry.fuel_code }}</strong> (₹{{ entry.total_amount }}).
+
+        <div class="p-6 space-y-4 text-xs">
+          <p class="text-gray-300 leading-relaxed">
+            You are reversing fuel entry <strong class="text-white font-mono">{{ entry.fuel_code }}</strong> (<span class="text-rose-400 font-bold font-mono">₹{{ entry.total_amount }}</span>).
           </p>
-          <div class="alert alert-warning py-2 small">
-            <i class="bi bi-info-circle me-1"></i> This will reverse the linked Expense <strong>{{ entry.linked_expense.expense_code }}</strong> and post a compensatory <strong>CREDIT REVERSAL</strong> transaction to restore account balance while keeping full audit history intact.
+          <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 leading-relaxed">
+            <i class="bi bi-info-circle mr-1"></i> This will reverse linked Expense <strong class="text-white font-mono">{{ entry.linked_expense.expense_code }}</strong> and post a compensatory <strong>CREDIT REVERSAL</strong> transaction to restore account balance.
           </div>
-          <div class="mb-3">
-            <label class="form-label small text-muted">Reason for Reversal *</label>
-            <textarea name="reason" rows="2" class="form-control bg-dark text-white border-secondary" required placeholder="e.g. Fuel slip duplicated / Wrong machine selected"></textarea>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Reason for Reversal <span class="text-rose-400">*</span></label>
+            <textarea name="reason" rows="2" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-rose-500 focus:ring-1 focus:ring-rose-500 text-white text-xs placeholder-gray-600 focus:outline-none" required placeholder="e.g. Duplicate slip entered / Incorrect machine selected"></textarea>
           </div>
         </div>
-        <div class="modal-footer border-secondary">
-          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-danger btn-sm">Execute Reversal</button>
+
+        <div class="px-6 py-4 border-t border-[#28354A] flex items-center justify-end gap-3 bg-[#162030]">
+          <button type="button" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors" data-bs-dismiss="modal">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-md shadow-rose-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-rose-400">
+            Execute Reversal
+          </button>
         </div>
       </form>
     </div>

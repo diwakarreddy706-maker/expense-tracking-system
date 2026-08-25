@@ -1,181 +1,211 @@
-<aside class="app-sidebar">
-  <div class="sidebar-header">
-    <div class="brand-icon">
-      <i class="bi bi-wallet2"></i>
-    </div>
-    <h1 class="brand-title">Expense Tracking</h1>
+{% load static %}
+<aside
+  class="fixed inset-y-0 left-0 z-50 w-64 bg-[#111827] border-r border-[#28354A] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto lg:z-auto"
+  :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+  @click.away="sidebarOpen = false"
+  @keydown.escape.window="sidebarOpen = false"
+  aria-label="Main Navigation"
+>
+  <!-- Sidebar Header / Brand -->
+  <div class="h-16 flex items-center justify-between px-5 border-b border-[#28354A] bg-[#0F172A]/70 backdrop-blur-sm">
+    <a href="{% url 'dashboard:index' %}" class="flex items-center gap-3 text-white no-underline group focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg p-1">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-900/30 group-hover:scale-105 transition-transform duration-200">
+        <i class="bi bi-wallet2 text-lg"></i>
+      </div>
+      <div>
+        <div class="font-bold text-sm tracking-tight text-white flex items-center gap-1.5">
+          <span>AgriBOS</span>
+          <span class="text-[10px] uppercase font-semibold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ERP</span>
+        </div>
+        <div class="text-[11px] text-gray-400 font-medium">Expense & Machinery</div>
+      </div>
+    </a>
+
+    <!-- Close button for mobile drawer -->
+    <button
+      type="button"
+      @click="sidebarOpen = false"
+      class="lg:hidden text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+      aria-label="Close Sidebar"
+    >
+      <i class="bi bi-x-lg text-lg"></i>
+    </button>
   </div>
-  <ul class="sidebar-menu">
+
+  <!-- Role Badge / Current Context -->
+  <div class="px-5 py-3 border-b border-[#1E293B] bg-[#0B0F17]/50 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+      <span class="text-xs font-semibold text-gray-300">
+        {% if request.user.profile.role %}
+          {{ request.user.profile.get_role_display }}
+        {% elif request.user.is_superuser %}
+          Superuser
+        {% else %}
+          Guest
+        {% endif %}
+      </span>
+    </div>
+    <span class="text-[10px] text-gray-400 font-mono">v1.0</span>
+  </div>
+
+  <!-- Navigation Menu List -->
+  <nav class="flex-1 overflow-y-auto px-3 py-3 space-y-1 text-sm font-medium" aria-label="Sidebar Menu">
     {% with role=request.user.profile.role %}
+
+    <!-- Section: Operations -->
+    <div class="px-3 pt-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">Core Operations</div>
+
     <!-- Dashboard: All Roles -->
-    <li class="menu-item">
-      <a href="{% url 'dashboard:index' %}" class="menu-link active">
-        <i class="bi bi-grid-1x2-fill menu-icon"></i>
-        <span>Dashboard</span>
-      </a>
-    </li>
+    <a href="{% url 'dashboard:index' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'dashboard' and request.resolver_match.url_name == 'index' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-grid-1x2-fill w-5 text-center text-base {% if request.resolver_match.app_name == 'dashboard' and request.resolver_match.url_name == 'index' %}text-emerald-400{% else %}text-gray-400{% endif %}"></i>
+      <span>Dashboard</span>
+    </a>
 
     <!-- Expenses Hub -->
-    <li class="menu-item">
-      <a href="{% url 'expenses:list' %}" class="menu-link">
-        <i class="bi bi-receipt menu-icon"></i>
-        <span>Expenses</span>
-      </a>
-    </li>
+    <a href="{% url 'expenses:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'expenses' and request.resolver_match.url_name != 'categories' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-receipt w-5 text-center text-base {% if request.resolver_match.app_name == 'expenses' and request.resolver_match.url_name != 'categories' %}text-emerald-400{% else %}text-gray-400{% endif %}"></i>
+      <span>Expenses Hub</span>
+    </a>
 
     <!-- Expense Categories: Owner & Accountant -->
     {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
-    <li class="menu-item">
-      <a href="{% url 'expenses:categories' %}" class="menu-link">
-        <i class="bi bi-tags-fill menu-icon"></i>
-        <span>Expense Categories</span>
-      </a>
-    </li>
+    <a href="{% url 'expenses:categories' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'expenses' and request.resolver_match.url_name == 'categories' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-tags-fill w-5 text-center text-base text-gray-400"></i>
+      <span>Expense Categories</span>
+    </a>
     {% endif %}
 
     <!-- Fuel & Lubricants: All Roles -->
-    <li class="menu-item">
-      <a href="{% url 'fuel:list' %}" class="menu-link">
-        <i class="bi bi-fuel-pump-fill menu-icon"></i>
-        <span>Fuel & Lubricants</span>
-      </a>
-    </li>
+    <a href="{% url 'fuel:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'fuel' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-fuel-pump-fill w-5 text-center text-base text-amber-400"></i>
+      <span>Fuel & Lubricants</span>
+    </a>
 
-    <!-- Machines: Owner, Manager -->
+    <!-- Section: Machinery & Fleet -->
+    {% if role == 'OWNER' or role == 'MANAGER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
+    <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">Machinery & Fleet</div>
+
+    <!-- Machines Directory -->
     {% if role == 'OWNER' or role == 'MANAGER' or request.user.is_superuser %}
-    <li class="menu-item">
-      <a href="{% url 'machines:list' %}" class="menu-link">
-        <i class="bi bi-truck menu-icon"></i>
-        <span>Machines & Equipment</span>
-      </a>
-    </li>
+    <a href="{% url 'machines:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'list' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-truck w-5 text-center text-base text-blue-400"></i>
+      <span>Machines Registry</span>
+    </a>
     {% endif %}
 
-    <!-- Machine Bookings & Dispatch: Owner, Manager, Accountant -->
+    <!-- Bookings & Dispatch -->
+    <a href="{% url 'machines:booking_list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'booking_list' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-calendar-check w-5 text-center text-base text-emerald-400"></i>
+      <span>Bookings & Jobs</span>
+    </a>
+
+    <a href="{% url 'machines:dispatch_board' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'dispatch_board' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-kanban w-5 text-center text-base text-cyan-400"></i>
+      <span>Dispatch Board</span>
+    </a>
+
+    <a href="{% url 'machines:work_list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'work_list' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-clock-history w-5 text-center text-base text-teal-400"></i>
+      <span>Work Logs & Billing</span>
+    </a>
+
+    <a href="{% url 'machines:maintenance_dashboard' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and 'maintenance' in request.resolver_match.url_name %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-tools w-5 text-center text-base text-amber-400"></i>
+      <span>Workshop Maintenance</span>
+    </a>
+    {% endif %}
+
+    <!-- Section: People & Payroll -->
     {% if role == 'OWNER' or role == 'MANAGER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
-    <li class="menu-item">
-      <a href="{% url 'machines:booking_list' %}" class="menu-link">
-        <i class="bi bi-calendar-check menu-icon text-primary"></i>
-        <span>Bookings & Dispatch</span>
-      </a>
-    </li>
-    <li class="menu-item">
-      <a href="{% url 'machines:dispatch_board' %}" class="menu-link">
-        <i class="bi bi-kanban menu-icon text-info"></i>
-        <span>Dispatch Board</span>
-      </a>
-    </li>
+    <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">Staff & Wages</div>
+
+    <a href="{% url 'employees:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'employees' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-people-fill w-5 text-center text-base text-purple-400"></i>
+      <span>Staff & Wages</span>
+    </a>
     {% endif %}
 
-    <!-- Machine Work Entries & Billing: Owner, Manager, Accountant -->
-    {% if role == 'OWNER' or role == 'MANAGER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
-    <li class="menu-item">
-      <a href="{% url 'machines:work_list' %}" class="menu-link">
-        <i class="bi bi-clock-history menu-icon text-success"></i>
-        <span>Machine Work & Billing</span>
-      </a>
-    </li>
-    {% endif %}
-
-    <!-- Employees: Owner, Manager, Accountant -->
-    {% if role == 'OWNER' or role == 'MANAGER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
-    <li class="menu-item">
-      <a href="{% url 'employees:list' %}" class="menu-link">
-        <i class="bi bi-people-fill menu-icon"></i>
-        <span>Employees & Staff</span>
-      </a>
-    </li>
-    {% endif %}
-
-    <!-- Business Accounts: Owner, Accountant -->
-    {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
-    <li class="menu-item">
-      <a href="{% url 'finance:accounts' %}" class="menu-link">
-        <i class="bi bi-bank2 menu-icon"></i>
-        <span>Business Accounts</span>
-      </a>
-    </li>
-    {% endif %}
-
-    <!-- Customers & Farmers: Owner, Accountant, Manager -->
+    <!-- Section: Financial Management -->
     {% if role == 'OWNER' or role == 'ACCOUNTANT' or role == 'MANAGER' or request.user.is_superuser %}
-    <li class="menu-item">
-      <a href="{% url 'finance:customers' %}" class="menu-link">
-        <i class="bi bi-person-lines-fill menu-icon"></i>
-        <span>Customers</span>
-      </a>
-    </li>
-    {% endif %}
+    <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">Finance & Ledgers</div>
 
-    <!-- Suppliers & Vendors: Owner, Accountant, Manager -->
-    {% if role == 'OWNER' or role == 'ACCOUNTANT' or role == 'MANAGER' or request.user.is_superuser %}
-    <li class="menu-item">
-      <a href="{% url 'finance:suppliers' %}" class="menu-link">
-        <i class="bi bi-shop-window menu-icon"></i>
-        <span>Suppliers & Vendors</span>
-      </a>
-    </li>
-    {% endif %}
-
-    <!-- Budgets: Owner, Accountant, Manager -->
-    {% if role == 'OWNER' or role == 'ACCOUNTANT' or role == 'MANAGER' or request.user.is_superuser %}
-    <li class="menu-item">
-      <a href="{% url 'budgets:list' %}" class="menu-link">
-        <i class="bi bi-bullseye menu-icon"></i>
-        <span>Budgets</span>
-      </a>
-    </li>
-    {% endif %}
-
-    <!-- Receivables: Owner, Accountant -->
     {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
-    <li class="menu-item">
-      <a href="{% url 'finance:receivables' %}" class="menu-link">
-        <i class="bi bi-arrow-down-left-square-fill menu-icon"></i>
-        <span>Receivables</span>
-      </a>
-    </li>
+    <a href="{% url 'finance:accounts' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'finance' and request.resolver_match.url_name == 'accounts' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-bank2 w-5 text-center text-base text-blue-400"></i>
+      <span>Business Accounts</span>
+    </a>
     {% endif %}
 
-    <!-- Payables: Owner, Accountant -->
+    <a href="{% url 'finance:customers' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'finance' and request.resolver_match.url_name == 'customers' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-person-lines-fill w-5 text-center text-base text-emerald-400"></i>
+      <span>Farmers / Customers</span>
+    </a>
+
+    <a href="{% url 'finance:suppliers' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'finance' and request.resolver_match.url_name == 'suppliers' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-shop-window w-5 text-center text-base text-amber-400"></i>
+      <span>Suppliers & Vendors</span>
+    </a>
+
+    <a href="{% url 'budgets:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'budgets' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-bullseye w-5 text-center text-base text-indigo-400"></i>
+      <span>Budgets</span>
+    </a>
+
     {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
-    <li class="menu-item">
-      <a href="{% url 'finance:payables' %}" class="menu-link">
-        <i class="bi bi-arrow-up-right-square-fill menu-icon"></i>
-        <span>Payables</span>
-      </a>
-    </li>
+    <a href="{% url 'finance:receivables' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'finance' and request.resolver_match.url_name == 'receivables' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-arrow-down-left-square-fill w-5 text-center text-base text-emerald-400"></i>
+      <span>Receivables</span>
+    </a>
+
+    <a href="{% url 'finance:payables' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'finance' and request.resolver_match.url_name == 'payables' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-arrow-up-right-square-fill w-5 text-center text-base text-rose-400"></i>
+      <span>Payables</span>
+    </a>
+
+    <a href="{% url 'finance:daily_closing' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'finance' and request.resolver_match.url_name == 'daily_closing' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-lock-fill w-5 text-center text-base text-amber-400"></i>
+      <span>Daily Closing</span>
+    </a>
     {% endif %}
 
-    <!-- Daily Closing: Owner, Accountant -->
-    {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
-    <li class="menu-item">
-      <a href="{% url 'finance:daily_closing' %}" class="menu-link">
-        <i class="bi bi-lock-fill menu-icon"></i>
-        <span>Daily Closing</span>
-      </a>
-    </li>
+    <a href="{% url 'reports:index' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'reports' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-file-earmark-bar-graph-fill w-5 text-center text-base text-sky-400"></i>
+      <span>Reports & Analytics</span>
+    </a>
     {% endif %}
 
-    <!-- Financial & Ops Reports -->
-    {% if role == 'OWNER' or role == 'ACCOUNTANT' or role == 'MANAGER' or request.user.is_superuser %}
-    <li class="menu-item">
-      <a href="{% url 'reports:index' %}" class="menu-link">
-        <i class="bi bi-file-earmark-bar-graph-fill menu-icon"></i>
-        <span>Reports</span>
-      </a>
-    </li>
-    {% endif %}
-
-    <!-- User Management: Owner Only -->
+    <!-- Section: Administration -->
     {% if role == 'OWNER' or request.user.is_superuser %}
-    <li class="menu-item border-top border-secondary pt-2 mt-2">
-      <a href="{% url 'accounts:user_list' %}" class="menu-link">
-        <i class="bi bi-person-gear menu-icon text-warning"></i>
-        <span>User Management</span>
-      </a>
-    </li>
+    <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400 border-t border-[#1E293B] mt-3">Administration</div>
+
+    <a href="{% url 'accounts:user_list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name == 'user_list' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-person-gear w-5 text-center text-base text-amber-400"></i>
+      <span>User Management</span>
+    </a>
     {% endif %}
+
     {% endwith %}
-  </ul>
+  </nav>
+
+  <!-- Sidebar Footer / User Profile & Logout -->
+  <div class="p-3 border-t border-[#28354A] bg-[#0B0F17]/80">
+    <div class="flex items-center justify-between px-2 py-1.5 rounded-lg bg-[#182234]">
+      <a href="{% url 'accounts:profile' %}" class="flex items-center gap-2.5 min-w-0 text-gray-300 hover:text-white no-underline">
+        <div class="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-xs flex-shrink-0">
+          {{ request.user.username|slice:":2"|upper }}
+        </div>
+        <div class="truncate">
+          <div class="text-xs font-semibold text-white truncate">{{ request.user.get_full_name|default:request.user.username }}</div>
+          <div class="text-[11px] text-gray-400 truncate">{{ request.user.email|default:"Operator" }}</div>
+        </div>
+      </a>
+      <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+        {% csrf_token %}
+        <button type="submit" class="text-gray-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-gray-800/80 transition-colors focus:outline-none" title="Sign Out" aria-label="Sign Out">
+          <i class="bi bi-box-arrow-right text-base"></i>
+        </button>
+      </form>
+    </div>
+  </div>
 </aside>

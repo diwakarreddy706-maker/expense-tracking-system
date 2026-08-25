@@ -1,81 +1,106 @@
 {% extends 'base.html' %}
 
-{% block title %}User Profile & Security | Expense Tracking{% endblock %}
+{% block title %}User Profile &amp; Security | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">User Profile & Security</h2>
-    <p class="text-muted small mb-0">Manage account information and security credentials</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">User Profile &amp; Security</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Manage your system credentials, contact info, and security credentials</p>
   </div>
 </div>
 
-<div class="row g-4">
-  <!-- Profile Information -->
-  <div class="col-12 col-lg-6">
-    <div class="theme-card h-100 mb-0">
-      <div class="card-header-clean">
-        <h3 class="card-title-clean"><i class="bi bi-person-badge me-2 text-emerald"></i>Account Details</h3>
-        <span class="badge bg-dark border border-secondary text-info text-uppercase">{{ request.user.profile.get_role_display }}</span>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Profile Information Card -->
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+    <div>
+      <div class="flex items-center justify-between border-b border-[#28354A] pb-3 mb-5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <i class="bi bi-person-badge text-base"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white tracking-tight m-0">Account Details</h3>
+        </div>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          {{ request.user.profile.get_role_display }}
+        </span>
       </div>
 
-      <form method="post">
+      <form method="post" class="space-y-4">
         {% csrf_token %}
-        <div class="mb-3">
-          <label class="form-label small text-muted">Username</label>
-          <input type="text" class="form-control bg-dark text-muted border-secondary" value="{{ request.user.username }}" disabled>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1.5">Username</label>
+          <input type="text" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] text-gray-400 text-xs font-medium cursor-not-allowed" value="{{ request.user.username }}" disabled>
         </div>
-        <div class="row g-2 mb-3">
-          <div class="col-6">
-            <label class="form-label small text-muted">First Name</label>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">First Name</label>
             {{ profile_form.first_name }}
           </div>
-          <div class="col-6">
-            <label class="form-label small text-muted">Last Name</label>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Last Name</label>
             {{ profile_form.last_name }}
           </div>
         </div>
-        <div class="mb-3">
-          <label class="form-label small text-muted">Email Address</label>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Email Address</label>
           {{ profile_form.email }}
         </div>
-        <div class="mb-4">
-          <label class="form-label small text-muted">Contact Phone Number</label>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Contact Phone Number</label>
           {{ profile_form.phone_number }}
         </div>
 
-        <button type="submit" name="update_profile" class="btn btn-emerald btn-sm">
-          <i class="bi bi-check-circle me-1"></i> Save Profile Details
-        </button>
+        <div class="pt-2 border-t border-[#1E293B] mt-5">
+          <button type="submit" name="update_profile" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-400">
+            <i class="bi bi-check-circle"></i>
+            <span>Save Profile Details</span>
+          </button>
+        </div>
       </form>
     </div>
   </div>
 
-  <!-- Password Security -->
-  <div class="col-12 col-lg-6">
-    <div class="theme-card h-100 mb-0">
-      <div class="card-header-clean">
-        <h3 class="card-title-clean"><i class="bi bi-shield-lock me-2 text-warning"></i>Change Password</h3>
+  <!-- Password Security Card -->
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+    <div>
+      <div class="flex items-center justify-between border-b border-[#28354A] pb-3 mb-5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <i class="bi bi-shield-lock text-base"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white tracking-tight m-0">Change Password</h3>
+        </div>
       </div>
 
-      <form method="post">
+      <form method="post" class="space-y-4">
         {% csrf_token %}
-        <div class="mb-3">
-          <label class="form-label small text-muted">Current Password</label>
-          <input type="password" name="old_password" class="form-control bg-dark text-white border-secondary" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label small text-muted">New Password</label>
-          <input type="password" name="new_password1" class="form-control bg-dark text-white border-secondary" required>
-        </div>
-        <div class="mb-4">
-          <label class="form-label small text-muted">Confirm New Password</label>
-          <input type="password" name="new_password2" class="form-control bg-dark text-white border-secondary" required>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Current Password</label>
+          <input type="password" name="old_password" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none" required>
         </div>
 
-        <button type="submit" name="change_password" class="btn btn-ghost btn-sm">
-          <i class="bi bi-key me-1"></i> Update Password
-        </button>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">New Password</label>
+          <input type="password" name="new_password1" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none" required>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Confirm New Password</label>
+          <input type="password" name="new_password2" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none" required>
+        </div>
+
+        <div class="pt-2 border-t border-[#1E293B] mt-5">
+          <button type="submit" name="change_password" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 font-semibold text-xs border border-[#28354A] transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400">
+            <i class="bi bi-key"></i>
+            <span>Update Password</span>
+          </button>
+        </div>
       </form>
     </div>
   </div>

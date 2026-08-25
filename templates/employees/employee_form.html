@@ -1,79 +1,85 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ title }} | Expense Tracking{% endblock %}
+{% block title %}{{ title }} | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
-    <p class="text-muted small mb-0">Employee details, role classification, and wage setup</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">{{ title }}</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Employee details, role classification, and contact info</p>
   </div>
   <div>
-    <a href="{% url 'employees:list' %}" class="btn btn-ghost btn-sm">
-      <i class="bi bi-arrow-left me-1"></i> Back to Employees
+    <a href="{% url 'employees:list' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Employees</span>
     </a>
   </div>
 </div>
 
-<div class="row justify-content-center">
-  <div class="col-12 col-lg-8">
-    <div class="theme-card">
-      <form method="post" novalidate>
-        {% csrf_token %}
+<div class="max-w-2xl mx-auto">
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 sm:p-8 shadow-sm">
+    <form method="post" novalidate class="space-y-4">
+      {% csrf_token %}
 
-        {% if form.non_field_errors %}
-          <div class="alert alert-danger py-2 small mb-3">{{ form.non_field_errors }}</div>
-        {% endif %}
-
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-4">
-            <label class="form-label small text-muted">Employee Code *</label>
-            {{ form.employee_code }}
-            {% if form.employee_code.errors %}<div class="text-danger small mt-1">{{ form.employee_code.errors.0 }}</div>{% endif %}
-          </div>
-          <div class="col-12 col-md-8">
-            <label class="form-label small text-muted">Full Name *</label>
-            {{ form.full_name }}
-            {% if form.full_name.errors %}<div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>{% endif %}
-          </div>
+      {% if form.non_field_errors %}
+        <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium">
+          {{ form.non_field_errors }}
         </div>
+      {% endif %}
 
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Contact Phone</label>
-            {{ form.phone_number }}
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Emergency Contact</label>
-            {{ form.emergency_contact }}
-          </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Employee Code <span class="text-rose-400">*</span></label>
+          {{ form.employee_code }}
+          {% if form.employee_code.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.employee_code.errors.0 }}</div>{% endif %}
         </div>
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Full Name <span class="text-rose-400">*</span></label>
+          {{ form.full_name }}
+          {% if form.full_name.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.full_name.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
 
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Operational Role *</label>
-            {{ form.role }}
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Employment Status</label>
-            {{ form.status }}
-          </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Contact Phone</label>
+          {{ form.phone_number }}
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Emergency Contact</label>
+          {{ form.emergency_contact }}
+        </div>
+      </div>
 
-        <div class="mb-4">
-          <label class="form-label small text-muted">Joining Date *</label>
-          {{ form.joining_date }}
-          <div class="form-text text-muted" style="font-size: 0.75rem;">
-            Compensation structures (daily wage, monthly salary, per-acre commission) can be configured and managed on the staff member's financial profile.
-          </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Operational Role <span class="text-rose-400">*</span></label>
+          {{ form.role }}
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Employment Status</label>
+          {{ form.status }}
+        </div>
+      </div>
 
-        <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-3">
-          <a href="{% url 'employees:list' %}" class="btn btn-ghost btn-sm">Cancel</a>
-          <button type="submit" class="btn btn-emerald btn-sm">Save Staff Record</button>
-        </div>
-      </form>
-    </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-300 mb-1.5">Joining Date <span class="text-rose-400">*</span></label>
+        {{ form.joining_date }}
+        <p class="text-[11px] text-gray-400 mt-1.5 m-0">
+          Compensation structures (daily wage, monthly salary, per-acre commission) can be configured on the staff member's financial profile.
+        </p>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 border-t border-[#28354A] pt-4 mt-6">
+        <a href="{% url 'employees:list' %}" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+          Cancel
+        </a>
+        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400">
+          <i class="bi bi-check-lg"></i>
+          <span>Save Staff Record</span>
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 {% endblock %}

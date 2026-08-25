@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 
-{% block title %}Budgets & Financial Controls | Expense Tracking{% endblock %}
+{% block title %}Budgets &amp; Financial Controls | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">Budgets & Operational Spending Controls</h2>
-    <p class="text-muted small mb-0">Plan, track, and control spending limits by category, machinery, and business segment</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Budgets &amp; Operational Spending Controls</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Plan, track, and control spending limits by category, machinery, and business segment</p>
   </div>
   <div>
     {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
-      <a href="{% url 'budgets:create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+      <a href="{% url 'budgets:create' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
         <i class="bi bi-plus-lg"></i>
         <span>New Budget</span>
       </a>
@@ -19,57 +19,61 @@
 </div>
 
 <!-- Summary Metric Cards -->
-<div class="row g-3 mb-4">
-  <div class="col-6 col-lg-3">
-    <div class="theme-card p-3">
-      <span class="text-muted small">Total Monthly Budget</span>
-      <h3 class="fs-4 fw-bold text-white mt-1 mb-0 font-tabular">₹{{ summary_metrics.total_budgeted }}</h3>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 sm:p-5 shadow-sm">
+    <span class="text-xs text-gray-400 block">Total Monthly Budget</span>
+    <div class="text-xl sm:text-2xl font-extrabold text-white font-mono mt-1">₹{{ summary_metrics.total_budgeted }}</div>
+  </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 sm:p-5 shadow-sm">
+    <span class="text-xs text-gray-400 block">Actual Expenses (Spent)</span>
+    <div class="text-xl sm:text-2xl font-extrabold text-emerald-400 font-mono mt-1">₹{{ summary_metrics.total_spent }}</div>
+  </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 sm:p-5 shadow-sm">
+    <span class="text-xs text-gray-400 block">Remaining Budget</span>
+    <div class="text-xl sm:text-2xl font-extrabold font-mono mt-1 {% if summary_metrics.total_remaining < 0 %}text-rose-400{% else %}text-white{% endif %}">
+      ₹{{ summary_metrics.total_remaining }}
     </div>
   </div>
-  <div class="col-6 col-lg-3">
-    <div class="theme-card p-3">
-      <span class="text-muted small">Actual Expenses (Spent)</span>
-      <h3 class="fs-4 fw-bold text-emerald mt-1 mb-0 font-tabular">₹{{ summary_metrics.total_spent }}</h3>
+
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 sm:p-5 shadow-sm">
+    <div class="flex items-center justify-between">
+      <span class="text-xs text-gray-400">Overall Utilization</span>
+      {% if summary_metrics.status == 'NORMAL' %}
+        <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Normal (&lt;80%)</span>
+      {% elif summary_metrics.status == 'WARNING' %}
+        <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Warning (80-99%)</span>
+      {% else %}
+        <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Exceeded (&ge;100%)</span>
+      {% endif %}
     </div>
-  </div>
-  <div class="col-6 col-lg-3">
-    <div class="theme-card p-3">
-      <span class="text-muted small">Remaining Budget</span>
-      <h3 class="fs-4 fw-bold {% if summary_metrics.total_remaining < 0 %}text-crimson{% else %}text-white{% endif %} mt-1 mb-0 font-tabular">
-        ₹{{ summary_metrics.total_remaining }}
-      </h3>
-    </div>
-  </div>
-  <div class="col-6 col-lg-3">
-    <div class="theme-card p-3">
-      <div class="d-flex justify-content-between align-items-center">
-        <span class="text-muted small">Overall Utilization</span>
-        {% if summary_metrics.status == 'NORMAL' %}
-          <span class="badge bg-success">Normal (<80%)</span>
-        {% elif summary_metrics.status == 'WARNING' %}
-          <span class="badge bg-warning text-dark">Warning (80-99%)</span>
-        {% else %}
-          <span class="badge bg-danger">Exceeded (≥100%)</span>
-        {% endif %}
-      </div>
-      <h3 class="fs-4 fw-bold {% if summary_metrics.status == 'EXCEEDED' %}text-crimson{% elif summary_metrics.status == 'WARNING' %}text-warning{% else %}text-emerald{% endif %} mt-1 mb-0 font-tabular">
-        {{ summary_metrics.overall_utilization }}%
-      </h3>
+    <div class="text-xl sm:text-2xl font-extrabold font-mono mt-1 {% if summary_metrics.status == 'EXCEEDED' %}text-rose-400{% elif summary_metrics.status == 'WARNING' %}text-amber-400{% else %}text-emerald-400{% endif %}">
+      {{ summary_metrics.overall_utilization }}%
     </div>
   </div>
 </div>
 
 <!-- Filter Bar -->
-<div class="theme-card p-3 mb-4">
-  <form method="get" class="row g-2 align-items-center">
-    <div class="col-12 col-md-3">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
-        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search budget title...">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-center">
+    <div class="md:col-span-2">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+          <i class="bi bi-search text-xs"></i>
+        </span>
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none"
+          placeholder="Search budget title..."
+        >
       </div>
     </div>
-    <div class="col-6 col-md-2">
-      <select name="month" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div>
+      <select name="month" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="1" {% if selected_month == 1 %}selected{% endif %}>01 - Jan</option>
         <option value="2" {% if selected_month == 2 %}selected{% endif %}>02 - Feb</option>
         <option value="3" {% if selected_month == 3 %}selected{% endif %}>03 - Mar</option>
@@ -84,99 +88,108 @@
         <option value="12" {% if selected_month == 12 %}selected{% endif %}>12 - Dec</option>
       </select>
     </div>
-    <div class="col-6 col-md-2">
-      <input type="number" name="year" value="{{ selected_year }}" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Year">
-    </div>
-    <div class="col-6 col-md-3">
-      <select name="segment" class="form-select form-select-sm bg-dark text-white border-secondary">
-        <option value="">All Business Segments</option>
+
+    <div>
+      <select name="segment" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
+        <option value="">All Segments</option>
         {% for code, label in segment_choices %}
           <option value="{{ code }}" {% if selected_segment == code %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
     </div>
-    <div class="col-6 col-md-2 d-flex gap-2">
-      <button type="submit" class="btn btn-ghost btn-sm w-100">Filter</button>
+
+    <div class="flex items-center gap-2">
+      <input type="number" name="year" value="{{ selected_year }}" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-mono focus:outline-none" placeholder="Year">
+      <button type="submit" class="px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors text-xs font-semibold" title="Apply Filter">
+        <i class="bi bi-funnel-fill"></i>
+      </button>
       {% if query or selected_segment or selected_status %}
-        <a href="{% url 'budgets:list' %}" class="btn btn-ghost btn-sm" title="Clear"><i class="bi bi-x-lg"></i></a>
+        <a href="{% url 'budgets:list' %}" class="px-2.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 border border-[#28354A] transition-colors text-xs no-underline" title="Clear">
+          <i class="bi bi-x-lg"></i>
+        </a>
       {% endif %}
     </div>
   </form>
 </div>
 
 <!-- Budgets Table -->
-<div class="theme-card">
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Budget Title</th>
-          <th>Period</th>
-          <th>Business Segment</th>
-          <th class="text-end">Allocated Limit</th>
-          <th class="text-end">Actual Spent</th>
-          <th class="text-end">Remaining</th>
-          <th style="min-width: 140px;">Utilization Progress</th>
-          <th class="text-center">Control Alert</th>
-          <th class="text-end">Actions</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th class="py-3.5 px-4">Budget Title</th>
+          <th class="py-3.5 px-4">Period</th>
+          <th class="py-3.5 px-4">Business Segment</th>
+          <th class="py-3.5 px-4 text-right">Allocated Limit</th>
+          <th class="py-3.5 px-4 text-right">Actual Spent</th>
+          <th class="py-3.5 px-4 text-right">Remaining</th>
+          <th class="py-3.5 px-4 min-w-[140px]">Utilization Progress</th>
+          <th class="py-3.5 px-4 text-center">Control Alert</th>
+          <th class="py-3.5 px-4 text-right">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for b in budget_cards %}
-          <tr class="border-secondary">
-            <td class="text-white fw-semibold">
-              <a href="{% url 'budgets:detail' b.budget.id %}" class="text-info text-decoration-none">
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 font-semibold text-white">
+              <a href="{% url 'budgets:detail' b.budget.id %}" class="text-cyan-400 hover:underline no-underline">
                 {{ b.budget.title }}
               </a>
               {% if b.budget.status != 'ACTIVE' %}
-                <span class="badge bg-secondary ms-1" style="font-size: 0.65rem;">{{ b.budget.get_status_display }}</span>
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-gray-800 text-gray-400 border border-gray-700 ml-1">{{ b.budget.get_status_display }}</span>
               {% endif %}
             </td>
-            <td class="font-tabular text-light small">{{ b.budget.period_month|stringformat:"02d" }}/{{ b.budget.period_year }}</td>
-            <td><span class="badge bg-dark border border-secondary text-light">{{ b.budget.get_business_segment_display }}</span></td>
-            <td class="text-end font-tabular text-white fw-semibold">₹{{ b.total_allocated }}</td>
-            <td class="text-end font-tabular text-emerald">₹{{ b.total_actual }}</td>
-            <td class="text-end font-tabular fw-bold {% if b.total_remaining < 0 %}text-crimson{% else %}text-muted{% endif %}">
+            <td class="py-3.5 px-4 font-mono text-gray-400">{{ b.budget.period_month|stringformat:"02d" }}/{{ b.budget.period_year }}</td>
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                {{ b.budget.get_business_segment_display }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-white">₹{{ b.total_allocated }}</td>
+            <td class="py-3.5 px-4 text-right font-mono text-emerald-400">₹{{ b.total_actual }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold {% if b.total_remaining < 0 %}text-rose-400{% else %}text-gray-400{% endif %}">
               ₹{{ b.total_remaining }}
             </td>
-            <td>
-              <div class="d-flex align-items-center gap-2">
-                <div class="progress flex-grow-1 bg-dark border border-secondary" style="height: 8px;">
-                  <div class="progress-bar {% if b.overall_status == 'EXCEEDED' %}bg-danger{% elif b.overall_status == 'WARNING' %}bg-warning{% else %}bg-success{% endif %}"
-                       role="progressbar"
-                       style="width: {% if b.overall_utilization > 100 %}100{% else %}{{ b.overall_utilization }}{% endif %}%;"
-                       aria-valuenow="{{ b.overall_utilization }}" aria-valuemin="0" aria-valuemax="100">
-                  </div>
+            <td class="py-3.5 px-4">
+              <div class="flex items-center gap-2">
+                <div class="w-full bg-[#0B0F17] rounded-full h-2 overflow-hidden border border-[#28354A]">
+                  <div
+                    class="h-full rounded-full transition-all {% if b.overall_status == 'EXCEEDED' %}bg-rose-500{% elif b.overall_status == 'WARNING' %}bg-amber-500{% else %}bg-emerald-500{% endif %}"
+                    style="width: {% if b.overall_utilization > 100 %}100{% else %}{{ b.overall_utilization }}{% endif %}%;"
+                  ></div>
                 </div>
-                <span class="small font-tabular {% if b.overall_status == 'EXCEEDED' %}text-crimson fw-bold{% elif b.overall_status == 'WARNING' %}text-warning{% else %}text-muted{% endif %}">
+                <span class="font-mono text-[11px] font-semibold {% if b.overall_status == 'EXCEEDED' %}text-rose-400{% elif b.overall_status == 'WARNING' %}text-amber-400{% else %}text-gray-400{% endif %}">
                   {{ b.overall_utilization }}%
                 </span>
               </div>
             </td>
-            <td class="text-center">
+            <td class="py-3.5 px-4 text-center">
               {% if b.overall_status == 'NORMAL' %}
-                <span class="badge bg-success">Normal</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Normal</span>
               {% elif b.overall_status == 'WARNING' %}
-                <span class="badge bg-warning text-dark">Warning</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Warning</span>
               {% else %}
-                <span class="badge bg-danger">Exceeded</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Exceeded</span>
               {% endif %}
             </td>
-            <td class="text-end">
-              <a href="{% url 'budgets:detail' b.budget.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Inspect Allocations">
-                <i class="bi bi-eye"></i>
-              </a>
-              {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
-                <a href="{% url 'budgets:edit' b.budget.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Edit Budget">
-                  <i class="bi bi-pencil"></i>
+            <td class="py-3.5 px-4 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <a href="{% url 'budgets:detail' b.budget.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="Inspect Allocations">
+                  <i class="bi bi-eye"></i>
                 </a>
-              {% endif %}
+                {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
+                  <a href="{% url 'budgets:edit' b.budget.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-amber-400 hover:text-amber-300 border border-[#28354A] transition-colors no-underline text-xs" title="Edit Budget">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                {% endif %}
+              </div>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="9" class="text-center py-5 text-muted">
-              <i class="bi bi-pie-chart fs-1 d-block mb-2 text-secondary"></i>
+            <td colspan="9" class="py-12 text-center text-gray-500">
+              <i class="bi bi-pie-chart text-3xl d-block mb-2 text-gray-600"></i>
               No budgets found for the selected period. Click "New Budget" to create operational spending limits.
             </td>
           </tr>

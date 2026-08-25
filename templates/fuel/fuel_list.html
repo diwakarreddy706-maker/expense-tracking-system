@@ -1,181 +1,203 @@
 {% extends 'base.html' %}
 
-{% block title %}Fuel & Lubricants | Expense Tracking{% endblock %}
+{% block title %}Fuel &amp; Lubricants | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">Fuel & Lubricants Tracking</h2>
-    <p class="text-muted small mb-0">Machinery fueling logs, diesel consumption, lubricants, and supplier pump tracking</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Fuel &amp; Lubricants Tracking</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Machinery fueling logs, diesel consumption, lubricants, and supplier pump tracking</p>
   </div>
   <div>
-    <a href="{% url 'fuel:create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+    <a href="{% url 'fuel:create' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
       <i class="bi bi-fuel-pump-fill"></i>
       <span>Log Fuel Entry</span>
     </a>
   </div>
 </div>
 
-<!-- Key Fuel Metrics (Section 22 Analytics Preparation) -->
-<div class="row g-3 mb-4">
-  <div class="col-12 col-sm-4">
-    <div class="theme-card p-3">
-      <div class="d-flex align-items-center justify-content-between">
-        <div>
-          <span class="text-muted small">Total Volume Dispensed</span>
-          <h3 class="fs-4 fw-bold text-white mt-1 mb-0 font-tabular">{{ stats.total_litres|default:"0.00" }} L</h3>
-        </div>
-        <div class="rounded-circle p-2 bg-dark border border-secondary text-warning">
-          <i class="bi bi-droplet-fill fs-5"></i>
-        </div>
+<!-- Key Fuel Metrics -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-sm">
+    <div class="flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-gray-400">Total Volume Dispensed</span>
+        <div class="text-2xl font-extrabold text-white font-mono mt-1">{{ stats.total_litres|default:"0.00" }} L</div>
+      </div>
+      <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+        <i class="bi bi-droplet-fill text-lg"></i>
       </div>
     </div>
   </div>
-  <div class="col-12 col-sm-4">
-    <div class="theme-card p-3">
-      <div class="d-flex align-items-center justify-content-between">
-        <div>
-          <span class="text-muted small">Total Fuel Expense</span>
-          <h3 class="fs-4 fw-bold text-crimson mt-1 mb-0 font-tabular">₹{{ stats.total_fuel_cost|default:"0.00" }}</h3>
-        </div>
-        <div class="rounded-circle p-2 bg-dark border border-secondary text-danger">
-          <i class="bi bi-cash-stack fs-5"></i>
-        </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-sm">
+    <div class="flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-gray-400">Total Fuel Expense</span>
+        <div class="text-2xl font-extrabold text-rose-400 font-mono mt-1">₹{{ stats.total_fuel_cost|default:"0.00" }}</div>
+      </div>
+      <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+        <i class="bi bi-cash-stack text-lg"></i>
       </div>
     </div>
   </div>
-  <div class="col-12 col-sm-4">
-    <div class="theme-card p-3">
-      <div class="d-flex align-items-center justify-content-between">
-        <div>
-          <span class="text-muted small">Average Unit Price</span>
-          <h3 class="fs-4 fw-bold text-emerald mt-1 mb-0 font-tabular">₹{{ stats.avg_price|floatformat:2|default:"0.00" }} / L</h3>
-        </div>
-        <div class="rounded-circle p-2 bg-dark border border-secondary text-emerald">
-          <i class="bi bi-graph-up fs-5"></i>
-        </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-sm">
+    <div class="flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-gray-400">Average Unit Price</span>
+        <div class="text-2xl font-extrabold text-emerald-400 font-mono mt-1">₹{{ stats.avg_price|floatformat:2|default:"0.00" }} / L</div>
+      </div>
+      <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+        <i class="bi bi-graph-up text-lg"></i>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Multi-Parameter Filter Bar -->
-<div class="theme-card p-3 mb-4">
-  <form method="get" class="row g-2 align-items-center">
-    <div class="col-12 col-md-3">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
-        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search slip, machine, notes...">
+<!-- Search & Filter Bar -->
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 items-center">
+    <div class="lg:col-span-2">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+          <i class="bi bi-search text-xs"></i>
+        </span>
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none"
+          placeholder="Search slip, machine, notes..."
+        >
       </div>
     </div>
-    <div class="col-6 col-md-2">
-      <select name="machine" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div>
+      <select name="machine" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Machines</option>
         {% for m in machines %}
-          <option value="{{ m.id }}" {% if mch_id == m.id|stringformat:"i" %}selected{% endif %}>{{ m.name }}</option>
+          {% if mch_id == m.id|stringformat:"i" %}
+            <option value="{{ m.id }}" selected>{{ m.name }}</option>
+          {% else %}
+            <option value="{{ m.id }}">{{ m.name }}</option>
+          {% endif %}
         {% endfor %}
       </select>
     </div>
-    <div class="col-6 col-md-2">
-      <select name="type" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div>
+      <select name="type" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Fuel Types</option>
-        <option value="DIESEL" {% if f_type == 'DIESEL' %}selected{% endif %}>Diesel</option>
-        <option value="PETROL" {% if f_type == 'PETROL' %}selected{% endif %}>Petrol</option>
-        <option value="ENGINE_OIL" {% if f_type == 'ENGINE_OIL' %}selected{% endif %}>Engine Oil</option>
-        <option value="HYDRAULIC_OIL" {% if f_type == 'HYDRAULIC_OIL' %}selected{% endif %}>Hydraulic Oil</option>
+        {% if f_type == 'DIESEL' %}<option value="DIESEL" selected>Diesel</option>{% else %}<option value="DIESEL">Diesel</option>{% endif %}
+        {% if f_type == 'PETROL' %}<option value="PETROL" selected>Petrol</option>{% else %}<option value="PETROL">Petrol</option>{% endif %}
+        {% if f_type == 'ENGINE_OIL' %}<option value="ENGINE_OIL" selected>Engine Oil</option>{% else %}<option value="ENGINE_OIL">Engine Oil</option>{% endif %}
+        {% if f_type == 'HYDRAULIC_OIL' %}<option value="HYDRAULIC_OIL" selected>Hydraulic Oil</option>{% else %}<option value="HYDRAULIC_OIL">Hydraulic Oil</option>{% endif %}
       </select>
     </div>
-    <div class="col-6 col-md-2">
-      <select name="supplier" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div>
+      <select name="supplier" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Suppliers</option>
         {% for s in suppliers %}
-          <option value="{{ s.id }}" {% if supp_id == s.id|stringformat:"i" %}selected{% endif %}>{{ s.name }}</option>
+          {% if supp_id == s.id|stringformat:"i" %}
+            <option value="{{ s.id }}" selected>{{ s.name }}</option>
+          {% else %}
+            <option value="{{ s.id }}">{{ s.name }}</option>
+          {% endif %}
         {% endfor %}
       </select>
     </div>
-    <div class="col-6 col-md-2">
-      <select name="account" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div class="flex items-center gap-2">
+      <select name="account" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Accounts</option>
         {% for a in accounts %}
-          <option value="{{ a.id }}" {% if acc_id == a.id|stringformat:"i" %}selected{% endif %}>{{ a.account_name }}</option>
+          {% if acc_id == a.id|stringformat:"i" %}
+            <option value="{{ a.id }}" selected>{{ a.account_name }}</option>
+          {% else %}
+            <option value="{{ a.id }}">{{ a.account_name }}</option>
+          {% endif %}
         {% endfor %}
       </select>
-    </div>
-    <div class="col-12 col-md-1 d-flex gap-1">
-      <button type="submit" class="btn btn-ghost btn-sm w-100" title="Apply Filters">
+      <button type="submit" class="px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors text-xs" title="Apply Filter" aria-label="Apply Filter">
         <i class="bi bi-funnel-fill"></i>
       </button>
       {% if query or mch_id or f_type or supp_id or acc_id or start_date or end_date %}
-        <a href="{% url 'fuel:list' %}" class="btn btn-ghost btn-sm" title="Clear Filters"><i class="bi bi-x-lg"></i></a>
+        <a href="{% url 'fuel:list' %}" class="px-2.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 border border-[#28354A] transition-colors text-xs no-underline" title="Clear" aria-label="Clear Search">
+          <i class="bi bi-x-lg"></i>
+        </a>
       {% endif %}
     </div>
   </form>
 </div>
 
 <!-- Fuel Entries Table -->
-<div class="theme-card">
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Date</th>
-          <th>Code</th>
-          <th>Machine & Meter</th>
-          <th>Type</th>
-          <th class="text-end">Volume (L)</th>
-          <th class="text-end">Rate (₹/L)</th>
-          <th class="text-end">Total Amount</th>
-          <th>Supplier / Account</th>
-          <th class="text-center">Status</th>
-          <th class="text-end">Actions</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th scope="col" class="py-3.5 px-4">Date</th>
+          <th scope="col" class="py-3.5 px-4">Code</th>
+          <th scope="col" class="py-3.5 px-4">Machine &amp; Meter</th>
+          <th scope="col" class="py-3.5 px-4">Type</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Volume (L)</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Rate (₹/L)</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Total Amount</th>
+          <th scope="col" class="py-3.5 px-4">Supplier / Account</th>
+          <th scope="col" class="py-3.5 px-4 text-center">Status</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for entry in entries %}
-          <tr class="border-secondary">
-            <td class="text-muted small">{{ entry.date|date:"d M Y" }}</td>
-            <td class="font-tabular text-warning fw-semibold">
-              <a href="{% url 'fuel:detail' entry.id %}" class="text-decoration-none text-warning">
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 text-gray-400 font-mono text-[11px] whitespace-nowrap">{{ entry.date|date:"d M Y" }}</td>
+            <td class="py-3.5 px-4 font-mono font-bold text-amber-400 whitespace-nowrap">
+              <a href="{% url 'fuel:detail' entry.id %}" class="text-amber-400 hover:text-amber-300 no-underline">
                 {{ entry.fuel_code }}
               </a>
             </td>
-            <td>
-              <div class="text-white fw-semibold">
-                <i class="bi bi-truck me-1 text-emerald"></i>{{ entry.machine.name }}
+            <td class="py-3.5 px-4">
+              <div class="text-white font-semibold flex items-center gap-1.5">
+                <i class="bi bi-truck text-emerald-400"></i>
+                <span>{{ entry.machine.name }}</span>
               </div>
-              <div class="text-muted" style="font-size: 0.75rem;">
+              <div class="text-[10px] text-gray-400 font-mono mt-0.5">
                 Meter: {{ entry.meter_reading }} {{ entry.machine.get_meter_unit_display }}
               </div>
             </td>
-            <td>
-              <span class="badge bg-dark border border-secondary text-info">
+            <td class="py-3.5 px-4">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
                 {{ entry.get_fuel_type_display }}
               </span>
             </td>
-            <td class="text-end font-tabular text-white fw-semibold">{{ entry.quantity }}</td>
-            <td class="text-end font-tabular text-muted">₹{{ entry.unit_price }}</td>
-            <td class="text-end font-tabular text-crimson fw-bold">₹{{ entry.total_amount }}</td>
-            <td>
-              <div class="text-white small">{{ entry.supplier.name|default:"Direct / Cash" }}</div>
-              <div class="text-muted" style="font-size: 0.75rem;">{{ entry.account.account_name|default:entry.get_payment_method_display }}</div>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-white">{{ entry.quantity }}</td>
+            <td class="py-3.5 px-4 text-right font-mono text-gray-400">₹{{ entry.unit_price }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-rose-400 text-sm whitespace-nowrap">₹{{ entry.total_amount }}</td>
+            <td class="py-3.5 px-4">
+              <div class="text-gray-200 font-medium">{{ entry.supplier.name|default:"Direct / Cash" }}</div>
+              <div class="text-[10px] text-gray-400">{{ entry.account.account_name|default:entry.get_payment_method_display }}</div>
             </td>
-            <td class="text-center">
+            <td class="py-3.5 px-4 text-center">
               {% if entry.linked_expense.is_reversed %}
-                <span class="badge bg-danger">Reversed</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Reversed</span>
               {% else %}
-                <span class="badge bg-success">Posted</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Posted</span>
               {% endif %}
             </td>
-            <td class="text-end">
-              <a href="{% url 'fuel:detail' entry.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Inspect Fuel & Ledger Link">
+            <td class="py-3.5 px-4 text-right">
+              <a href="{% url 'fuel:detail' entry.id %}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="Inspect Fuel Details" aria-label="Inspect Fuel Details">
                 <i class="bi bi-eye"></i>
+                <span class="hidden sm:inline">View</span>
               </a>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="10" class="text-center py-5 text-muted">
-              <i class="bi bi-fuel-pump fs-1 d-block mb-2 text-secondary"></i>
+            <td colspan="10" class="py-12 text-center text-gray-500">
+              <i class="bi bi-fuel-pump text-3xl d-block mb-2 text-gray-600"></i>
               No fuel or lubricant logs found. Click "Log Fuel Entry" to record equipment refueling.
             </td>
           </tr>

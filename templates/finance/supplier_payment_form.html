@@ -1,72 +1,78 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ title }} | Expense Tracking{% endblock %}
+{% block title %}{{ title }} | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">{{ title }}</h2>
-    <p class="text-muted small mb-0">Disburse vendor payment for {{ payable.supplier.name }} (Outstanding: ₹{{ payable.outstanding_amount }})</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">{{ title }}</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Disburse payment for <strong class="text-white">{{ payable.supplier.name }}</strong> (Outstanding: <span class="text-rose-400 font-mono font-bold">₹{{ payable.outstanding_amount }}</span>)</p>
   </div>
   <div>
-    <a href="{% url 'finance:payable_detail' payable.id %}" class="btn btn-ghost btn-sm">
-      <i class="bi bi-arrow-left me-1"></i> Back to Payable
+    <a href="{% url 'finance:payable_detail' payable.id %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Payable</span>
     </a>
   </div>
 </div>
 
-<div class="row justify-content-center">
-  <div class="col-12 col-lg-8">
-    <div class="theme-card">
-      <form method="post" novalidate>
-        {% csrf_token %}
+<div class="max-w-2xl mx-auto">
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 sm:p-8 shadow-sm">
+    <form method="post" novalidate class="space-y-4">
+      {% csrf_token %}
 
-        {% if form.non_field_errors %}
-          <div class="alert alert-danger py-2 small mb-3">{{ form.non_field_errors }}</div>
-        {% endif %}
-
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Payment Date *</label>
-            {{ form.payment_date }}
-            {% if form.payment_date.errors %}<div class="text-danger small mt-1">{{ form.payment_date.errors.0 }}</div>{% endif %}
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Disbursed Amount (₹) * (Max: ₹{{ payable.outstanding_amount }})</label>
-            {{ form.amount }}
-            {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>{% endif %}
-          </div>
+      {% if form.non_field_errors %}
+        <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium">
+          {{ form.non_field_errors }}
         </div>
+      {% endif %}
 
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Debited Business Account *</label>
-            {{ form.account }}
-            {% if form.account.errors %}<div class="text-danger small mt-1">{{ form.account.errors.0 }}</div>{% endif %}
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Payment Mode *</label>
-            {{ form.payment_method }}
-          </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Disbursement Date <span class="text-rose-400">*</span></label>
+          {{ form.payment_date }}
+          {% if form.payment_date.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.payment_date.errors.0 }}</div>{% endif %}
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Disbursed Amount (₹) <span class="text-rose-400">*</span> (Max: ₹{{ payable.outstanding_amount }})</label>
+          {{ form.amount }}
+          {% if form.amount.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.amount.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
 
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Voucher / UTR / Cheque No.</label>
-            {{ form.reference_no }}
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label small text-muted">Notes / Remarks</label>
-            {{ form.notes }}
-          </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Debited Business Account <span class="text-rose-400">*</span></label>
+          {{ form.account }}
+          {% if form.account.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.account.errors.0 }}</div>{% endif %}
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Payment Mode <span class="text-rose-400">*</span></label>
+          {{ form.payment_method }}
+        </div>
+      </div>
 
-        <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-3">
-          <a href="{% url 'finance:payable_detail' payable.id %}" class="btn btn-ghost btn-sm">Cancel</a>
-          <button type="submit" class="btn btn-emerald btn-sm">Disburse Funds & Settle Payable</button>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Voucher / UTR / Cheque #</label>
+          {{ form.reference_no }}
         </div>
-      </form>
-    </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Notes / Remarks</label>
+          {{ form.notes }}
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 border-t border-[#28354A] pt-4 mt-6">
+        <a href="{% url 'finance:payable_detail' payable.id %}" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+          Cancel
+        </a>
+        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400">
+          <i class="bi bi-cash-stack"></i>
+          <span>Disburse Funds &amp; Settle Payable</span>
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 {% endblock %}

@@ -1,14 +1,103 @@
-<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
-  {% if messages %}
-    {% for message in messages %}
-      <div class="toast align-items-center text-white bg-{{ message.tags|default:'primary' }} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-          <div class="toast-body">
-            {{ message }}
-          </div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+{% if messages %}
+<div
+  class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full px-4 sm:px-0 pointer-events-none"
+  x-data="{ shown: true }"
+  x-show="shown"
+>
+  {% for message in messages %}
+    {% if message.tags == 'error' or message.tags == 'danger' %}
+      <div
+        x-data="{ itemOpen: true }"
+        x-show="itemOpen"
+        x-init="setTimeout(() => itemOpen = false, 6000)"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="transform translate-y-2 opacity-0 scale-95"
+        x-transition:enter-end="transform translate-y-0 opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="transform translate-y-0 opacity-100 scale-100"
+        x-transition:leave-end="transform translate-y-2 opacity-0 scale-95"
+        class="pointer-events-auto p-4 rounded-xl shadow-2xl border flex items-start gap-3 text-xs font-medium backdrop-blur-md bg-rose-950/90 border-rose-600/50 text-rose-100"
+        role="alert"
+        aria-live="assertive"
+      >
+        <div class="mt-0.5 text-base flex-shrink-0">
+          <i class="bi bi-exclamation-octagon-fill text-rose-400"></i>
         </div>
+        <div class="flex-1 leading-relaxed">{{ message }}</div>
+        <button type="button" @click="itemOpen = false" class="text-gray-400 hover:text-white p-0.5 -mr-1 -mt-1 rounded focus:outline-none" aria-label="Dismiss Notification">
+          <i class="bi bi-x text-base"></i>
+        </button>
       </div>
-    {% endfor %}
-  {% endif %}
+    {% elif message.tags == 'warning' %}
+      <div
+        x-data="{ itemOpen: true }"
+        x-show="itemOpen"
+        x-init="setTimeout(() => itemOpen = false, 6000)"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="transform translate-y-2 opacity-0 scale-95"
+        x-transition:enter-end="transform translate-y-0 opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="transform translate-y-0 opacity-100 scale-100"
+        x-transition:leave-end="transform translate-y-2 opacity-0 scale-95"
+        class="pointer-events-auto p-4 rounded-xl shadow-2xl border flex items-start gap-3 text-xs font-medium backdrop-blur-md bg-amber-950/90 border-amber-600/50 text-amber-100"
+        role="alert"
+        aria-live="assertive"
+      >
+        <div class="mt-0.5 text-base flex-shrink-0">
+          <i class="bi bi-exclamation-triangle-fill text-amber-400"></i>
+        </div>
+        <div class="flex-1 leading-relaxed">{{ message }}</div>
+        <button type="button" @click="itemOpen = false" class="text-gray-400 hover:text-white p-0.5 -mr-1 -mt-1 rounded focus:outline-none" aria-label="Dismiss Notification">
+          <i class="bi bi-x text-base"></i>
+        </button>
+      </div>
+    {% elif message.tags == 'success' %}
+      <div
+        x-data="{ itemOpen: true }"
+        x-show="itemOpen"
+        x-init="setTimeout(() => itemOpen = false, 6000)"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="transform translate-y-2 opacity-0 scale-95"
+        x-transition:enter-end="transform translate-y-0 opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="transform translate-y-0 opacity-100 scale-100"
+        x-transition:leave-end="transform translate-y-2 opacity-0 scale-95"
+        class="pointer-events-auto p-4 rounded-xl shadow-2xl border flex items-start gap-3 text-xs font-medium backdrop-blur-md bg-emerald-950/90 border-emerald-600/50 text-emerald-100"
+        role="alert"
+        aria-live="assertive"
+      >
+        <div class="mt-0.5 text-base flex-shrink-0">
+          <i class="bi bi-check-circle-fill text-emerald-400"></i>
+        </div>
+        <div class="flex-1 leading-relaxed">{{ message }}</div>
+        <button type="button" @click="itemOpen = false" class="text-gray-400 hover:text-white p-0.5 -mr-1 -mt-1 rounded focus:outline-none" aria-label="Dismiss Notification">
+          <i class="bi bi-x text-base"></i>
+        </button>
+      </div>
+    {% else %}
+      <div
+        x-data="{ itemOpen: true }"
+        x-show="itemOpen"
+        x-init="setTimeout(() => itemOpen = false, 6000)"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="transform translate-y-2 opacity-0 scale-95"
+        x-transition:enter-end="transform translate-y-0 opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="transform translate-y-0 opacity-100 scale-100"
+        x-transition:leave-end="transform translate-y-2 opacity-0 scale-95"
+        class="pointer-events-auto p-4 rounded-xl shadow-2xl border flex items-start gap-3 text-xs font-medium backdrop-blur-md bg-slate-900/90 border-slate-700 text-slate-100"
+        role="alert"
+        aria-live="assertive"
+      >
+        <div class="mt-0.5 text-base flex-shrink-0">
+          <i class="bi bi-info-circle-fill text-sky-400"></i>
+        </div>
+        <div class="flex-1 leading-relaxed">{{ message }}</div>
+        <button type="button" @click="itemOpen = false" class="text-gray-400 hover:text-white p-0.5 -mr-1 -mt-1 rounded focus:outline-none" aria-label="Dismiss Notification">
+          <i class="bi bi-x text-base"></i>
+        </button>
+      </div>
+    {% endif %}
+  {% endfor %}
 </div>
+{% endif %}

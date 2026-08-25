@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 
-{% block title %}Expense Categories | Expense Tracking{% endblock %}
+{% block title %}Expense Categories | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">Expense Categories</h2>
-    <p class="text-muted small mb-0">Classification taxonomy for operational and capital expenses</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Expense Categories</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Chart of expense classification categories and tracking codes</p>
   </div>
   <div>
-    <a href="{% url 'expenses:category_create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+    <a href="{% url 'expenses:category_create' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
       <i class="bi bi-plus-lg"></i>
       <span>Add Category</span>
     </a>
@@ -17,66 +17,78 @@
 </div>
 
 <!-- Search Bar -->
-<div class="theme-card p-3 mb-4">
-  <form method="get" class="row g-2 align-items-center">
-    <div class="col-12 col-md-10">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
-        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search categories by name or code...">
-      </div>
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <form method="get" class="flex flex-col sm:flex-row items-center gap-3">
+    <div class="relative flex-1 w-full">
+      <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+        <i class="bi bi-search text-xs"></i>
+      </span>
+      <input
+        type="text"
+        name="q"
+        value="{{ query }}"
+        class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none"
+        placeholder="Search categories by name or code..."
+      >
     </div>
-    <div class="col-12 col-md-2 d-flex gap-2">
-      <button type="submit" class="btn btn-ghost btn-sm w-100">Search</button>
-      {% if query %}<a href="{% url 'expenses:categories' %}" class="btn btn-ghost btn-sm"><i class="bi bi-x-lg"></i></a>{% endif %}
-    </div>
+    <button type="submit" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors text-xs font-semibold">
+      Search
+    </button>
+    {% if query %}
+      <a href="{% url 'expenses:categories' %}" class="px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 border border-[#28354A] transition-colors text-xs no-underline" title="Clear Search" aria-label="Clear Search">
+        <i class="bi bi-x-lg"></i>
+      </a>
+    {% endif %}
   </form>
 </div>
 
 <!-- Categories Table -->
-<div class="theme-card">
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Color / Icon</th>
-          <th>Category Name</th>
-          <th>Code</th>
-          <th>Parent Group</th>
-          <th class="text-center">Status</th>
-          <th class="text-end">Actions</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th scope="col" class="py-3.5 px-4">Color / Icon</th>
+          <th scope="col" class="py-3.5 px-4">Category Name</th>
+          <th scope="col" class="py-3.5 px-4">Code</th>
+          <th scope="col" class="py-3.5 px-4">Parent Group</th>
+          <th scope="col" class="py-3.5 px-4 text-center">Status</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for cat in categories %}
-          <tr class="border-secondary">
-            <td>
-              <div class="d-flex align-items-center gap-2">
-                <span class="d-inline-block rounded-circle" style="width: 14px; height: 14px; background-color: {{ cat.color_hex }};"></span>
-                <i class="bi {{ cat.icon_class|default:'bi-tag' }} text-muted"></i>
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4">
+              <div class="flex items-center gap-2.5">
+                <span class="w-3.5 h-3.5 rounded-full flex-shrink-0 bg-emerald-500 shadow-sm shadow-emerald-500/30"></span>
+                <i class="bi {{ cat.icon_class|default:'bi-tag' }} text-gray-400 text-sm"></i>
               </div>
             </td>
-            <td class="text-white fw-semibold">{{ cat.name }}</td>
-            <td class="font-tabular text-info">{{ cat.code }}</td>
-            <td class="text-muted small">{{ cat.parent.name|default:"Top-Level Category" }}</td>
-            <td class="text-center">
+            <td class="py-3.5 px-4 font-semibold text-white">{{ cat.name }}</td>
+            <td class="py-3.5 px-4 font-mono text-cyan-400 font-medium">{{ cat.code }}</td>
+            <td class="py-3.5 px-4 text-gray-400">{{ cat.parent.name|default:"Top-Level Category" }}</td>
+            <td class="py-3.5 px-4 text-center">
               {% if cat.is_active %}
-                <span class="badge bg-success">Active</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
               {% else %}
-                <span class="badge bg-secondary">Inactive</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-400 border border-gray-700">Inactive</span>
               {% endif %}
             </td>
-            <td class="text-end">
-              <a href="{% url 'expenses:category_edit' cat.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Edit Category">
-                <i class="bi bi-pencil-square"></i>
-              </a>
-              <a href="{% url 'expenses:category_toggle' cat.id %}" class="btn btn-ghost btn-sm py-1 px-2 text-warning" title="Toggle Active Status">
-                <i class="bi bi-power"></i>
-              </a>
+            <td class="py-3.5 px-4 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <a href="{% url 'expenses:category_edit' cat.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="Edit Category" aria-label="Edit Category">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+                <a href="{% url 'expenses:category_toggle' cat.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-amber-400 hover:text-amber-300 border border-[#28354A] transition-colors no-underline text-xs" title="Toggle Active" aria-label="Toggle Category Status">
+                  <i class="bi bi-power"></i>
+                </a>
+              </div>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="6" class="text-center py-4 text-muted">No expense categories found.</td>
+            <td colspan="6" class="py-10 text-center text-gray-500">No expense categories found.</td>
           </tr>
         {% endfor %}
       </tbody>

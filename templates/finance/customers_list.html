@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 
-{% block title %}Customers | Expense Tracking{% endblock %}
+{% block title %}Customers | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">Customer Directory</h2>
-    <p class="text-muted small mb-0">Client registry for machinery hire, tillage services, and billing</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Customer Directory</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Client registry for machinery hire, tillage services, and billing</p>
   </div>
   <div>
-    <a href="{% url 'finance:customer_create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+    <a href="{% url 'finance:customer_create' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
       <i class="bi bi-plus-lg"></i>
       <span>Add Customer</span>
     </a>
@@ -17,72 +17,99 @@
 </div>
 
 <!-- Search Bar -->
-<div class="theme-card p-3 mb-4">
-  <form method="get" class="row g-2 align-items-center">
-    <div class="col-12 col-md-8">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
-        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search by customer name, code, or phone number...">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-center">
+    <div class="md:col-span-2">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+          <i class="bi bi-search text-xs"></i>
+        </span>
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none"
+          placeholder="Search by customer name, code, or phone number..."
+        >
       </div>
     </div>
-    <div class="col-12 col-sm-6 col-md-2">
-      <select name="status" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div>
+      <select name="status" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Statuses</option>
-        <option value="ACTIVE" {% if status == 'ACTIVE' %}selected{% endif %}>Active</option>
-        <option value="INACTIVE" {% if status == 'INACTIVE' %}selected{% endif %}>Inactive</option>
+        {% if status == 'ACTIVE' %}
+          <option value="ACTIVE" selected>Active</option>
+        {% else %}
+          <option value="ACTIVE">Active</option>
+        {% endif %}
+        {% if status == 'INACTIVE' %}
+          <option value="INACTIVE" selected>Inactive</option>
+        {% else %}
+          <option value="INACTIVE">Inactive</option>
+        {% endif %}
       </select>
     </div>
-    <div class="col-12 col-sm-6 col-md-2 d-flex gap-2">
-      <button type="submit" class="btn btn-ghost btn-sm w-100">Filter</button>
+
+    <div class="flex items-center gap-2">
+      <button type="submit" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors text-xs font-semibold">
+        Filter
+      </button>
       {% if query or status %}
-        <a href="{% url 'finance:customers' %}" class="btn btn-ghost btn-sm" title="Clear"><i class="bi bi-x-lg"></i></a>
+        <a href="{% url 'finance:customers' %}" class="px-2.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 border border-[#28354A] transition-colors text-xs no-underline" title="Clear" aria-label="Clear Search">
+          <i class="bi bi-x-lg"></i>
+        </a>
       {% endif %}
     </div>
   </form>
 </div>
 
 <!-- Customers Table -->
-<div class="theme-card">
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Code</th>
-          <th>Name / Farmer</th>
-          <th>Phone</th>
-          <th>Location / Village</th>
-          <th class="text-center">Status</th>
-          <th class="text-end">Actions</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th scope="col" class="py-3.5 px-4">Code</th>
+          <th scope="col" class="py-3.5 px-4">Name / Farmer</th>
+          <th scope="col" class="py-3.5 px-4">Phone</th>
+          <th scope="col" class="py-3.5 px-4">Location / Village</th>
+          <th scope="col" class="py-3.5 px-4 text-center">Status</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for c in customers %}
-          <tr class="border-secondary">
-            <td class="font-tabular text-info fw-semibold">{{ c.customer_code }}</td>
-            <td class="text-white fw-semibold">{{ c.name }}</td>
-            <td class="font-tabular text-muted">{{ c.phone|default:"--" }}</td>
-            <td class="text-muted small">{{ c.location_address|default:"--" }}</td>
-            <td class="text-center">
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">{{ c.customer_code }}</td>
+            <td class="py-3.5 px-4 font-semibold text-white">{{ c.name }}</td>
+            <td class="py-3.5 px-4 font-mono text-gray-400">{{ c.phone|default:"--" }}</td>
+            <td class="py-3.5 px-4 text-gray-300">{{ c.location_address|default:"--" }}</td>
+            <td class="py-3.5 px-4 text-center">
               {% if c.status == 'ACTIVE' %}
-                <span class="badge bg-success">Active</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
               {% else %}
-                <span class="badge bg-secondary">Inactive</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-400 border border-gray-700">Inactive</span>
               {% endif %}
             </td>
-            <td class="text-end">
-              <a href="{% url 'finance:customer_edit' c.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Edit Customer">
-                <i class="bi bi-pencil-square"></i>
-              </a>
-              {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
-                <a href="{% url 'finance:customer_delete' c.id %}" class="btn btn-ghost btn-sm py-1 px-2 text-danger" title="Delete" onclick="return confirm('Soft delete customer {{ c.name }}?');">
-                  <i class="bi bi-trash"></i>
+            <td class="py-3.5 px-4 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <a href="{% url 'finance:customer_edit' c.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="Edit Customer" aria-label="Edit Customer">
+                  <i class="bi bi-pencil-square"></i>
                 </a>
-              {% endif %}
+                {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+                  <a href="{% url 'finance:customer_delete' c.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors no-underline text-xs" title="Delete" aria-label="Delete Customer" onclick="return confirm('Soft delete customer {{ c.name }}?');">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                {% endif %}
+              </div>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="6" class="text-center py-4 text-muted">No customers found. Click "Add Customer" to create a new client profile.</td>
+            <td colspan="6" class="py-12 text-center text-gray-500">
+              <i class="bi bi-people text-3xl d-block mb-2 text-gray-600"></i>
+              No customers found. Click "Add Customer" to create a new client profile.
+            </td>
           </tr>
         {% endfor %}
       </tbody>

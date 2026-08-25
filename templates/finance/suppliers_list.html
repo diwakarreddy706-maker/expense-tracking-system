@@ -1,93 +1,116 @@
 {% extends 'base.html' %}
 
-{% block title %}Suppliers | Expense Tracking{% endblock %}
+{% block title %}Suppliers | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">Suppliers & Vendors</h2>
-    <p class="text-muted small mb-0">Petroleum outlets, spare parts dealers, workshops, and agricultural vendors</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Suppliers &amp; Vendors</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Petroleum outlets, spare parts dealers, workshops, and agricultural vendors</p>
   </div>
   <div>
-    <a href="{% url 'finance:supplier_create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+    <a href="{% url 'finance:supplier_create' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
       <i class="bi bi-plus-lg"></i>
       <span>Add Supplier</span>
     </a>
   </div>
 </div>
 
-<!-- Search Bar -->
-<div class="theme-card p-3 mb-4">
-  <form method="get" class="row g-2 align-items-center">
-    <div class="col-12 col-md-6">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
-        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search by vendor name, code, or phone...">
+<!-- Search & Filter Bar -->
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-center">
+    <div class="md:col-span-2">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+          <i class="bi bi-search text-xs"></i>
+        </span>
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none"
+          placeholder="Search by vendor name, code, or phone..."
+        >
       </div>
     </div>
-    <div class="col-12 col-sm-6 col-md-4">
-      <select name="type" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div>
+      <select name="type" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Supplier Types</option>
         <option value="FUEL_PUMP" {% if supp_type == 'FUEL_PUMP' %}selected{% endif %}>Fuel Pump</option>
         <option value="SPARE_PARTS" {% if supp_type == 'SPARE_PARTS' %}selected{% endif %}>Spare Parts</option>
         <option value="WORKSHOP" {% if supp_type == 'WORKSHOP' %}selected{% endif %}>Workshop</option>
-        <option value="FERTILIZER" {% if supp_type == 'FERTILIZER' %}selected{% endif %}>Fertilizer & Seeds</option>
+        <option value="FERTILIZER" {% if supp_type == 'FERTILIZER' %}selected{% endif %}>Fertilizer &amp; Seeds</option>
         <option value="OTHER" {% if supp_type == 'OTHER' %}selected{% endif %}>Other</option>
       </select>
     </div>
-    <div class="col-12 col-sm-6 col-md-2 d-flex gap-2">
-      <button type="submit" class="btn btn-ghost btn-sm w-100">Filter</button>
+
+    <div class="flex items-center gap-2">
+      <button type="submit" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors text-xs font-semibold">
+        Filter
+      </button>
       {% if query or supp_type %}
-        <a href="{% url 'finance:suppliers' %}" class="btn btn-ghost btn-sm" title="Clear"><i class="bi bi-x-lg"></i></a>
+        <a href="{% url 'finance:suppliers' %}" class="px-2.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 border border-[#28354A] transition-colors text-xs no-underline" title="Clear">
+          <i class="bi bi-x-lg"></i>
+        </a>
       {% endif %}
     </div>
   </form>
 </div>
 
 <!-- Suppliers Table -->
-<div class="theme-card">
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Code</th>
-          <th>Vendor Name</th>
-          <th>Type</th>
-          <th>Phone</th>
-          <th>Payment Terms</th>
-          <th class="text-center">Status</th>
-          <th class="text-end">Actions</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th class="py-3.5 px-4">Code</th>
+          <th class="py-3.5 px-4">Vendor Name</th>
+          <th class="py-3.5 px-4">Type</th>
+          <th class="py-3.5 px-4">Phone</th>
+          <th class="py-3.5 px-4">Payment Terms</th>
+          <th class="py-3.5 px-4 text-center">Status</th>
+          <th class="py-3.5 px-4 text-right">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for s in suppliers %}
-          <tr class="border-secondary">
-            <td class="font-tabular text-warning fw-semibold">{{ s.supplier_code }}</td>
-            <td class="text-white fw-semibold">{{ s.name }}</td>
-            <td><span class="badge bg-dark border border-secondary text-info">{{ s.get_supplier_type_display }}</span></td>
-            <td class="font-tabular text-muted">{{ s.phone|default:"--" }}</td>
-            <td class="text-muted small">{{ s.payment_terms|default:"Cash / Direct" }}</td>
-            <td class="text-center">
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 font-mono font-bold text-amber-400 whitespace-nowrap">{{ s.supplier_code }}</td>
+            <td class="py-3.5 px-4 font-semibold text-white">{{ s.name }}</td>
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                {{ s.get_supplier_type_display }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 font-mono text-gray-400">{{ s.phone|default:"--" }}</td>
+            <td class="py-3.5 px-4 text-gray-300">{{ s.payment_terms|default:"Cash / Direct" }}</td>
+            <td class="py-3.5 px-4 text-center">
               {% if s.status == 'ACTIVE' %}
-                <span class="badge bg-success">Active</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
               {% else %}
-                <span class="badge bg-secondary">Inactive</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-400 border border-gray-700">Inactive</span>
               {% endif %}
             </td>
-            <td class="text-end">
-              <a href="{% url 'finance:supplier_edit' s.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Edit Supplier">
-                <i class="bi bi-pencil-square"></i>
-              </a>
-              {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
-                <a href="{% url 'finance:supplier_delete' s.id %}" class="btn btn-ghost btn-sm py-1 px-2 text-danger" title="Delete" onclick="return confirm('Soft delete supplier {{ s.name }}?');">
-                  <i class="bi bi-trash"></i>
+            <td class="py-3.5 px-4 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <a href="{% url 'finance:supplier_edit' s.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="Edit Supplier">
+                  <i class="bi bi-pencil-square"></i>
                 </a>
-              {% endif %}
+                {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+                  <a href="{% url 'finance:supplier_delete' s.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors no-underline text-xs" title="Delete" onclick="return confirm('Soft delete supplier {{ s.name }}?');">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                {% endif %}
+              </div>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="7" class="text-center py-4 text-muted">No suppliers found. Click "Add Supplier" to register a fuel pump or vendor.</td>
+            <td colspan="7" class="py-12 text-center text-gray-500">
+              <i class="bi bi-shop text-3xl d-block mb-2 text-gray-600"></i>
+              No suppliers found. Click "Add Supplier" to register a fuel pump or vendor.
+            </td>
           </tr>
         {% endfor %}
       </tbody>

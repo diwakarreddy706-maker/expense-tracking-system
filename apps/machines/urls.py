@@ -28,4 +28,22 @@ urlpatterns = [
     path('work/add/', views.work_entry_create_view, name='work_create'),
     path('work/<int:entry_id>/edit/', views.work_entry_edit_view, name='work_edit'),
     path('work/<int:entry_id>/delete/', views.work_entry_delete_view, name='work_delete'),
+
+    # Phase 15: Machinery Maintenance & Service Management
+    path('maintenance/', views.maintenance_dashboard_view, name='maintenance_dashboard'),
+    path('maintenance/jobs/', views.maintenance_job_list_view, name='maintenance_job_list'),
+    path('maintenance/jobs/add/', views.maintenance_job_create_view, name='maintenance_job_create'),
+    path('maintenance/jobs/<int:job_id>/', views.maintenance_job_detail_view, name='maintenance_job_detail'),
+    path('maintenance/jobs/<int:job_id>/edit/', views.maintenance_job_edit_view, name='maintenance_job_edit'),
+    path('maintenance/jobs/<int:job_id>/start/', views.maintenance_job_start_view, name='maintenance_job_start'),
+    path('maintenance/jobs/<int:job_id>/complete/', views.maintenance_job_complete_view, name='maintenance_job_complete'),
+    path('maintenance/jobs/<int:job_id>/cancel/', views.maintenance_job_cancel_view, name='maintenance_job_cancel'),
+    path('maintenance/jobs/<int:job_id>/delete/', views.maintenance_job_delete_view, name='maintenance_job_delete'),
+    path('maintenance/jobs/<int:job_id>/parts/add/', views.maintenance_part_add_view, name='maintenance_part_add'),
+    path('maintenance/jobs/<int:job_id>/parts/<int:part_id>/delete/', views.maintenance_part_delete_view, name='maintenance_part_delete'),
+    path('maintenance/jobs/<int:job_id>/post-expense/', views.maintenance_job_post_expense_view, name='maintenance_job_post_expense'),
+    path('maintenance/schedules/', views.maintenance_schedule_list_view, name='maintenance_schedule_list'),
+    path('maintenance/schedules/add/', views.maintenance_schedule_create_view, name='maintenance_schedule_create'),
+    path('maintenance/schedules/<int:schedule_id>/edit/', views.maintenance_schedule_edit_view, name='maintenance_schedule_edit'),
+    path('maintenance/history/<int:machine_id>/', views.machine_service_history_view, name='machine_service_history'),
 ]

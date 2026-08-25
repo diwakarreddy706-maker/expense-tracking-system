@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 
-{% block title %}Employees | Expense Tracking{% endblock %}
+{% block title %}Staff &amp; Operators | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">Staff & Operator Directory</h2>
-    <p class="text-muted small mb-0">Tractor drivers, harvester operators, mechanics, and farm staff</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Staff &amp; Operator Directory</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Tractor drivers, combine operators, workshop mechanics, and field crew</p>
   </div>
   <div>
-    <a href="{% url 'employees:create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+    <a href="{% url 'employees:create' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
       <i class="bi bi-person-plus-fill"></i>
       <span>Add Employee</span>
     </a>
@@ -17,16 +17,25 @@
 </div>
 
 <!-- Search & Filter Bar -->
-<div class="theme-card p-3 mb-4">
-  <form method="get" class="row g-2 align-items-center">
-    <div class="col-12 col-md-5">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
-        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search by name, code, or phone...">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-center">
+    <div class="md:col-span-2">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+          <i class="bi bi-search text-xs"></i>
+        </span>
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none"
+          placeholder="Search by name, code, or phone..."
+        >
       </div>
     </div>
-    <div class="col-12 col-sm-6 col-md-3">
-      <select name="role" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div>
+      <select name="role" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Operational Roles</option>
         <option value="TRACTOR_DRIVER" {% if role == 'TRACTOR_DRIVER' %}selected{% endif %}>Tractor Driver</option>
         <option value="HARVESTER_OPERATOR" {% if role == 'HARVESTER_OPERATOR' %}selected{% endif %}>Harvester Operator</option>
@@ -35,82 +44,94 @@
         <option value="DAILY_LABOR" {% if role == 'DAILY_LABOR' %}selected{% endif %}>Daily Labor</option>
       </select>
     </div>
-    <div class="col-12 col-sm-6 col-md-2">
-      <select name="status" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div class="flex items-center gap-2">
+      <select name="status" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Statuses</option>
         <option value="ACTIVE" {% if status == 'ACTIVE' %}selected{% endif %}>Active</option>
         <option value="INACTIVE" {% if status == 'INACTIVE' %}selected{% endif %}>Inactive</option>
         <option value="ON_LEAVE" {% if status == 'ON_LEAVE' %}selected{% endif %}>On Leave</option>
       </select>
-    </div>
-    <div class="col-12 col-md-2 d-flex gap-2">
-      <button type="submit" class="btn btn-ghost btn-sm w-100">Filter</button>
+      <button type="submit" class="px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors text-xs" title="Apply Filter">
+        <i class="bi bi-funnel-fill"></i>
+      </button>
       {% if query or role or status %}
-        <a href="{% url 'employees:list' %}" class="btn btn-ghost btn-sm" title="Clear"><i class="bi bi-x-lg"></i></a>
+        <a href="{% url 'employees:list' %}" class="px-2.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 border border-[#28354A] transition-colors text-xs no-underline" title="Clear">
+          <i class="bi bi-x-lg"></i>
+        </a>
       {% endif %}
     </div>
   </form>
 </div>
 
 <!-- Employees Table -->
-<div class="theme-card">
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Code</th>
-          <th>Staff Name</th>
-          <th>Designation / Role</th>
-          <th>Phone</th>
-          <th>Joining Date</th>
-          <th class="text-center">Status</th>
-          <th class="text-end">Actions</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th class="py-3.5 px-4">Code</th>
+          <th class="py-3.5 px-4">Staff Name</th>
+          <th class="py-3.5 px-4">Designation / Role</th>
+          <th class="py-3.5 px-4">Phone</th>
+          <th class="py-3.5 px-4">Joining Date</th>
+          <th class="py-3.5 px-4 text-center">Status</th>
+          <th class="py-3.5 px-4 text-right">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for emp in employees %}
-          <tr class="border-secondary">
-            <td class="font-tabular text-info fw-semibold">{{ emp.employee_code }}</td>
-            <td class="text-white fw-semibold">
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">{{ emp.employee_code }}</td>
+            <td class="py-3.5 px-4 font-semibold text-white">
               {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
-                <a href="{% url 'employees:financial_profile' emp.id %}" class="text-white text-decoration-none" title="View Financial Ledger">
+                <a href="{% url 'employees:financial_profile' emp.id %}" class="text-white hover:text-emerald-400 no-underline transition-colors">
                   {{ emp.full_name }}
                 </a>
               {% else %}
                 {{ emp.full_name }}
               {% endif %}
             </td>
-            <td><span class="badge bg-dark border border-secondary text-primary">{{ emp.get_role_display }}</span></td>
-            <td class="font-tabular text-muted">{{ emp.phone_number|default:"--" }}</td>
-            <td class="text-muted small">{{ emp.joining_date|date:"d M Y" }}</td>
-            <td class="text-center">
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                {{ emp.get_role_display }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 font-mono text-gray-400">{{ emp.phone_number|default:"--" }}</td>
+            <td class="py-3.5 px-4 text-gray-400 font-mono text-[11px]">{{ emp.joining_date|date:"d M Y" }}</td>
+            <td class="py-3.5 px-4 text-center">
               {% if emp.status == 'ACTIVE' %}
-                <span class="badge bg-success">Active</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
               {% elif emp.status == 'ON_LEAVE' %}
-                <span class="badge bg-warning text-dark">On Leave</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">On Leave</span>
               {% else %}
-                <span class="badge bg-secondary">Inactive</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-400 border border-gray-700">Inactive</span>
               {% endif %}
             </td>
-            <td class="text-end">
-              {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
-                <a href="{% url 'employees:financial_profile' emp.id %}" class="btn btn-ghost btn-sm py-1 px-2 text-warning" title="Wage & Financial Ledger">
-                  <i class="bi bi-wallet2"></i>
+            <td class="py-3.5 px-4 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
+                  <a href="{% url 'employees:financial_profile' emp.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-amber-400 hover:text-amber-300 border border-[#28354A] transition-colors no-underline text-xs" title="Wage &amp; Financial Ledger">
+                    <i class="bi bi-wallet2"></i>
+                  </a>
+                {% endif %}
+                <a href="{% url 'employees:edit' emp.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="Edit Employee">
+                  <i class="bi bi-pencil-square"></i>
                 </a>
-              {% endif %}
-              <a href="{% url 'employees:edit' emp.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Edit Employee">
-                <i class="bi bi-pencil-square"></i>
-              </a>
-              {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
-                <a href="{% url 'employees:delete' emp.id %}" class="btn btn-ghost btn-sm py-1 px-2 text-danger" title="Delete" onclick="return confirm('Soft delete employee {{ emp.full_name }}?');">
-                  <i class="bi bi-trash"></i>
-                </a>
-              {% endif %}
+                {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+                  <a href="{% url 'employees:delete' emp.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors no-underline text-xs" title="Delete" onclick="return confirm('Soft delete employee {{ emp.full_name }}?');">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                {% endif %}
+              </div>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="7" class="text-center py-4 text-muted">No staff members found. Click "Add Employee" to register a team member.</td>
+            <td colspan="7" class="py-12 text-center text-gray-500">
+              <i class="bi bi-people text-3xl d-block mb-2 text-gray-600"></i>
+              No staff members found. Click "Add Employee" to register a team member.
+            </td>
           </tr>
         {% endfor %}
       </tbody>

@@ -1,28 +1,29 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ title }} | Expense Tracking{% endblock %}
+{% block title %}{{ title }} | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <div class="d-flex align-items-center gap-2">
-      <h2 class="fs-4 fw-bold text-white mb-0">{{ receivable.receivable_code }}</h2>
+    <div class="flex items-center gap-3">
+      <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">{{ receivable.receivable_code }}</h2>
       {% if receivable.status == 'PAID' %}
-        <span class="badge bg-success">Settled</span>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Settled</span>
       {% elif receivable.status == 'PARTIAL' %}
-        <span class="badge bg-warning text-dark">Partially Paid</span>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Partially Paid</span>
       {% else %}
-        <span class="badge bg-danger">Unpaid</span>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Unpaid</span>
       {% endif %}
     </div>
-    <p class="text-muted small mb-0 mt-1">Billed to <strong>{{ receivable.customer.name }}</strong> on {{ receivable.bill_date|date:"d M Y" }}</p>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Billed to <strong class="text-white">{{ receivable.customer.name }}</strong> on {{ receivable.bill_date|date:"d M Y" }}</p>
   </div>
-  <div class="d-flex gap-2">
-    <a href="{% url 'finance:receivables' %}" class="btn btn-ghost btn-sm">
-      <i class="bi bi-arrow-left me-1"></i> Back to Receivables
+  <div class="flex items-center gap-2.5">
+    <a href="{% url 'finance:receivables' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Receivables</span>
     </a>
     {% if receivable.status != 'PAID' %}
-      <a href="{% url 'finance:customer_payment_create' receivable.id %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+      <a href="{% url 'finance:customer_payment_create' receivable.id %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
         <i class="bi bi-cash-stack"></i>
         <span>Receive Payment</span>
       </a>
@@ -31,102 +32,118 @@
 </div>
 
 <!-- Ledger Summary Cards -->
-<div class="row g-3 mb-4">
-  <div class="col-4">
-    <div class="theme-card p-3">
-      <span class="text-muted small">Total Billed Amount</span>
-      <h3 class="fs-4 fw-bold text-white mt-1 mb-0 font-tabular">₹{{ receivable.total_amount }}</h3>
-    </div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-sm">
+    <span class="text-xs text-gray-400 block">Total Billed Amount</span>
+    <div class="text-2xl font-extrabold text-white font-mono mt-1">₹{{ receivable.total_amount }}</div>
   </div>
-  <div class="col-4">
-    <div class="theme-card p-3">
-      <span class="text-muted small">Total Received (Money In)</span>
-      <h3 class="fs-4 fw-bold text-emerald mt-1 mb-0 font-tabular">₹{{ receivable.received_amount }}</h3>
-    </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-sm">
+    <span class="text-xs text-gray-400 block">Total Received (Money In)</span>
+    <div class="text-2xl font-extrabold text-emerald-400 font-mono mt-1">+₹{{ receivable.received_amount }}</div>
   </div>
-  <div class="col-4">
-    <div class="theme-card p-3">
-      <span class="text-muted small">Remaining Outstanding</span>
-      <h3 class="fs-4 fw-bold {% if receivable.outstanding_amount > 0 %}text-warning{% else %}text-muted{% endif %} mt-1 mb-0 font-tabular">
-        ₹{{ receivable.outstanding_amount }}
-      </h3>
+
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-sm">
+    <span class="text-xs text-gray-400 block">Remaining Outstanding</span>
+    <div class="text-2xl font-extrabold font-mono mt-1 {% if receivable.outstanding_amount > 0 %}text-amber-400{% else %}text-gray-500{% endif %}">
+      ₹{{ receivable.outstanding_amount }}
     </div>
   </div>
 </div>
 
 <!-- Payment History Table -->
-<div class="theme-card">
-  <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
-    <i class="bi bi-cash-coin me-2 text-emerald"></i>Settlement Payment Receipts
-  </h3>
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+        <i class="bi bi-cash-coin text-base"></i>
+      </div>
+      <h3 class="text-sm font-bold text-white tracking-tight m-0">Settlement Payment Receipts</h3>
+    </div>
+  </div>
 
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Date</th>
-          <th>Payment Code</th>
-          <th>Credited Account</th>
-          <th>Method</th>
-          <th>Reference / Notes</th>
-          <th class="text-end">Received Amount</th>
-          <th class="text-center">Status</th>
-          <th class="text-end">Actions</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th class="py-3.5 px-4">Date</th>
+          <th class="py-3.5 px-4">Payment Code</th>
+          <th class="py-3.5 px-4">Credited Account</th>
+          <th class="py-3.5 px-4">Method</th>
+          <th class="py-3.5 px-4">Reference / Notes</th>
+          <th class="py-3.5 px-4 text-right">Received Amount</th>
+          <th class="py-3.5 px-4 text-center">Status</th>
+          <th class="py-3.5 px-4 text-right">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for pay in payments %}
-          <tr class="border-secondary">
-            <td class="text-muted small">{{ pay.payment_date|date:"d M Y" }}</td>
-            <td class="font-tabular text-info fw-semibold">{{ pay.payment_code }}</td>
-            <td>
-              <div class="text-white small"><i class="bi bi-wallet2 text-emerald me-1"></i>{{ pay.account.account_name }}</div>
-              <div class="text-muted" style="font-size: 0.75rem;">Ledger Tx #{{ pay.linked_ledger_transaction.id|default:"--" }}</div>
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 text-gray-400 font-mono text-[11px] whitespace-nowrap">{{ pay.payment_date|date:"d M Y" }}</td>
+            <td class="py-3.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">{{ pay.payment_code }}</td>
+            <td class="py-3.5 px-4">
+              <div class="text-white font-medium flex items-center gap-1">
+                <i class="bi bi-wallet2 text-emerald-400"></i>
+                <span>{{ pay.account.account_name }}</span>
+              </div>
+              <div class="text-[10px] text-gray-400">Ledger Tx #{{ pay.linked_ledger_transaction.id|default:"--" }}</div>
             </td>
-            <td><span class="badge bg-dark border border-secondary text-info">{{ pay.get_payment_method_display }}</span></td>
-            <td class="text-light small">
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                {{ pay.get_payment_method_display }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-gray-300">
               {{ pay.notes|default:"--" }}
-              {% if pay.reference_no %}<span class="text-muted">({{ pay.reference_no }})</span>{% endif %}
+              {% if pay.reference_no %}<span class="text-gray-500">({{ pay.reference_no }})</span>{% endif %}
             </td>
-            <td class="text-end font-tabular text-emerald fw-bold">₹{{ pay.amount }}</td>
-            <td class="text-center">
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-emerald-400 text-sm whitespace-nowrap">+₹{{ pay.amount }}</td>
+            <td class="py-3.5 px-4 text-center">
               {% if pay.is_reversed %}
-                <span class="badge bg-danger">Reversed</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Reversed</span>
               {% else %}
-                <span class="badge bg-success">Posted</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Posted</span>
               {% endif %}
             </td>
-            <td class="text-end">
+            <td class="py-3.5 px-4 text-right">
               {% if not pay.is_reversed and request.user.profile.role == 'OWNER' or request.user.is_superuser %}
-                <button class="btn btn-ghost btn-sm py-1 px-2 text-danger" data-bs-toggle="modal" data-bs-target="#custPayReversalModal{{ pay.id }}" title="Reverse Payment">
+                <button
+                  type="button"
+                  class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors"
+                  data-bs-toggle="modal"
+                  data-bs-target="#custPayReversalModal{{ pay.id }}"
+                  title="Reverse Payment"
+                >
                   <i class="bi bi-arrow-counterclockwise"></i>
                 </button>
 
                 <!-- Reversal Modal -->
-                <div class="modal fade" id="custPayReversalModal{{ pay.id }}" tabindex="-1" aria-hidden="true">
-                  <div class="modal-dialog modal-dialog-centered text-start">
-                    <div class="modal-content bg-dark border-secondary text-white">
+                <div class="modal fade fixed inset-0 z-50 overflow-y-auto" id="custPayReversalModal{{ pay.id }}" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-center justify-center p-4">
+                    <div class="modal-content relative w-full max-w-md bg-[#131A26] border border-[#28354A] rounded-2xl shadow-2xl overflow-hidden text-gray-100 text-left">
                       <form method="post" action="{% url 'finance:customer_payment_reverse' pay.id %}">
                         {% csrf_token %}
-                        <div class="modal-header border-secondary">
-                          <h5 class="modal-title fs-6 fw-bold text-danger">Confirm Payment Reversal</h5>
-                          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+                          <h5 class="text-sm font-bold text-rose-400 tracking-tight m-0">Confirm Payment Reversal</h5>
+                          <button type="button" class="btn-close text-gray-400 hover:text-white p-1 rounded-lg focus:outline-none" data-bs-dismiss="modal" aria-label="Close">
+                            <i class="bi bi-x-lg text-sm"></i>
+                          </button>
                         </div>
-                        <div class="modal-body">
-                          <p class="small text-light">
-                            Reverse payment <strong>{{ pay.payment_code }}</strong> (₹{{ pay.amount }}) from {{ receivable.customer.name }}?
+                        <div class="p-6 space-y-4 text-xs">
+                          <p class="text-gray-300 leading-relaxed m-0">
+                            Reverse payment <strong class="text-white font-mono">{{ pay.payment_code }}</strong> (₹{{ pay.amount }}) from {{ receivable.customer.name }}?
                           </p>
-                          <div class="alert alert-warning py-2 small">
-                            <i class="bi bi-info-circle me-1"></i> This will restore the receivable balance by ₹{{ pay.amount }} and post a compensatory DEBIT reversal ledger transaction to deduct the funds from {{ pay.account.account_name }}.
+                          <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 leading-relaxed">
+                            <i class="bi bi-info-circle mr-1"></i> This will restore the receivable balance by ₹{{ pay.amount }} and post a compensatory DEBIT reversal ledger transaction to deduct the funds from {{ pay.account.account_name }}.
                           </div>
-                          <div class="mb-3">
-                            <label class="form-label small text-muted">Reason for Reversal *</label>
-                            <textarea name="reason" rows="2" class="form-control bg-dark text-white border-secondary" required placeholder="e.g. Cheque bounced / Payment logged against wrong client"></textarea>
+                          <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Reason for Reversal <span class="text-rose-400">*</span></label>
+                            <textarea name="reason" rows="2" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-rose-500 focus:ring-1 focus:ring-rose-500 text-white text-xs placeholder-gray-600 focus:outline-none" required placeholder="e.g. Cheque bounced / Payment logged against wrong client"></textarea>
                           </div>
                         </div>
-                        <div class="modal-footer border-secondary">
-                          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Cancel</button>
-                          <button type="submit" class="btn btn-danger btn-sm">Execute Reversal</button>
+                        <div class="px-6 py-4 border-t border-[#28354A] flex items-center justify-end gap-3 bg-[#162030]">
+                          <button type="button" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors" data-bs-dismiss="modal">Cancel</button>
+                          <button type="submit" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-md shadow-rose-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-rose-400">Execute Reversal</button>
                         </div>
                       </form>
                     </div>
@@ -137,7 +154,7 @@
           </tr>
         {% empty %}
           <tr>
-            <td colspan="8" class="text-center py-4 text-muted">No payments received yet against this receivable.</td>
+            <td colspan="8" class="py-10 text-center text-gray-500">No payments received yet against this receivable.</td>
           </tr>
         {% endfor %}
       </tbody>

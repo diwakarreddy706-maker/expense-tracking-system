@@ -1,63 +1,79 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ title }} | Expense Tracking{% endblock %}
+{% block title %}{{ title }} | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">Daily Financial Closing & Cash Reconciliation</h2>
-    <p class="text-muted small mb-0">Reconcile physical cash counts, bank balances, and digital wallets against authoritative ledger movements</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Daily Financial Closing &amp; Cash Reconciliation</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Reconcile physical cash counts, bank balances, and digital wallets against authoritative ledger movements</p>
   </div>
   <div>
-    <span class="badge bg-dark border border-secondary text-info px-3 py-2">
-      <i class="bi bi-clock-history me-1"></i> Asia/Kolkata Business Date
+    <span class="px-3 py-1.5 rounded-xl bg-[#131A26] border border-[#28354A] text-cyan-400 text-xs font-semibold inline-flex items-center gap-1.5">
+      <i class="bi bi-clock-history"></i>
+      <span>Asia/Kolkata Business Date</span>
     </span>
   </div>
 </div>
 
 <!-- Scope Selector Tabs -->
-<ul class="nav nav-pills gap-2 mb-4">
-  <li class="nav-item">
-    <a class="nav-link {% if scope == 'CONSOLIDATED' %}active bg-emerald text-white{% else %}btn-ghost text-light{% endif %}"
-       href="{% url 'finance:daily_closing' %}?scope=CONSOLIDATED&date={{ closing_date|date:'Y-m-d' }}">
-      <i class="bi bi-layers-fill me-1"></i> Consolidated Liquid Closing
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link {% if scope == 'CASH_ACCOUNT' %}active bg-emerald text-white{% else %}btn-ghost text-light{% endif %}"
-       href="{% url 'finance:daily_closing' %}?scope=CASH_ACCOUNT&date={{ closing_date|date:'Y-m-d' }}{% if cash_accounts.first %}&account={{ cash_accounts.first.id }}{% endif %}">
-      <i class="bi bi-cash-stack me-1"></i> Cash Drawer (Physical Count)
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link {% if scope == 'BANK_ACCOUNT' %}active bg-emerald text-white{% else %}btn-ghost text-light{% endif %}"
-       href="{% url 'finance:daily_closing' %}?scope=BANK_ACCOUNT&date={{ closing_date|date:'Y-m-d' }}{% if bank_accounts.first %}&account={{ bank_accounts.first.id }}{% endif %}">
-      <i class="bi bi-bank me-1"></i> Bank Account Reconciliation
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link {% if scope == 'UPI_ACCOUNT' %}active bg-emerald text-white{% else %}btn-ghost text-light{% endif %}"
-       href="{% url 'finance:daily_closing' %}?scope=UPI_ACCOUNT&date={{ closing_date|date:'Y-m-d' }}{% if upi_accounts.first %}&account={{ upi_accounts.first.id }}{% endif %}">
-      <i class="bi bi-qr-code me-1"></i> UPI / Digital Wallet
-    </a>
-  </li>
-</ul>
+<div class="flex flex-wrap items-center gap-2 mb-6">
+  <a
+    href="{% url 'finance:daily_closing' %}?scope=CONSOLIDATED&date={{ closing_date|date:'Y-m-d' }}"
+    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all no-underline {% if scope == 'CONSOLIDATED' %}bg-emerald-600 text-white shadow-sm shadow-emerald-900/30{% else %}bg-[#131A26] text-gray-400 hover:text-white border border-[#28354A]{% endif %}"
+  >
+    <i class="bi bi-layers-fill"></i>
+    <span>Consolidated Liquid Closing</span>
+  </a>
+
+  <a
+    href="{% url 'finance:daily_closing' %}?scope=CASH_ACCOUNT&date={{ closing_date|date:'Y-m-d' }}{% if cash_accounts.first %}&account={{ cash_accounts.first.id }}{% endif %}"
+    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all no-underline {% if scope == 'CASH_ACCOUNT' %}bg-emerald-600 text-white shadow-sm shadow-emerald-900/30{% else %}bg-[#131A26] text-gray-400 hover:text-white border border-[#28354A]{% endif %}"
+  >
+    <i class="bi bi-cash-stack"></i>
+    <span>Cash Drawer (Physical Count)</span>
+  </a>
+
+  <a
+    href="{% url 'finance:daily_closing' %}?scope=BANK_ACCOUNT&date={{ closing_date|date:'Y-m-d' }}{% if bank_accounts.first %}&account={{ bank_accounts.first.id }}{% endif %}"
+    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all no-underline {% if scope == 'BANK_ACCOUNT' %}bg-emerald-600 text-white shadow-sm shadow-emerald-900/30{% else %}bg-[#131A26] text-gray-400 hover:text-white border border-[#28354A]{% endif %}"
+  >
+    <i class="bi bi-bank"></i>
+    <span>Bank Reconciliation</span>
+  </a>
+
+  <a
+    href="{% url 'finance:daily_closing' %}?scope=UPI_ACCOUNT&date={{ closing_date|date:'Y-m-d' }}{% if upi_accounts.first %}&account={{ upi_accounts.first.id }}{% endif %}"
+    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all no-underline {% if scope == 'UPI_ACCOUNT' %}bg-emerald-600 text-white shadow-sm shadow-emerald-900/30{% else %}bg-[#131A26] text-gray-400 hover:text-white border border-[#28354A]{% endif %}"
+  >
+    <i class="bi bi-qr-code"></i>
+    <span>UPI / Digital Wallet</span>
+  </a>
+</div>
 
 <!-- Control Bar: Date & Account Selector -->
-<div class="theme-card p-3 mb-4">
-  <form method="get" class="row g-2 align-items-center">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-center">
     <input type="hidden" name="scope" value="{{ scope }}">
 
-    <div class="col-12 col-md-4">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-calendar-event"></i></span>
-        <input type="date" name="date" value="{{ closing_date|date:'Y-m-d' }}" class="form-control bg-dark text-white border-secondary" max="{{ today|date:'Y-m-d' }}">
+    <div class="{% if scope != 'CONSOLIDATED' %}md:col-span-2{% else %}md:col-span-3{% endif %}">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+          <i class="bi bi-calendar-event text-xs"></i>
+        </span>
+        <input
+          type="date"
+          name="date"
+          value="{{ closing_date|date:'Y-m-d' }}"
+          class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none"
+          max="{{ today|date:'Y-m-d' }}"
+        >
       </div>
     </div>
 
     {% if scope != 'CONSOLIDATED' %}
-      <div class="col-12 col-md-5">
-        <select name="account" class="form-select form-select-sm bg-dark text-white border-secondary">
+      <div>
+        <select name="account" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
           {% if scope == 'CASH_ACCOUNT' %}
             {% for a in cash_accounts %}
               <option value="{{ a.id }}" {% if reconciliation.target_account.id == a.id %}selected{% endif %}>{{ a.account_name }} (Current: ₹{{ a.current_balance }})</option>
@@ -75,142 +91,165 @@
       </div>
     {% endif %}
 
-    <div class="col-12 col-md-2">
-      <button type="submit" class="btn btn-ghost btn-sm w-100">Load Reconciliation</button>
+    <div>
+      <button type="submit" class="w-full px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors text-xs font-semibold">
+        Load Reconciliation
+      </button>
     </div>
   </form>
 </div>
 
 {% if calc_error %}
-  <div class="alert alert-danger mb-4">{{ calc_error }}</div>
+  <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-semibold mb-6">
+    {{ calc_error }}
+  </div>
 {% endif %}
 
 {% if reconciliation %}
-<div class="row g-4 mb-4">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
   <!-- Left: Reconciliation Breakdown -->
-  <div class="col-12 col-lg-7">
-    <div class="theme-card h-100">
-      <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
-        <h3 class="fs-6 fw-bold text-white mb-0">
-          <i class="bi bi-calculator me-2 text-emerald"></i>Authoritative Ledger Calculation
-        </h3>
-        <span class="badge bg-dark border border-secondary text-info font-tabular">{{ closing_date|date:"d M Y" }}</span>
-      </div>
+  <div class="lg:col-span-7">
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm h-full flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between border-b border-[#28354A] pb-3 mb-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <i class="bi bi-calculator text-base"></i>
+            </div>
+            <h3 class="text-sm font-bold text-white tracking-tight m-0">Authoritative Ledger Calculation</h3>
+          </div>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">{{ closing_date|date:"d M Y" }}</span>
+        </div>
 
-      <div class="p-3 bg-dark rounded border border-secondary mb-3">
-        <div class="d-flex justify-content-between align-items-center text-muted small mb-2">
-          <span>1. Opening Balance (as of 00:00:00)</span>
-          <span class="text-white font-tabular fw-semibold">₹{{ reconciliation.opening_balance }}</span>
-        </div>
-        <div class="d-flex justify-content-between align-items-center text-muted small mb-2">
-          <span>2. Total Daily Inflows / Receipts (+)</span>
-          <span class="text-emerald font-tabular fw-semibold">+ ₹{{ reconciliation.total_inflow }}</span>
-        </div>
-        <div class="d-flex justify-content-between align-items-center text-muted small mb-2">
-          <span>3. Total Daily Outflows / Payments (-)</span>
-          <span class="text-crimson font-tabular fw-semibold">- ₹{{ reconciliation.total_outflow }}</span>
-        </div>
-        {% if scope != 'CONSOLIDATED' %}
-        <div class="d-flex justify-content-between align-items-center text-muted small mb-2">
-          <span>4. Inter-Account Transfers (+/-)</span>
-          <span class="text-info font-tabular fw-semibold">+₹{{ reconciliation.transfer_in }} / -₹{{ reconciliation.transfer_out }}</span>
-        </div>
-        {% endif %}
-        <div class="d-flex justify-content-between align-items-center border-top border-secondary pt-3 mt-2">
-          <span class="text-white fw-bold">Authoritative Expected Closing Balance:</span>
-          <span class="fs-4 font-tabular text-emerald fw-bold">₹{{ reconciliation.expected_closing }}</span>
+        <div class="p-4 bg-[#0B0F17] rounded-xl border border-[#28354A] space-y-3 mb-4 text-xs">
+          <div class="flex justify-between items-center text-gray-400">
+            <span>1. Opening Balance (as of 00:00:00)</span>
+            <span class="text-white font-mono font-semibold">₹{{ reconciliation.opening_balance }}</span>
+          </div>
+          <div class="flex justify-between items-center text-gray-400">
+            <span>2. Total Daily Inflows / Receipts (+)</span>
+            <span class="text-emerald-400 font-mono font-semibold">+₹{{ reconciliation.total_inflow }}</span>
+          </div>
+          <div class="flex justify-between items-center text-gray-400">
+            <span>3. Total Daily Outflows / Payments (-)</span>
+            <span class="text-rose-400 font-mono font-semibold">-₹{{ reconciliation.total_outflow }}</span>
+          </div>
+          {% if scope != 'CONSOLIDATED' %}
+            <div class="flex justify-between items-center text-gray-400">
+              <span>4. Inter-Account Transfers (+/-)</span>
+              <span class="text-cyan-400 font-mono font-semibold">+₹{{ reconciliation.transfer_in }} / -₹{{ reconciliation.transfer_out }}</span>
+            </div>
+          {% endif %}
+          <div class="flex justify-between items-center border-t border-[#28354A] pt-3 text-sm">
+            <span class="text-white font-bold">Authoritative Expected Closing:</span>
+            <span class="text-xl font-extrabold text-emerald-400 font-mono">₹{{ reconciliation.expected_closing }}</span>
+          </div>
         </div>
       </div>
 
       <!-- Supporting Non-Cash Obligations Section -->
-      <div class="border-top border-secondary pt-3 mt-3">
-        <span class="text-muted small d-block mb-2">Operational Context (Excluded from Cash Reconciliation):</span>
-        <div class="row g-2 text-muted" style="font-size: 0.75rem;">
-          <div class="col-4">Customer Receivables: <strong class="text-light">₹{{ reconciliation.receivables_outstanding }}</strong></div>
-          <div class="col-4">Supplier Payables: <strong class="text-light">₹{{ reconciliation.payables_outstanding }}</strong></div>
-          <div class="col-4">Employee Obligations: <strong class="text-light">₹{{ reconciliation.employee_wages_outstanding }}</strong></div>
+      <div class="border-t border-[#28354A] pt-4 mt-2">
+        <span class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider block mb-2">Operational Context (Excluded from Cash Count):</span>
+        <div class="grid grid-cols-3 gap-2 text-[11px]">
+          <div class="p-2 rounded-lg bg-[#0B0F17] border border-[#1E293B]">
+            <span class="text-gray-400 block">Receivables:</span>
+            <strong class="text-white font-mono">₹{{ reconciliation.receivables_outstanding }}</strong>
+          </div>
+          <div class="p-2 rounded-lg bg-[#0B0F17] border border-[#1E293B]">
+            <span class="text-gray-400 block">Payables:</span>
+            <strong class="text-white font-mono">₹{{ reconciliation.payables_outstanding }}</strong>
+          </div>
+          <div class="p-2 rounded-lg bg-[#0B0F17] border border-[#1E293B]">
+            <span class="text-gray-400 block">Wages Owed:</span>
+            <strong class="text-white font-mono">₹{{ reconciliation.employee_wages_outstanding }}</strong>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Right: Verification & Closing Submission Form -->
-  <div class="col-12 col-lg-5">
-    <div class="theme-card h-100">
+  <div class="lg:col-span-5">
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm h-full flex flex-col justify-between">
       {% if existing_closing %}
-        <div class="text-center py-4">
-          <div class="rounded-circle d-inline-flex p-3 bg-dark border border-success text-success mb-3">
-            <i class="bi bi-lock-fill fs-2"></i>
+        <div class="text-center py-6">
+          <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mx-auto mb-3">
+            <i class="bi bi-lock-fill text-2xl"></i>
           </div>
-          <h3 class="fs-5 fw-bold text-white">Day Closed & Locked</h3>
-          <p class="text-muted small mb-3">Closed on {{ existing_closing.closed_at|date:"d M Y H:i" }} by {{ existing_closing.closed_by.username }}</p>
+          <h3 class="text-base font-extrabold text-white tracking-tight m-0">Day Closed &amp; Locked</h3>
+          <p class="text-xs text-gray-400 mt-1 mb-4">Closed on {{ existing_closing.closed_at|date:"d M Y H:i" }} by {{ existing_closing.closed_by.username }}</p>
 
-          <div class="p-3 bg-dark rounded border border-secondary text-start mb-3">
-            <div class="d-flex justify-content-between text-muted small mb-1">
+          <div class="p-4 bg-[#0B0F17] rounded-xl border border-[#28354A] text-left space-y-2 text-xs mb-4">
+            <div class="flex justify-between text-gray-400">
               <span>Expected Closing:</span>
-              <span class="text-white font-tabular">₹{{ existing_closing.expected_closing }}</span>
+              <span class="text-white font-mono">₹{{ existing_closing.expected_closing }}</span>
             </div>
-            <div class="d-flex justify-content-between text-muted small mb-1">
+            <div class="flex justify-between text-gray-400">
               <span>Actual Verified Closing:</span>
-              <span class="text-white font-tabular fw-bold">₹{{ existing_closing.actual_closing }}</span>
+              <span class="text-white font-mono font-bold">₹{{ existing_closing.actual_closing }}</span>
             </div>
-            <div class="d-flex justify-content-between text-muted small mb-1">
-              <span>Discrepancy:</span>
-              <span class="font-tabular fw-bold {% if existing_closing.status == 'BALANCED' %}text-success{% elif existing_closing.status == 'SURPLUS' %}text-warning{% else %}text-danger{% endif %}">
+            <div class="flex justify-between border-t border-[#1E293B] pt-2">
+              <span class="text-gray-300">Discrepancy:</span>
+              <span class="font-mono font-bold {% if existing_closing.status == 'BALANCED' %}text-emerald-400{% elif existing_closing.status == 'SURPLUS' %}text-amber-400{% else %}text-rose-400{% endif %}">
                 ₹{{ existing_closing.discrepancy }} ({{ existing_closing.get_status_display }})
               </span>
             </div>
             {% if existing_closing.notes %}
-              <div class="border-top border-secondary pt-2 mt-2">
-                <span class="text-muted" style="font-size: 0.7rem;">Explanation:</span>
-                <p class="text-light small mb-0">{{ existing_closing.notes }}</p>
+              <div class="border-t border-[#1E293B] pt-2 mt-2">
+                <span class="text-[10px] text-gray-400 block">Explanation:</span>
+                <p class="text-gray-300 text-xs mt-0.5 mb-0">{{ existing_closing.notes }}</p>
               </div>
             {% endif %}
           </div>
-          <span class="badge bg-success py-2 px-3">Immutably Locked</span>
+          <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Immutably Locked</span>
         </div>
       {% else %}
-        <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
-          <i class="bi bi-shield-check me-2 text-warning"></i>Physical Count / Verification
-        </h3>
-
-        <form method="post" action="{% url 'finance:daily_closing_submit' %}" id="closingForm">
-          {% csrf_token %}
-          <input type="hidden" name="closing_date" value="{{ closing_date|date:'Y-m-d' }}">
-          <input type="hidden" name="scope" value="{{ scope }}">
-          {% if reconciliation.target_account %}
-            <input type="hidden" name="account" value="{{ reconciliation.target_account.id }}">
-          {% endif %}
-
-          <div class="mb-3">
-            <label class="form-label small text-muted">
-              {% if scope == 'CASH_ACCOUNT' %}Physical Cash Counted in Drawer (₹) *
-              {% elif scope == 'BANK_ACCOUNT' %}Verified Bank Statement Balance (₹) *
-              {% elif scope == 'UPI_ACCOUNT' %}Verified Digital Wallet Balance (₹) *
-              {% else %}Total Verified Liquid Balance across all Accounts (₹) *{% endif %}
-            </label>
-            {{ form.actual_closing }}
-          </div>
-
-          <!-- Live Discrepancy Indicator -->
-          <div class="p-3 bg-dark rounded border border-secondary mb-3">
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="text-muted small">Calculated Discrepancy:</span>
-              <span class="fs-5 font-tabular fw-bold" id="discrepancyDisplay">₹0.00</span>
+        <div>
+          <div class="flex items-center gap-2.5 border-b border-[#28354A] pb-3 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+              <i class="bi bi-shield-check text-base"></i>
             </div>
-            <div class="small text-muted mt-1" id="statusHelperText">Actual matches Expected Balance exactly.</div>
+            <h3 class="text-sm font-bold text-white tracking-tight m-0">Physical Count / Verification</h3>
           </div>
 
-          <div class="mb-3" id="notesFieldContainer">
-            <label class="form-label small text-muted" id="notesLabel">Discrepancy Note (Mandatory if surplus/deficit)</label>
-            {{ form.notes }}
-          </div>
+          <form method="post" action="{% url 'finance:daily_closing_submit' %}" id="closingForm" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="closing_date" value="{{ closing_date|date:'Y-m-d' }}">
+            <input type="hidden" name="scope" value="{{ scope }}">
+            {% if reconciliation.target_account %}
+              <input type="hidden" name="account" value="{{ reconciliation.target_account.id }}">
+            {% endif %}
 
-          <button type="submit" class="btn btn-emerald btn-sm w-100 py-2 d-flex align-items-center justify-content-center gap-2">
-            <i class="bi bi-lock-fill"></i>
-            <span>Lock & Complete Daily Closing</span>
-          </button>
-        </form>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">
+                {% if scope == 'CASH_ACCOUNT' %}Physical Cash Counted in Drawer (₹) *
+                {% elif scope == 'BANK_ACCOUNT' %}Verified Bank Statement Balance (₹) *
+                {% elif scope == 'UPI_ACCOUNT' %}Verified Digital Wallet Balance (₹) *
+                {% else %}Total Verified Liquid Balance across all Accounts (₹) *{% endif %}
+              </label>
+              {{ form.actual_closing }}
+            </div>
+
+            <!-- Live Discrepancy Indicator -->
+            <div class="p-3.5 bg-[#0B0F17] rounded-xl border border-[#28354A]">
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-gray-400">Calculated Discrepancy:</span>
+                <span class="text-lg font-mono font-bold text-emerald-400" id="discrepancyDisplay">₹0.00</span>
+              </div>
+              <div class="text-[11px] text-gray-400 mt-1" id="statusHelperText">Actual matches Expected Balance exactly.</div>
+            </div>
+
+            <div id="notesFieldContainer">
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5" id="notesLabel">Discrepancy Note (Mandatory if surplus/deficit)</label>
+              {{ form.notes }}
+            </div>
+
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 flex items-center justify-center gap-2 mt-4">
+              <i class="bi bi-lock-fill"></i>
+              <span>Lock &amp; Complete Daily Closing</span>
+            </button>
+          </form>
+        </div>
       {% endif %}
     </div>
   </div>
@@ -218,52 +257,61 @@
 {% endif %}
 
 <!-- Historical Daily Closings Table -->
-<div class="theme-card">
-  <h3 class="fs-6 fw-bold text-white border-bottom border-secondary pb-3 mb-3">
-    <i class="bi bi-archive-fill me-2 text-info"></i>Historical Daily Closing Records
-  </h3>
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+        <i class="bi bi-archive-fill text-base"></i>
+      </div>
+      <h3 class="text-sm font-bold text-white tracking-tight m-0">Historical Daily Closing Records</h3>
+    </div>
+  </div>
 
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Closing Date</th>
-          <th>Scope</th>
-          <th>Account</th>
-          <th class="text-end">Opening</th>
-          <th class="text-end">Expected</th>
-          <th class="text-end">Actual Counted</th>
-          <th class="text-end">Discrepancy</th>
-          <th class="text-center">Status</th>
-          <th>Closed By</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th class="py-3.5 px-4">Closing Date</th>
+          <th class="py-3.5 px-4">Scope</th>
+          <th class="py-3.5 px-4">Account</th>
+          <th class="py-3.5 px-4 text-right">Opening</th>
+          <th class="py-3.5 px-4 text-right">Expected</th>
+          <th class="py-3.5 px-4 text-right">Actual Counted</th>
+          <th class="py-3.5 px-4 text-right">Discrepancy</th>
+          <th class="py-3.5 px-4 text-center">Status</th>
+          <th class="py-3.5 px-4">Closed By</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for c in recent_closings %}
-          <tr class="border-secondary">
-            <td class="font-tabular text-info fw-semibold">{{ c.closing_date|date:"d M Y" }}</td>
-            <td><span class="badge bg-dark border border-secondary text-light">{{ c.get_scope_display }}</span></td>
-            <td>{{ c.account.account_name|default:"Consolidated Liquid" }}</td>
-            <td class="text-end font-tabular text-muted">₹{{ c.opening_balance }}</td>
-            <td class="text-end font-tabular text-white">₹{{ c.expected_closing }}</td>
-            <td class="text-end font-tabular text-emerald fw-semibold">₹{{ c.actual_closing }}</td>
-            <td class="text-end font-tabular fw-bold {% if c.discrepancy == 0 %}text-muted{% elif c.discrepancy > 0 %}text-warning{% else %}text-crimson{% endif %}">
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">{{ c.closing_date|date:"d M Y" }}</td>
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-300 border border-gray-700">
+                {{ c.get_scope_display }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-white font-medium">{{ c.account.account_name|default:"Consolidated Liquid" }}</td>
+            <td class="py-3.5 px-4 text-right font-mono text-gray-400">₹{{ c.opening_balance }}</td>
+            <td class="py-3.5 px-4 text-right font-mono text-white">₹{{ c.expected_closing }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-emerald-400">₹{{ c.actual_closing }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold {% if c.discrepancy == 0 %}text-gray-500{% elif c.discrepancy > 0 %}text-amber-400{% else %}text-rose-400{% endif %}">
               ₹{{ c.discrepancy }}
             </td>
-            <td class="text-center">
+            <td class="py-3.5 px-4 text-center">
               {% if c.status == 'BALANCED' %}
-                <span class="badge bg-success">Balanced</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Balanced</span>
               {% elif c.status == 'SURPLUS' %}
-                <span class="badge bg-warning text-dark">Surplus</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Surplus</span>
               {% else %}
-                <span class="badge bg-danger">Deficit</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Deficit</span>
               {% endif %}
             </td>
-            <td class="text-muted small">{{ c.closed_by.username }} ({{ c.closed_at|date:"H:i" }})</td>
+            <td class="py-3.5 px-4 text-gray-400 text-[11px]">{{ c.closed_by.username }} ({{ c.closed_at|date:"H:i" }})</td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="9" class="text-center py-4 text-muted">No historical daily closings logged yet.</td>
+            <td colspan="9" class="py-10 text-center text-gray-500">No historical daily closings logged yet.</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -282,24 +330,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const notesField = document.querySelector('textarea[name="notes"]');
 
   function updateLiveDiscrepancy() {
-    if (!actualInput) return;
+    if (!actualInput || !discrepancyDisplay) return;
     const actualVal = parseFloat(actualInput.value || 0);
     const diff = (actualVal - expectedVal);
 
     if (isNaN(diff) || Math.abs(diff) < 0.001) {
       discrepancyDisplay.textContent = "₹0.00";
-      discrepancyDisplay.className = "fs-5 font-tabular fw-bold text-success";
-      statusHelper.textContent = "Actual matches Expected Balance exactly (Balanced).";
+      discrepancyDisplay.className = "text-lg font-mono font-bold text-emerald-400";
+      if (statusHelper) statusHelper.textContent = "Actual matches Expected Balance exactly (Balanced).";
       if (notesField) notesField.required = false;
     } else if (diff > 0) {
       discrepancyDisplay.textContent = "+₹" + diff.toFixed(2);
-      discrepancyDisplay.className = "fs-5 font-tabular fw-bold text-warning";
-      statusHelper.textContent = "Surplus detected (Excess funds). Mandatory note required.";
+      discrepancyDisplay.className = "text-lg font-mono font-bold text-amber-400";
+      if (statusHelper) statusHelper.textContent = "Surplus detected (Excess funds). Mandatory note required.";
       if (notesField) notesField.required = true;
     } else {
       discrepancyDisplay.textContent = "-₹" + Math.abs(diff).toFixed(2);
-      discrepancyDisplay.className = "fs-5 font-tabular fw-bold text-danger";
-      statusHelper.textContent = "Deficit detected (Shortage of funds). Mandatory note required.";
+      discrepancyDisplay.className = "text-lg font-mono font-bold text-rose-400";
+      if (statusHelper) statusHelper.textContent = "Deficit detected (Shortage of funds). Mandatory note required.";
       if (notesField) notesField.required = true;
     }
   }

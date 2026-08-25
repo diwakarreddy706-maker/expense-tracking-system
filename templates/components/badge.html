@@ -1,0 +1,35 @@
+{# Reusable Status Badge Component #}
+{# Parameters: status, label, size (sm|md) #}
+{% with s=status|upper %}
+{% if s == 'BALANCED' or s == 'AVAILABLE' or s == 'PAID' or s == 'COMPLETED' or s == 'ACTIVE' or s == 'RETURNED' %}
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+  <span>{{ label|default:status }}</span>
+</span>
+{% elif s == 'DEFICIT' or s == 'CANCELLED' or s == 'OVERDUE' or s == 'REVERSED' or s == 'DEFICIT_CLOSING' or s == 'INACTIVE' %}
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider border bg-rose-500/10 text-rose-400 border-rose-500/20">
+  <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+  <span>{{ label|default:status }}</span>
+</span>
+{% elif s == 'PENDING' or s == 'WORKING' or s == 'DISPATCHED' or s == 'MAINTENANCE' or s == 'PARTIAL' or s == 'DRAFT' %}
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider border bg-amber-500/10 text-amber-400 border-amber-500/20">
+  <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+  <span>{{ label|default:status }}</span>
+</span>
+{% elif s == 'BOOKED' or s == 'SCHEDULED' or s == 'IN_PROGRESS' %}
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider border bg-blue-500/10 text-blue-400 border-blue-500/20">
+  <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+  <span>{{ label|default:status }}</span>
+</span>
+{% elif s == 'IDLE' or s == 'STANDBY' %}
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider border bg-slate-500/10 text-slate-400 border-slate-500/20">
+  <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+  <span>{{ label|default:status }}</span>
+</span>
+{% else %}
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider border bg-gray-800 text-gray-300 border-gray-700">
+  <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+  <span>{{ label|default:status }}</span>
+</span>
+{% endif %}
+{% endwith %}

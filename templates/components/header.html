@@ -1,0 +1,111 @@
+<!-- Top Application Header Bar -->
+<header class="h-16 border-b border-[#28354A] bg-[#111827]/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+  <!-- Left Side: Mobile Menu Button & Breadcrumb Context -->
+  <div class="flex items-center gap-3">
+    <button
+      type="button"
+      @click="sidebarOpen = !sidebarOpen"
+      class="lg:hidden p-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-gray-400 hover:text-white border border-[#28354A] focus:outline-none focus:ring-2 focus:ring-emerald-500"
+      aria-label="Toggle Mobile Navigation"
+    >
+      <i class="bi bi-list text-lg"></i>
+    </button>
+
+    <div class="hidden sm:flex items-center gap-2 text-xs">
+      <span class="text-gray-400">AgriBOS ERP</span>
+      <span class="text-gray-600">/</span>
+      <span class="text-white font-medium">Enterprise Management</span>
+    </div>
+  </div>
+
+  <!-- Right Side: Quick Action, Status Badge & Profile Dropdown -->
+  <div class="flex items-center gap-3">
+    <!-- Live Financial System Badge -->
+    <div class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span>Double-Entry Safe</span>
+    </div>
+
+    <!-- Quick Add Expense Trigger (Owner / Accountant / Manager) -->
+    {% if request.user.is_authenticated %}
+      {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.profile.role == 'MANAGER' or request.user.is_superuser %}
+        <button
+          type="button"
+          @click="quickExpenseOpen = true"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          title="Record New Expense (Alt+N)"
+          aria-label="Quick Add Expense"
+        >
+          <i class="bi bi-plus-lg text-xs"></i>
+          <span class="hidden sm:inline">Expense</span>
+        </button>
+      {% endif %}
+
+      <!-- User Profile Dropdown (Alpine.js powered) -->
+      <div class="relative" x-data="{ userMenuOpen: false }">
+        <button
+          type="button"
+          @click="userMenuOpen = !userMenuOpen"
+          @click.away="userMenuOpen = false"
+          class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-medium transition-colors"
+          aria-expanded="false"
+          aria-haspopup="true"
+        >
+          <span class="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 inline-flex items-center justify-center text-emerald-400 font-bold text-[10px]">
+            {{ request.user.username|slice:":1"|upper }}
+          </span>
+          <span class="hidden md:inline font-semibold">{{ request.user.get_full_name|default:request.user.username }}</span>
+          <span class="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded bg-gray-700/60 text-gray-300 border border-gray-600/40">
+            {{ request.user.profile.get_role_display|default:"User" }}
+          </span>
+          <i class="bi bi-chevron-down text-[10px] text-gray-400"></i>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div
+          x-show="userMenuOpen"
+          x-transition:enter="transition ease-out duration-100"
+          x-transition:enter-start="transform opacity-0 scale-95"
+          x-transition:enter-end="transform opacity-100 scale-100"
+          x-transition:leave="transition ease-in duration-75"
+          x-transition:leave-start="transform opacity-100 scale-100"
+          x-transition:leave-end="transform opacity-0 scale-95"
+          class="absolute right-0 mt-2 w-56 bg-[#161F2E] border border-[#28354A] rounded-xl shadow-2xl py-1.5 z-50 text-xs"
+          style="display: none;"
+        >
+          <div class="px-4 py-2 border-b border-[#28354A]">
+            <div class="font-semibold text-white">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <div class="text-[11px] text-gray-400 truncate">{{ request.user.email|default:"Operator" }}</div>
+          </div>
+
+          <a href="{% url 'accounts:profile' %}" class="flex items-center gap-2.5 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800/80 no-underline">
+            <i class="bi bi-shield-lock text-emerald-400"></i>
+            <span>Profile &amp; Security</span>
+          </a>
+
+          {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+          <a href="{% url 'accounts:user_list' %}" class="flex items-center gap-2.5 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800/80 no-underline">
+            <i class="bi bi-people text-cyan-400"></i>
+            <span>User Management</span>
+          </a>
+          {% endif %}
+
+          <div class="border-t border-[#28354A] my-1"></div>
+
+          <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+            {% csrf_token %}
+            <button type="submit" class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Sign Out</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    {% else %}
+      <a href="{% url 'accounts:login' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs no-underline">
+        <i class="bi bi-box-arrow-in-right"></i>
+        <span>Sign In</span>
+      </a>
+    {% endif %}
+  </div>
+</header>

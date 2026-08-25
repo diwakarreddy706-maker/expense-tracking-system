@@ -1,41 +1,109 @@
-<!-- Quick Expense Modal -->
-<div class="modal fade" id="quickExpenseModal" tabindex="-1" aria-labelledby="quickExpenseModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content bg-dark border-secondary text-white">
+{% load static %}
+<!-- Modernized Quick Expense Modal -->
+<div
+  class="modal fade fixed inset-0 z-50 overflow-y-auto"
+  id="quickExpenseModal"
+  tabindex="-1"
+  aria-labelledby="quickExpenseModalLabel"
+  aria-hidden="true"
+  x-show="quickExpenseOpen"
+  x-transition:enter="transition ease-out duration-200"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  x-transition:leave="transition ease-in duration-150"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+  @keydown.escape.window="quickExpenseOpen = false"
+>
+  <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-center justify-center p-4">
+    <div class="modal-content relative w-full max-w-lg bg-[#131A26] border border-[#28354A] rounded-2xl shadow-2xl overflow-hidden text-gray-100">
       <form id="quickExpenseForm" method="post" action="{% url 'api_expenses_quick' %}">
         {% csrf_token %}
-        <div class="modal-header border-secondary">
-          <h5 class="modal-title fs-6 fw-bold text-white" id="quickExpenseModalLabel">
-            <i class="bi bi-lightning-fill text-warning me-2"></i>Quick Expense Entry
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div id="quickExpenseAlert" class="alert alert-danger py-2 small d-none mb-3"></div>
 
-          <div class="row g-3 mb-3">
-            <div class="col-12 col-sm-6">
-              <label class="form-label small text-muted">Amount (₹) *</label>
-              <input type="number" step="0.01" name="amount" class="form-control form-control-lg bg-dark text-white border-secondary fw-bold" placeholder="0.00" required>
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <i class="bi bi-lightning-fill text-base"></i>
             </div>
-            <div class="col-12 col-sm-6">
-              <label class="form-label small text-muted">Category *</label>
-              <select name="category_id" class="form-select form-select-lg bg-dark text-white border-secondary" required id="quickExpCat">
-                <!-- Populated via API or standard choices -->
+            <div>
+              <h3 class="text-sm font-bold text-white tracking-tight" id="quickExpenseModalLabel">Quick Expense Entry</h3>
+              <p class="text-[11px] text-gray-400">Record operational field expenditure immediately</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="btn-close text-gray-400 hover:text-white p-1 rounded-lg focus:outline-none"
+            data-bs-dismiss="modal"
+            @click="quickExpenseOpen = false"
+            aria-label="Close"
+          >
+            <i class="bi bi-x-lg text-sm"></i>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 space-y-4">
+          <div id="quickExpenseAlert" class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs hidden"></div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5" for="quickExpAmount">
+                Amount (₹) <span class="text-rose-400">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 font-bold text-sm">₹</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  name="amount"
+                  id="quickExpAmount"
+                  class="w-full pl-8 pr-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white font-bold text-base num-tabular placeholder-gray-600 focus:outline-none"
+                  placeholder="0.00"
+                  required
+                >
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5" for="quickExpCat">
+                Category <span class="text-rose-400">*</span>
+              </label>
+              <select
+                name="category_id"
+                id="quickExpCat"
+                class="w-full px-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none"
+                required
+              >
+                <option value="">Loading Categories...</option>
               </select>
             </div>
           </div>
 
-          <div class="row g-3 mb-3">
-            <div class="col-12 col-sm-6">
-              <label class="form-label small text-muted">Account *</label>
-              <select name="account_id" class="form-select bg-dark text-white border-secondary" required id="quickExpAcc">
-                <!-- Populated via API or standard choices -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5" for="quickExpAcc">
+                Payment Account <span class="text-rose-400">*</span>
+              </label>
+              <select
+                name="account_id"
+                id="quickExpAcc"
+                class="w-full px-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none"
+                required
+              >
+                <option value="">Loading Accounts...</option>
               </select>
             </div>
-            <div class="col-12 col-sm-6">
-              <label class="form-label small text-muted">Payment Method *</label>
-              <select name="payment_method" class="form-select bg-dark text-white border-secondary">
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5" for="quickExpMethod">
+                Payment Method <span class="text-rose-400">*</span>
+              </label>
+              <select
+                name="payment_method"
+                id="quickExpMethod"
+                class="w-full px-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none"
+              >
                 <option value="CASH">Cash</option>
                 <option value="UPI">UPI</option>
                 <option value="BANK_TRANSFER">Bank Transfer</option>
@@ -43,22 +111,50 @@
             </div>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label small text-muted">Associated Machine (Optional)</label>
-            <select name="machine_id" class="form-select bg-dark text-white border-secondary" id="quickExpMch">
-              <option value="">-- None / General --</option>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5" for="quickExpMch">
+              Associated Machine <span class="text-gray-400 font-normal">(Optional)</span>
+            </label>
+            <select
+              name="machine_id"
+              id="quickExpMch"
+              class="w-full px-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none"
+            >
+              <option value="">-- None / General Enterprise --</option>
             </select>
           </div>
 
-          <div class="mb-2">
-            <label class="form-label small text-muted">Quick Description / Item</label>
-            <input type="text" name="description" class="form-control bg-dark text-white border-secondary" placeholder="e.g. Tractor grease, workshop welding">
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5" for="quickExpDesc">
+              Description / Notes
+            </label>
+            <input
+              type="text"
+              name="description"
+              id="quickExpDesc"
+              class="w-full px-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-600 focus:outline-none"
+              placeholder="e.g. Tractor grease, spare bolt, hydraulic leak weld"
+            >
           </div>
         </div>
-        <div class="modal-footer border-secondary">
-          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-emerald btn-sm" id="quickExpenseSubmitBtn">
-            <i class="bi bi-check-lg me-1"></i> Post Expense
+
+        <!-- Footer -->
+        <div class="px-6 py-4 border-t border-[#28354A] flex items-center justify-end gap-3 bg-[#162030]">
+          <button
+            type="button"
+            class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium text-xs border border-gray-700 transition-colors"
+            data-bs-dismiss="modal"
+            @click="quickExpenseOpen = false"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            id="quickExpenseSubmitBtn"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-md shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          >
+            <i class="bi bi-check-lg"></i>
+            <span>Post Expense</span>
           </button>
         </div>
       </form>

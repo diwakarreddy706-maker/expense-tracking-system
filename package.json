@@ -1,0 +1,36 @@
+{
+  "name": "ets",
+  "version": "1.0.0",
+  "description": "A robust, enterprise-grade financial management and operational cost tracking platform built with Python, Django 5.x, MySQL 8.x, Bootstrap 5.3, and Chart.js.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build:css": "tailwindcss -i ./static/css/input.css -o ./static/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./static/css/input.css -o ./static/css/tailwind.css --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diwakarreddy706-maker/expense-tracking-system.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/diwakarreddy706-maker/expense-tracking-system/issues"
+  },
+  "homepage": "https://github.com/diwakarreddy706-maker/expense-tracking-system#readme",
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/typography": "^0.5.20",
+    "autoprefixer": "^10.5.4",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^3.4.19"
+  },
+  "dependencies": {
+    "alpinejs": "^3.16.3",
+    "htmx.org": "^2.0.10"
+  }
+}

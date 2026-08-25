@@ -54,5 +54,6 @@ pyrightconfig.json
 *.swo
 *~
 .DS_Store
-Thumbs.db
-
+# Node & Frontend Build
+node_modules/
+package-lock.json

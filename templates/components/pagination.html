@@ -1,0 +1,31 @@
+{# Reusable Pagination Component #}
+{# Expects: page_obj, request #}
+{% if page_obj.has_other_pages %}
+<div class="flex items-center justify-between px-4 py-3 border-t border-[#28354A] bg-[#162030] text-xs">
+  <div class="text-gray-400">
+    Showing page <span class="font-bold text-white">{{ page_obj.number }}</span> of <span class="font-bold text-white">{{ page_obj.paginator.num_pages }}</span>
+  </div>
+
+  <div class="flex items-center gap-1.5">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors">
+        <i class="bi bi-chevron-left me-1"></i> Previous
+      </a>
+    {% else %}
+      <span class="px-3 py-1.5 rounded-lg bg-gray-900 text-gray-600 border border-gray-800 cursor-not-allowed">
+        <i class="bi bi-chevron-left me-1"></i> Previous
+      </span>
+    {% endif %}
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors">
+        Next <i class="bi bi-chevron-right ms-1"></i>
+      </a>
+    {% else %}
+      <span class="px-3 py-1.5 rounded-lg bg-gray-900 text-gray-600 border border-gray-800 cursor-not-allowed">
+        Next <i class="bi bi-chevron-right ms-1"></i>
+      </span>
+    {% endif %}
+  </div>
+</div>
+{% endif %}

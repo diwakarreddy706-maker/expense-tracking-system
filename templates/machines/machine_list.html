@@ -1,18 +1,19 @@
 {% extends 'base.html' %}
 
-{% block title %}Machines & Equipment | Expense Tracking{% endblock %}
+{% block title %}Machines &amp; Fleet | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
-    <h2 class="fs-4 fw-bold text-white mb-1">Agricultural Machinery & Equipment</h2>
-    <p class="text-muted small mb-0">Tractors, combine harvesters, tillers, and implements registry</p>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Agricultural Machinery &amp; Fleet Registry</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Tractors, combine harvesters, tillers, and implements registry</p>
   </div>
-  <div class="d-flex gap-2">
-    <a href="{% url 'machines:work_list' %}" class="btn btn-ghost btn-sm">
-      <i class="bi bi-clock-history me-1 text-info"></i> Work & Billing Logs
+  <div class="flex items-center gap-2.5">
+    <a href="{% url 'machines:work_list' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-cyan-300 font-semibold text-xs border border-[#28354A] transition-all no-underline shadow-sm">
+      <i class="bi bi-clock-history text-cyan-400"></i>
+      <span>Work &amp; Billing Logs</span>
     </a>
-    <a href="{% url 'machines:create' %}" class="btn btn-emerald btn-sm d-flex align-items-center gap-2">
+    <a href="{% url 'machines:create' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
       <i class="bi bi-plus-lg"></i>
       <span>Add Machine</span>
     </a>
@@ -20,92 +21,125 @@
 </div>
 
 <!-- Search & Filter Bar -->
-<div class="theme-card p-3 mb-4">
-  <form method="get" class="row g-2 align-items-center">
-    <div class="col-12 col-md-5">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
-        <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search by name, code, or registration...">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-center">
+    <div class="md:col-span-2">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+          <i class="bi bi-search text-xs"></i>
+        </span>
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none"
+          placeholder="Search by name, code, or registration..."
+        >
       </div>
     </div>
-    <div class="col-12 col-sm-6 col-md-3">
-      <select name="type" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div>
+      <select name="type" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Equipment Types</option>
         {% for t in machine_types %}
-          <option value="{{ t.code }}" {% if m_type == t.code %}selected{% endif %}>{{ t.name }}</option>
+          {% if m_type == t.code %}
+            <option value="{{ t.code }}" selected>{{ t.name }}</option>
+          {% else %}
+            <option value="{{ t.code }}">{{ t.name }}</option>
+          {% endif %}
         {% endfor %}
       </select>
     </div>
-    <div class="col-12 col-sm-6 col-md-2">
-      <select name="status" class="form-select form-select-sm bg-dark text-white border-secondary">
+
+    <div class="flex items-center gap-2">
+      <select name="status" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
         <option value="">All Statuses</option>
-        <option value="ACTIVE" {% if status == 'ACTIVE' %}selected{% endif %}>Active</option>
-        <option value="UNDER_MAINTENANCE" {% if status == 'UNDER_MAINTENANCE' %}selected{% endif %}>Under Maintenance</option>
-        <option value="IDLE" {% if status == 'IDLE' %}selected{% endif %}>Idle</option>
-        <option value="DECOMMISSIONED" {% if status == 'DECOMMISSIONED' %}selected{% endif %}>Decommissioned</option>
+        {% if status == 'ACTIVE' %}<option value="ACTIVE" selected>Active</option>{% else %}<option value="ACTIVE">Active</option>{% endif %}
+        {% if status == 'UNDER_MAINTENANCE' %}<option value="UNDER_MAINTENANCE" selected>Under Maintenance</option>{% else %}<option value="UNDER_MAINTENANCE">Under Maintenance</option>{% endif %}
+        {% if status == 'IDLE' %}<option value="IDLE" selected>Idle</option>{% else %}<option value="IDLE">Idle</option>{% endif %}
+        {% if status == 'DECOMMISSIONED' %}<option value="DECOMMISSIONED" selected>Decommissioned</option>{% else %}<option value="DECOMMISSIONED">Decommissioned</option>{% endif %}
       </select>
-    </div>
-    <div class="col-12 col-md-2 d-flex gap-2">
-      <button type="submit" class="btn btn-ghost btn-sm w-100">Filter</button>
+      <button type="submit" class="px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-[#28354A] transition-colors text-xs" title="Apply Filter" aria-label="Apply Filter">
+        <i class="bi bi-funnel-fill"></i>
+      </button>
       {% if query or m_type or status %}
-        <a href="{% url 'machines:list' %}" class="btn btn-ghost btn-sm" title="Clear"><i class="bi bi-x-lg"></i></a>
+        <a href="{% url 'machines:list' %}" class="px-2.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 border border-[#28354A] transition-colors text-xs no-underline" title="Clear" aria-label="Clear Search">
+          <i class="bi bi-x-lg"></i>
+        </a>
       {% endif %}
     </div>
   </form>
 </div>
 
 <!-- Machines Table -->
-<div class="theme-card">
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle mb-0">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="text-muted small border-secondary">
-          <th>Code</th>
-          <th>Model / Machine Name</th>
-          <th>Type</th>
-          <th>Registration / Chassis</th>
-          <th>Assigned Operator</th>
-          <th class="text-end">Current Meter</th>
-          <th class="text-center">Status</th>
-          <th class="text-end">Actions</th>
+        <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/50">
+          <th scope="col" class="py-3.5 px-4">Code</th>
+          <th scope="col" class="py-3.5 px-4">Model / Machine Name</th>
+          <th scope="col" class="py-3.5 px-4">Type</th>
+          <th scope="col" class="py-3.5 px-4">Registration / Chassis</th>
+          <th scope="col" class="py-3.5 px-4">Assigned Operator</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Current Meter</th>
+          <th scope="col" class="py-3.5 px-4 text-center">Status</th>
+          <th scope="col" class="py-3.5 px-4 text-right">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-[#1E293B]">
         {% for m in machines %}
-          <tr class="border-secondary">
-            <td class="font-tabular text-info fw-semibold">{{ m.machine_code }}</td>
-            <td class="text-white fw-semibold">
-              <i class="bi bi-truck me-2 text-emerald"></i>{{ m.name }}
+          <tr class="hover:bg-gray-800/40 transition-colors">
+            <td class="py-3.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">{{ m.machine_code }}</td>
+            <td class="py-3.5 px-4 font-semibold text-white">
+              <div class="flex items-center gap-2">
+                <i class="bi bi-truck text-emerald-400"></i>
+                <span>{{ m.name }}</span>
+              </div>
             </td>
-            <td><span class="badge bg-dark border border-secondary text-info">{{ m.machine_type.name }}</span></td>
-            <td class="font-tabular text-muted">{{ m.registration_no|default:"--" }}</td>
-            <td class="text-muted small">{{ m.default_operator.full_name|default:"Unassigned" }}</td>
-            <td class="text-end font-tabular text-emerald fw-semibold">{{ m.current_meter_reading }} {{ m.get_meter_unit_display }}</td>
-            <td class="text-center">
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-cyan-400 border border-[#28354A]">
+                {{ m.machine_type.name }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 font-mono text-gray-400">{{ m.registration_no|default:"--" }}</td>
+            <td class="py-3.5 px-4 text-gray-300">{{ m.default_operator.full_name|default:"Unassigned" }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-emerald-400">
+              {{ m.current_meter_reading }} {{ m.get_meter_unit_display }}
+            </td>
+            <td class="py-3.5 px-4 text-center">
               {% if m.status == 'ACTIVE' %}
-                <span class="badge bg-success">Active</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
               {% elif m.status == 'UNDER_MAINTENANCE' %}
-                <span class="badge bg-danger">Workshop</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Workshop</span>
               {% elif m.status == 'IDLE' %}
-                <span class="badge bg-warning text-dark">Idle</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Idle</span>
               {% else %}
-                <span class="badge bg-secondary">Decommissioned</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-400 border border-gray-700">Decommissioned</span>
               {% endif %}
             </td>
-            <td class="text-end">
-              <a href="{% url 'machines:edit' m.id %}" class="btn btn-ghost btn-sm py-1 px-2" title="Edit Machine">
-                <i class="bi bi-pencil-square"></i>
-              </a>
-              {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
-                <a href="{% url 'machines:delete' m.id %}" class="btn btn-ghost btn-sm py-1 px-2 text-danger" title="Delete" onclick="return confirm('Soft delete machine {{ m.name }}?');">
-                  <i class="bi bi-trash"></i>
+            <td class="py-3.5 px-4 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <a href="{% url 'machines:machine_service_history' m.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-amber-400 hover:text-amber-300 border border-[#28354A] transition-colors no-underline text-xs" title="Service History" aria-label="Service History">
+                  <i class="bi bi-tools"></i>
                 </a>
-              {% endif %}
+                <a href="{% url 'machines:edit' m.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="Edit Machine" aria-label="Edit Machine">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+                {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+                  <a href="{% url 'machines:delete' m.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors no-underline text-xs" title="Delete" aria-label="Delete Machine" onclick="return confirm('Soft delete machine {{ m.name }}?');">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                {% endif %}
+              </div>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="8" class="text-center py-4 text-muted">No agricultural machines found. Click "Add Machine" to register your equipment.</td>
+            <td colspan="8" class="py-12 text-center text-gray-500">
+              <i class="bi bi-truck text-3xl d-block mb-2 text-gray-600"></i>
+              No agricultural machines found. Click "Add Machine" to register your equipment.
+            </td>
           </tr>
         {% endfor %}
       </tbody>

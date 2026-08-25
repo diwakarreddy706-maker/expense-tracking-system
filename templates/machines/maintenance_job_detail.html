@@ -1,0 +1,617 @@
+{% extends 'base.html' %}
+
+{% block title %}Maintenance Job {{ job.maintenance_code }} | AgriBOS{% endblock %}
+
+{% block content %}
+<!-- Top Header & Actions -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+  <div>
+    <nav class="flex items-center gap-1.5 text-xs text-gray-400 mb-1.5" aria-label="Breadcrumb">
+      <a href="{% url 'machines:maintenance_dashboard' %}" class="hover:text-white transition-colors no-underline text-gray-400">Maintenance</a>
+      <span>/</span>
+      <a href="{% url 'machines:maintenance_job_list' %}" class="hover:text-white transition-colors no-underline text-gray-400">Jobs</a>
+      <span>/</span>
+      <span class="text-white font-mono font-semibold">{{ job.maintenance_code }}</span>
+    </nav>
+    <div class="flex flex-wrap items-center gap-3">
+      <h2 class="text-xl sm:text-2xl font-extrabold text-white font-mono tracking-tight m-0">{{ job.maintenance_code }}</h2>
+
+      <!-- Status Badge -->
+      <span class="px-2.5 py-1 rounded-full text-xs font-semibold
+        {% if job.status == 'COMPLETED' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20
+        {% elif job.status == 'IN_REPAIR' %}bg-cyan-500/10 text-cyan-400 border border-cyan-500/20
+        {% elif job.status == 'CANCELLED' %}bg-gray-800 text-gray-400 border border-gray-700
+        {% elif job.status == 'WAITING_FOR_PARTS' %}bg-amber-500/10 text-amber-400 border border-amber-500/20
+        {% else %}bg-gray-800 text-gray-300 border border-gray-700{% endif %}">
+        {{ job.get_status_display }}
+      </span>
+
+      <!-- Type Badge -->
+      {% if job.maintenance_type == 'BREAKDOWN_REPAIR' %}
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+          <i class="bi bi-lightning-charge-fill"></i><span>Breakdown ({{ job.severity }})</span>
+        </span>
+      {% elif job.maintenance_type == 'PREVENTIVE_SERVICE' %}
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+          <i class="bi bi-shield-check"></i><span>Preventive</span>
+        </span>
+      {% else %}
+        <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-800 text-gray-300 border border-gray-700">
+          {{ job.get_maintenance_type_display }}
+        </span>
+      {% endif %}
+
+      {% if job.machine_stopped %}
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-950/80 text-rose-300 border border-rose-600/40">
+          <i class="bi bi-exclamation-triangle-fill"></i><span>Machine Stopped</span>
+        </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Action Toolbar -->
+  <div class="flex flex-wrap items-center gap-2">
+    <a href="{% url 'machines:machine_service_history' job.machine.id %}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-cyan-300 font-semibold text-xs border border-[#28354A] transition-all no-underline">
+      <i class="bi bi-clock-history"></i><span>Machine History</span>
+    </a>
+
+    {% if request.user.profile.is_owner or request.user.profile.is_manager %}
+      {% if job.status != 'COMPLETED' and job.status != 'CANCELLED' %}
+        <a href="{% url 'machines:maintenance_job_edit' job.id %}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-gray-300 hover:text-white font-semibold text-xs border border-[#28354A] transition-all no-underline">
+          <i class="bi bi-pencil"></i><span>Edit</span>
+        </a>
+
+        {% if job.status != 'IN_REPAIR' %}
+        <button type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-sm transition-all" data-bs-toggle="modal" data-bs-target="#startJobModal">
+          <i class="bi bi-play-circle-fill"></i><span>Start Repair</span>
+        </button>
+        {% endif %}
+
+        <button type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm shadow-emerald-900/30 transition-all" data-bs-toggle="modal" data-bs-target="#completeJobModal">
+          <i class="bi bi-check-circle-fill"></i><span>Complete Job</span>
+        </button>
+
+        <button type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold transition-all" data-bs-toggle="modal" data-bs-target="#cancelJobModal">
+          <i class="bi bi-x-circle"></i><span>Cancel</span>
+        </button>
+      {% endif %}
+    {% endif %}
+
+    {% if request.user.profile.is_owner or request.user.profile.is_accountant %}
+      {% if job.status == 'COMPLETED' and not job.linked_expense and job.total_maintenance_cost > 0 %}
+      <button type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm shadow-emerald-900/30 transition-all" data-bs-toggle="modal" data-bs-target="#postExpenseModal">
+        <i class="bi bi-receipt"></i><span>Post to Expenses</span>
+      </button>
+      {% endif %}
+    {% endif %}
+
+    {% if request.user.profile.is_owner and job.status != 'COMPLETED' %}
+    <button type="button" class="p-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] text-xs transition-colors" data-bs-toggle="modal" data-bs-target="#deleteJobModal" title="Delete Job" aria-label="Delete Job">
+      <i class="bi bi-trash"></i>
+    </button>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Main Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <!-- Left Column (8 cols): Overview, Breakdown, Work Done & Spare Parts -->
+  <div class="lg:col-span-8 space-y-6">
+    <!-- Machine & Overview Card -->
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-[#28354A] bg-[#162030] flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2 m-0">
+          <i class="bi bi-gear-wide text-amber-400"></i><span>Machine &amp; Problem Summary</span>
+        </h3>
+        <span class="text-xs font-mono text-gray-400">Reported: {{ job.reported_date|date:"d M Y" }}</span>
+      </div>
+
+      <div class="p-6 space-y-5">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-[#0B0F17] rounded-xl border border-[#28354A]">
+          <div>
+            <span class="text-[11px] text-gray-400 uppercase font-semibold block">Target Machine</span>
+            <span class="text-base font-bold text-white block mt-0.5">{{ job.machine.name }}</span>
+            <span class="text-xs font-mono text-cyan-400">{{ job.machine.machine_code }} &bull; {{ job.machine.machine_type.name }}</span>
+          </div>
+          <div>
+            <span class="text-[11px] text-gray-400 uppercase font-semibold block">Job Meter Reading</span>
+            <span class="text-base font-bold text-white font-mono block mt-0.5">
+              {{ job.meter_reading|default:job.machine.current_meter_reading }} {{ job.machine.meter_unit }}
+            </span>
+          </div>
+          <div>
+            <span class="text-[11px] text-gray-400 uppercase font-semibold block">Current Machine State</span>
+            <div class="mt-1">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold
+                {% if job.machine.status == 'UNDER_MAINTENANCE' %}bg-rose-500/10 text-rose-400 border border-rose-500/20
+                {% elif job.machine.status == 'ACTIVE' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20
+                {% else %}bg-gray-800 text-gray-300 border border-gray-700{% endif %}">
+                {{ job.machine.get_status_display }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {% if job.maintenance_type == 'BREAKDOWN_REPAIR' %}
+        <div class="p-4 bg-[#0B0F17] border border-rose-500/30 rounded-xl space-y-2">
+          <div class="text-xs font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="bi bi-lightning-charge-fill"></i><span>Breakdown Details</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div><span class="text-gray-400">Location:</span> <strong class="text-white">{{ job.breakdown_location|default:"Field" }}</strong></div>
+            <div><span class="text-gray-400">Time:</span> <strong class="text-white">{{ job.breakdown_time|date:"d M Y, H:i"|default:"--" }}</strong></div>
+            <div><span class="text-gray-400">Severity:</span> <strong class="text-amber-400">{{ job.severity }}</strong></div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div>
+          <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">Problem Description</span>
+          <p class="text-xs text-gray-200 leading-relaxed bg-[#0B0F17] p-3.5 rounded-xl border border-[#28354A] m-0">{{ job.problem_description|linebreaksbr }}</p>
+        </div>
+
+        {% if job.diagnosis %}
+        <div>
+          <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Mechanic Diagnosis</span>
+          <p class="text-xs text-cyan-200 leading-relaxed bg-[#0B0F17] p-3.5 rounded-xl border border-cyan-500/20 m-0">{{ job.diagnosis|linebreaksbr }}</p>
+        </div>
+        {% endif %}
+
+        {% if job.work_performed %}
+        <div class="p-4 bg-emerald-950/20 border border-emerald-500/30 rounded-xl">
+          <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
+            <i class="bi bi-check-circle-fill"></i><span>Work Performed Summary</span>
+          </span>
+          <p class="text-xs text-emerald-100 leading-relaxed m-0">{{ job.work_performed|linebreaksbr }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Spare Parts Used Card -->
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-[#28354A] bg-[#162030] flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2 m-0">
+            <i class="bi bi-cpu text-cyan-400"></i><span>Spare Parts &amp; Consumables Used</span>
+          </h3>
+          <p class="text-[11px] text-gray-400 mt-0.5 mb-0">Direct machinery spare parts and oils consumed during this job</p>
+        </div>
+        {% if request.user.profile.is_owner or request.user.profile.is_manager %}
+          {% if job.status != 'COMPLETED' and job.status != 'CANCELLED' %}
+          <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm transition-all" data-bs-toggle="modal" data-bs-target="#addPartModal">
+            <i class="bi bi-plus-lg"></i><span>Add Spare Part</span>
+          </button>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold bg-[#111827]/40">
+              <th class="py-3 px-4">#</th>
+              <th class="py-3 px-3">Part Description</th>
+              <th class="py-3 px-3">OEM Part #</th>
+              <th class="py-3 px-3 text-right">Quantity</th>
+              <th class="py-3 px-3 text-right">Unit Cost</th>
+              <th class="py-3 px-3 text-right">Total</th>
+              <th class="py-3 px-3">Supplier</th>
+              {% if job.status != 'COMPLETED' and job.status != 'CANCELLED' %}
+              <th class="py-3 px-4 text-right">Action</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#1E293B]">
+            {% for p in part_usages %}
+            <tr class="hover:bg-gray-800/40 transition-colors">
+              <td class="py-3 px-4 text-gray-500">{{ forloop.counter }}</td>
+              <td class="py-3 px-3">
+                <div class="text-white font-semibold">{{ p.part_name }}</div>
+                {% if p.notes %}<span class="text-gray-400 text-[10px]">{{ p.notes }}</span>{% endif %}
+              </td>
+              <td class="py-3 px-3 font-mono text-gray-400 text-[11px]">{{ p.part_number|default:"--" }}</td>
+              <td class="py-3 px-3 text-right font-mono text-white font-semibold">{{ p.quantity }}</td>
+              <td class="py-3 px-3 text-right font-mono text-gray-400">₹{{ p.unit_cost|floatformat:2 }}</td>
+              <td class="py-3 px-3 text-right font-mono font-bold text-emerald-400">₹{{ p.total_cost|floatformat:2 }}</td>
+              <td class="py-3 px-3 text-gray-300">{{ p.supplier.name|default:"--" }}</td>
+              {% if job.status != 'COMPLETED' and job.status != 'CANCELLED' %}
+              <td class="py-3 px-4 text-right">
+                <form method="post" action="{% url 'machines:maintenance_part_delete' job.id p.id %}" onsubmit="return confirm('Remove part {{ p.part_name }}?');" class="m-0 inline">
+                  {% csrf_token %}
+                  <button type="submit" class="p-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors" title="Delete Part" aria-label="Delete Part">
+                    <i class="bi bi-trash text-xs"></i>
+                  </button>
+                </form>
+              </td>
+              {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="py-8 text-center text-gray-500 text-xs">No spare parts recorded for this maintenance job yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          {% if part_usages %}
+          <tfoot>
+            <tr class="border-t border-[#28354A] bg-[#162030] font-semibold">
+              <td colspan="5" class="py-3 px-4 text-right text-gray-400">Total Spare Parts Cost:</td>
+              <td class="py-3 px-3 text-right font-mono font-extrabold text-emerald-400 text-sm">₹{{ job.parts_cost|floatformat:2 }}</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+          {% endif %}
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column (4 cols): Cost Breakdown, Financial Posting, Dates & Audit -->
+  <div class="lg:col-span-4 space-y-6">
+    <!-- Cost Summary Card -->
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-emerald-500/40 bg-[#162030] flex items-center justify-between">
+        <h3 class="text-sm font-bold text-emerald-400 tracking-tight flex items-center gap-2 m-0">
+          <i class="bi bi-calculator"></i><span>Cost Summary</span>
+        </h3>
+      </div>
+      <div class="p-6 space-y-3 text-xs">
+        <div class="flex justify-between items-center text-gray-400">
+          <span>Spare Parts Cost</span>
+          <span class="font-mono text-white font-semibold">₹{{ job.parts_cost|floatformat:2 }}</span>
+        </div>
+        <div class="flex justify-between items-center text-gray-400">
+          <span>Labor / Mechanic Cost</span>
+          <span class="font-mono text-white font-semibold">₹{{ job.labor_cost|floatformat:2 }}</span>
+        </div>
+        <div class="flex justify-between items-center text-gray-400">
+          <span>External Workshop Cost</span>
+          <span class="font-mono text-white font-semibold">₹{{ job.external_service_cost|floatformat:2 }}</span>
+        </div>
+        <div class="flex justify-between items-center text-gray-400">
+          <span>Other / Transport Cost</span>
+          <span class="font-mono text-white font-semibold">₹{{ job.other_cost|floatformat:2 }}</span>
+        </div>
+        <div class="pt-3 border-t border-[#28354A] flex justify-between items-center">
+          <span class="text-sm font-bold text-white">Total Maintenance Cost</span>
+          <span class="text-lg font-extrabold font-mono text-emerald-400">₹{{ job.total_maintenance_cost|floatformat:2 }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financial Posting Status Card -->
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-[#28354A] bg-[#162030] flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2 m-0">
+          <i class="bi bi-bank2 text-amber-400"></i><span>Financial Posting Status</span>
+        </h3>
+      </div>
+      <div class="p-6 text-xs">
+        {% if job.linked_expense %}
+        <div class="p-4 bg-emerald-950/20 border border-emerald-500/30 rounded-xl space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              <i class="bi bi-check2"></i><span>Posted to Expense</span>
+            </span>
+            <span class="font-mono font-bold text-white">{{ job.linked_expense.expense_code }}</span>
+          </div>
+          <div class="text-gray-400">Amount: <strong class="text-emerald-400 font-mono">₹{{ job.linked_expense.amount|floatformat:2 }}</strong></div>
+          <div class="text-gray-400">Category: <strong class="text-white">{{ job.linked_expense.category.name }}</strong></div>
+          <div class="text-gray-400">Account: <strong class="text-white">{{ job.linked_expense.account.account_name|default:"Cash" }}</strong></div>
+        </div>
+        {% else %}
+        <div class="text-center py-2">
+          <i class="bi bi-receipt-cutoff text-gray-500 text-2xl block mb-2"></i>
+          <p class="text-xs text-gray-400 mb-3">Operational record only. Not yet posted to financial ledgers.</p>
+          {% if job.status == 'COMPLETED' and job.total_maintenance_cost > 0 %}
+            {% if request.user.profile.is_owner or request.user.profile.is_accountant %}
+            <button type="button" class="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm transition-all" data-bs-toggle="modal" data-bs-target="#postExpenseModal">
+              <i class="bi bi-arrow-right-circle me-1"></i><span>Post Maintenance Expense</span>
+            </button>
+            {% endif %}
+          {% else %}
+            <span class="text-[11px] text-gray-500 block">Complete the maintenance job with positive cost to enable expense posting.</span>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Service Timeline Card -->
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-[#28354A] bg-[#162030]">
+        <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2 m-0">
+          <i class="bi bi-calendar-event text-cyan-400"></i><span>Service Timeline</span>
+        </h3>
+      </div>
+      <div class="p-6 space-y-2.5 text-xs">
+        <div class="flex justify-between items-center py-1 border-b border-[#1E293B] text-gray-400">
+          <span>Reported Date:</span>
+          <span class="text-white font-medium">{{ job.reported_date|date:"d M Y" }}</span>
+        </div>
+        <div class="flex justify-between items-center py-1 border-b border-[#1E293B] text-gray-400">
+          <span>Started Date:</span>
+          <span class="text-white font-medium">{{ job.started_date|date:"d M Y, H:i"|default:"--" }}</span>
+        </div>
+        <div class="flex justify-between items-center py-1 border-b border-[#1E293B] text-gray-400">
+          <span>Completed Date:</span>
+          <span class="text-white font-medium">{{ job.completed_date|date:"d M Y, H:i"|default:"--" }}</span>
+        </div>
+        {% if job.next_service_meter %}
+        <div class="flex justify-between items-center py-1 border-b border-[#1E293B] text-gray-400">
+          <span>Next Service Target:</span>
+          <span class="text-amber-400 font-mono font-bold">{{ job.next_service_meter }} {{ job.machine.meter_unit }}</span>
+        </div>
+        {% endif %}
+        {% if job.next_service_date %}
+        <div class="flex justify-between items-center py-1 text-gray-400">
+          <span>Next Service Date:</span>
+          <span class="text-amber-400 font-bold">{{ job.next_service_date|date:"d M Y" }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Audit History -->
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-[#28354A] bg-[#162030]">
+        <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2 m-0">
+          <i class="bi bi-shield-check text-gray-400"></i><span>Audit History</span>
+        </h3>
+      </div>
+      <div class="divide-y divide-[#1E293B] text-xs">
+        {% for a in audit_logs %}
+        <div class="p-3.5">
+          <div class="flex justify-between items-center">
+            <span class="font-semibold text-white">{{ a.get_action_display }}</span>
+            <span class="text-gray-500 text-[11px] font-mono">{{ a.timestamp|date:"d M H:i" }}</span>
+          </div>
+          <span class="text-gray-400 text-[11px]">{{ a.user.username|default:"System" }}</span>
+        </div>
+        {% empty %}
+        <div class="p-4 text-center text-gray-500 text-xs">No audit records found.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- MODALS                                                                  -->
+<!-- ======================================================================= -->
+
+<!-- 1. Start Repair Modal -->
+<div class="modal fade fixed inset-0 z-50 overflow-y-auto" id="startJobModal" tabindex="-1" aria-labelledby="startJobModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-center justify-center p-4">
+    <div class="modal-content relative w-full max-w-md bg-[#131A26] border border-[#28354A] rounded-2xl shadow-2xl overflow-hidden text-gray-100">
+      <form method="post" action="{% url 'machines:maintenance_job_start' job.id %}">
+        {% csrf_token %}
+        <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+          <h4 class="text-sm font-bold text-cyan-400 tracking-tight flex items-center gap-2 m-0" id="startJobModalLabel">
+            <i class="bi bi-play-circle-fill"></i><span>Start Workshop Repair</span>
+          </h4>
+          <button type="button" class="btn-close text-gray-400 hover:text-white p-1 rounded-lg focus:outline-none" data-bs-dismiss="modal" aria-label="Close">
+            <i class="bi bi-x-lg text-sm"></i>
+          </button>
+        </div>
+        <div class="p-6 space-y-4 text-xs">
+          <p class="text-gray-300 leading-relaxed m-0">
+            Starting this job will update status to <strong class="text-cyan-400">IN REPAIR</strong> and mark machine <strong class="text-rose-400">UNDER MAINTENANCE</strong> (blocking new bookings and dispatches).
+          </p>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5" for="startDiagnosisInput">Mechanic Diagnosis / Repair Plan</label>
+            <textarea name="diagnosis" id="startDiagnosisInput" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-white text-xs placeholder-gray-500 focus:outline-none" rows="3" placeholder="Initial diagnosis...">{{ job.diagnosis|default:"" }}</textarea>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-[#28354A] flex items-center justify-end gap-3 bg-[#162030]">
+          <button type="button" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-md transition-all">Start Repair</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Complete Maintenance Modal -->
+<div class="modal fade fixed inset-0 z-50 overflow-y-auto" id="completeJobModal" tabindex="-1" aria-labelledby="completeJobModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-center justify-center p-4">
+    <div class="modal-content relative w-full max-w-2xl bg-[#131A26] border border-[#28354A] rounded-2xl shadow-2xl overflow-hidden text-gray-100">
+      <form method="post" action="{% url 'machines:maintenance_job_complete' job.id %}">
+        {% csrf_token %}
+        <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+          <h4 class="text-sm font-bold text-emerald-400 tracking-tight flex items-center gap-2 m-0" id="completeJobModalLabel">
+            <i class="bi bi-check-circle-fill"></i><span>Complete Maintenance Job</span>
+          </h4>
+          <button type="button" class="btn-close text-gray-400 hover:text-white p-1 rounded-lg focus:outline-none" data-bs-dismiss="modal" aria-label="Close">
+            <i class="bi bi-x-lg text-sm"></i>
+          </button>
+        </div>
+        <div class="p-6 space-y-4 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Completion Date &amp; Time <span class="text-rose-400">*</span></label>
+              {{ complete_form.completed_date }}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Completion Meter Reading</label>
+              {{ complete_form.meter_reading }}
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Work Performed Summary <span class="text-rose-400">*</span></label>
+              {{ complete_form.work_performed }}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Labor Cost (₹)</label>
+              {{ complete_form.labor_cost }}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">External Service Cost (₹)</label>
+              {{ complete_form.external_service_cost }}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Other Cost (₹)</label>
+              {{ complete_form.other_cost }}
+            </div>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-[#28354A] flex items-center justify-end gap-3 bg-[#162030]">
+          <button type="button" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-900/30 transition-all">Complete Job</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Add Spare Part Modal -->
+<div class="modal fade fixed inset-0 z-50 overflow-y-auto" id="addPartModal" tabindex="-1" aria-labelledby="addPartModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-center justify-center p-4">
+    <div class="modal-content relative w-full max-w-lg bg-[#131A26] border border-[#28354A] rounded-2xl shadow-2xl overflow-hidden text-gray-100">
+      <form method="post" action="{% url 'machines:maintenance_part_add' job.id %}">
+        {% csrf_token %}
+        <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+          <h4 class="text-sm font-bold text-cyan-400 tracking-tight flex items-center gap-2 m-0" id="addPartModalLabel">
+            <i class="bi bi-plus-circle-fill"></i><span>Add Spare Part</span>
+          </h4>
+          <button type="button" class="btn-close text-gray-400 hover:text-white p-1 rounded-lg focus:outline-none" data-bs-dismiss="modal" aria-label="Close">
+            <i class="bi bi-x-lg text-sm"></i>
+          </button>
+        </div>
+        <div class="p-6 space-y-4 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Part Name / Description <span class="text-rose-400">*</span></label>
+              {{ part_form.part_name }}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">OEM Part #</label>
+              {{ part_form.part_number }}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Supplier</label>
+              {{ part_form.supplier }}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Quantity <span class="text-rose-400">*</span></label>
+              {{ part_form.quantity }}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Unit Cost (₹) <span class="text-rose-400">*</span></label>
+              {{ part_form.unit_cost }}
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Notes</label>
+              {{ part_form.notes }}
+            </div>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-[#28354A] flex items-center justify-end gap-3 bg-[#162030]">
+          <button type="button" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-900/30 transition-all">Add Part</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Post to Expense Modal -->
+<div class="modal fade fixed inset-0 z-50 overflow-y-auto" id="postExpenseModal" tabindex="-1" aria-labelledby="postExpenseModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-center justify-center p-4">
+    <div class="modal-content relative w-full max-w-md bg-[#131A26] border border-[#28354A] rounded-2xl shadow-2xl overflow-hidden text-gray-100">
+      <form method="post" action="{% url 'machines:maintenance_job_post_expense' job.id %}">
+        {% csrf_token %}
+        <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+          <h4 class="text-sm font-bold text-emerald-400 tracking-tight flex items-center gap-2 m-0" id="postExpenseModalLabel">
+            <i class="bi bi-receipt"></i><span>Post Maintenance Expense</span>
+          </h4>
+          <button type="button" class="btn-close text-gray-400 hover:text-white p-1 rounded-lg focus:outline-none" data-bs-dismiss="modal" aria-label="Close">
+            <i class="bi bi-x-lg text-sm"></i>
+          </button>
+        </div>
+        <div class="p-6 space-y-4 text-xs">
+          <p class="text-gray-300 leading-relaxed m-0">
+            This will create a linked <strong>Expense</strong> of <strong class="text-emerald-400 font-mono">₹{{ job.total_maintenance_cost|floatformat:2 }}</strong> in the central financial ledger.
+          </p>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Payment Account <span class="text-rose-400">*</span></label>
+            {{ expense_post_form.account }}
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Expense Category <span class="text-rose-400">*</span></label>
+            {{ expense_post_form.category }}
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Payment Method <span class="text-rose-400">*</span></label>
+            {{ expense_post_form.payment_method }}
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-[#28354A] flex items-center justify-end gap-3 bg-[#162030]">
+          <button type="button" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-900/30 transition-all">Post Expense</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 5. Cancel Job Modal -->
+<div class="modal fade fixed inset-0 z-50 overflow-y-auto" id="cancelJobModal" tabindex="-1" aria-labelledby="cancelJobModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-center justify-center p-4">
+    <div class="modal-content relative w-full max-w-md bg-[#131A26] border border-[#28354A] rounded-2xl shadow-2xl overflow-hidden text-gray-100">
+      <form method="post" action="{% url 'machines:maintenance_job_cancel' job.id %}">
+        {% csrf_token %}
+        <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+          <h4 class="text-sm font-bold text-rose-400 tracking-tight flex items-center gap-2 m-0" id="cancelJobModalLabel">
+            <i class="bi bi-x-circle-fill"></i><span>Cancel Maintenance Job</span>
+          </h4>
+          <button type="button" class="btn-close text-gray-400 hover:text-white p-1 rounded-lg focus:outline-none" data-bs-dismiss="modal" aria-label="Close">
+            <i class="bi bi-x-lg text-sm"></i>
+          </button>
+        </div>
+        <div class="p-6 space-y-4 text-xs">
+          <p class="text-gray-300 leading-relaxed m-0">
+            Cancelling this maintenance job will restore the machine to ACTIVE if no other active repairs remain.
+          </p>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5" for="cancelJobReason">Reason for Cancellation</label>
+            <textarea name="cancellation_reason" id="cancelJobReason" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-rose-500 focus:ring-1 focus:ring-rose-500 text-white text-xs placeholder-gray-500 focus:outline-none" rows="2" placeholder="e.g. False alarm, repaired by operator in field..."></textarea>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-[#28354A] flex items-center justify-end gap-3 bg-[#162030]">
+          <button type="button" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md shadow-rose-900/30 transition-all">Confirm Cancellation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 6. Delete Job Modal -->
+<div class="modal fade fixed inset-0 z-50 overflow-y-auto" id="deleteJobModal" tabindex="-1" aria-labelledby="deleteJobModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-center justify-center p-4">
+    <div class="modal-content relative w-full max-w-md bg-[#131A26] border border-[#28354A] rounded-2xl shadow-2xl overflow-hidden text-gray-100">
+      <form method="post" action="{% url 'machines:maintenance_job_delete' job.id %}">
+        {% csrf_token %}
+        <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+          <h4 class="text-sm font-bold text-rose-400 tracking-tight flex items-center gap-2 m-0" id="deleteJobModalLabel">
+            <i class="bi bi-trash-fill"></i><span>Delete Maintenance Job</span>
+          </h4>
+          <button type="button" class="btn-close text-gray-400 hover:text-white p-1 rounded-lg focus:outline-none" data-bs-dismiss="modal" aria-label="Close">
+            <i class="bi bi-x-lg text-sm"></i>
+          </button>
+        </div>
+        <div class="p-6 space-y-3 text-xs">
+          <p class="text-gray-300 leading-relaxed m-0">
+            Are you sure you want to delete maintenance job <strong class="text-white font-mono">{{ job.maintenance_code }}</strong>?
+          </p>
+        </div>
+        <div class="px-6 py-4 border-t border-[#28354A] flex items-center justify-end gap-3 bg-[#162030]">
+          <button type="button" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md shadow-rose-900/30 transition-all">Delete</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

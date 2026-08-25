@@ -1,14 +1,19 @@
 {% extends 'base.html' %}
 
-{% block title %}500 - Server Error | Expense Tracking{% endblock %}
+{% block title %}500 - Internal Server Error | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="theme-card text-center py-5">
-  <i class="bi bi-shield-x fs-1 text-danger mb-3 d-block"></i>
-  <h2 class="text-white fw-bold mb-2">500 - Internal Server Error</h2>
-  <p class="text-muted mb-4">An unexpected error occurred. The incident has been logged for security and maintenance.</p>
-  <a href="{% url 'dashboard:index' %}" class="btn btn-emerald btn-sm">
-    <i class="bi bi-house me-1"></i> Return to Dashboard
-  </a>
+<div class="max-w-md mx-auto my-12 text-center">
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-8 shadow-sm">
+    <div class="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 mx-auto mb-4">
+      <i class="bi bi-cpu text-3xl"></i>
+    </div>
+    <h2 class="text-xl font-extrabold text-white tracking-tight m-0 mb-2">500 - Internal Server Error</h2>
+    <p class="text-xs text-gray-400 leading-relaxed mb-6">An unexpected system condition occurred. The event has been logged for system administrator review.</p>
+    <a href="{% url 'dashboard:index' %}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all no-underline">
+      <i class="bi bi-house"></i>
+      <span>Return to Dashboard</span>
+    </a>
+  </div>
 </div>
 {% endblock %}
