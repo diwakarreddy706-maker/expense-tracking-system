@@ -1,0 +1,23 @@
+[Unit]
+Description=Gunicorn daemon for Expense Tracking & Management System
+After=network.target mysql.service
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/expense_tracking
+Environment="DJANGO_SETTINGS_MODULE=expense_tracking_core.settings.production"
+EnvironmentFile=/var/www/expense_tracking/.env
+ExecStart=/var/www/expense_tracking/venv/bin/gunicorn \
+          --config /var/www/expense_tracking/deploy/gunicorn/gunicorn.conf.py \
+          expense_tracking_core.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=30
+PrivateTmp=true
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

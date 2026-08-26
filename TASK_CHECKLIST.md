@@ -176,8 +176,9 @@
 ---
 
 ## Phase 15: Production Readiness & Deployment
-- [ ] Configure `production.py` settings (`DEBUG=False`, `ALLOWED_HOSTS`, secure session cookies).
-- [ ] Configure Nginx reverse proxy with SSL/TLS and static asset caching.
-- [ ] Set up Gunicorn WSGI service unit.
-- [ ] Implement automated daily MySQL database backup script with off-site sync.
-- [ ] Validate final user acceptance against all 37 Functional Acceptance Criteria (`FAC-001` through `FAC-037`).
+- [x] Configure `production.py` settings (`DEBUG=False`, `ALLOWED_HOSTS`, secure session cookies, CSRF trusted origins, rotating logging).
+- [x] Configure Nginx reverse proxy with SSL/TLS and static asset caching (`deploy/nginx/expense_tracking.conf`).
+- [x] Set up Gunicorn WSGI service unit and configuration (`deploy/gunicorn/gunicorn.conf.py`, `deploy/systemd/expense_tracking.service`).
+- [x] Implement automated daily MySQL database backup & restore scripts with rotation & verification (`scripts/backup_db.sh`, `scripts/backup_db.ps1`, `scripts/restore_db.sh`).
+- [x] Create multi-container Docker deployment configuration (`Dockerfile`, `docker-compose.yml`, `.dockerignore`).
+- [x] Validate final user acceptance against all 37 Functional Acceptance Criteria (`FAC-001` through `FAC-037`) with automated audit script (`scripts/production_check.py`) and 196/196 test baseline.
