@@ -42,6 +42,21 @@
   hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
 >
   <div class="min-h-screen flex flex-col lg:flex-row">
+    <!-- Mobile Sidebar Backdrop -->
+    <div
+      x-show="sidebarOpen"
+      x-cloak
+      x-transition:enter="ease-out duration-200"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="ease-in duration-150"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      @click="sidebarOpen = false"
+      class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden"
+      aria-hidden="true"
+    ></div>
+
     <!-- Sidebar Navigation (Desktop Persistent / Mobile Slide-Over) -->
     {% include 'components/sidebar.html' %}
 
