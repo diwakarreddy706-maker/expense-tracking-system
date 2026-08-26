@@ -36,7 +36,7 @@ function Write-Log {
     Add-Content -Path $LogFile -Value $LogEntry
 }
 
-Write-Log "Starting automated backup for database '$DbName' on $DbHost:$DbPort..."
+Write-Log "Starting automated backup for database '$DbName' on ${DbHost}:${DbPort}..."
 
 # Check mysqldump existence
 $MysqldumpCmd = Get-Command "mysqldump" -ErrorAction SilentlyContinue
