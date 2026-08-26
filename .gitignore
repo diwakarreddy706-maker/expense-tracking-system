@@ -32,6 +32,8 @@ db.sqlite3-journal
 /media/*
 !/media/.gitkeep
 /static_collected/*
+staticfiles/
+/staticfiles/*
 
 # Environment Variables & Secrets
 .env
