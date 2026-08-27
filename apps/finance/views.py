@@ -1,6 +1,7 @@
+import json
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from django.contrib import messages
 from django.db.models import Q, Sum
 from django.views.decorators.http import require_POST
@@ -742,15 +743,18 @@ def transaction_reversal_view(request, transaction_id):
 
 
 # ============================================================================
-# PHASE 17: MASTER DATA SETUP & BUSINESS ONBOARDING HUB
+# PHASE 17 & 18: MASTER DATA SETUP, CSV IMPORT & RECONCILIATION
 # ============================================================================
+
+from apps.finance.services.import_service import MasterDataImportService
+
 
 @accountant_or_owner_required
 def business_setup_hub_view(request):
     """
-    Centralized Master Data Setup, Onboarding Hub & Readiness Verification Dashboard.
+    Centralized Master Data Setup, Bulk CSV Import & Production Reconciliation Dashboard.
     Provides read-only summaries of all core business master entities,
-    readiness badges, deep links for data entry, and CSV template documentation.
+    readiness badges, deep links for data entry, opening balance matrix, and CSV importer.
     """
     from apps.machines.models import Machine, MachineType
     from apps.employees.models import Employee, EmployeeCompensation
@@ -764,6 +768,7 @@ def business_setup_hub_view(request):
     bank_accounts_count = accounts_qs.filter(account_type__in=[Account.TYPE_BANK_SAVINGS, Account.TYPE_BANK_CURRENT]).count()
     upi_accounts_count = accounts_qs.filter(account_type=Account.TYPE_UPI_WALLET).count()
     total_opening_balance = accounts_qs.aggregate(total=Sum('opening_balance'))['total'] or Decimal('0.00')
+    total_current_balance = accounts_qs.aggregate(total=Sum('current_balance'))['total'] or Decimal('0.00')
 
     # 2. Machinery Master
     machines_qs = Machine.objects.filter(is_deleted=False)
@@ -779,6 +784,9 @@ def business_setup_hub_view(request):
     active_customers_count = customers_qs.filter(status=Customer.STATUS_ACTIVE).count()
     receivables_qs = Receivable.objects.filter(is_deleted=False, is_reversed=False)
     total_opening_receivables = receivables_qs.aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+    unpaid_receivables = receivables_qs.filter(status__in=[Receivable.STATUS_UNPAID, Receivable.STATUS_PARTIAL]).aggregate(
+        total=Sum('total_amount') - Sum('received_amount')
+    )['total'] or Decimal('0.00')
 
     # 4. Suppliers Master
     suppliers_qs = Supplier.objects.filter(is_deleted=False)
@@ -788,6 +796,9 @@ def business_setup_hub_view(request):
     parts_suppliers_count = suppliers_qs.filter(supplier_type='SPARE_PARTS').count()
     payables_qs = Payable.objects.filter(is_deleted=False, is_reversed=False)
     total_opening_payables = payables_qs.aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+    unpaid_payables = payables_qs.filter(status__in=[Payable.STATUS_UNPAID, Payable.STATUS_PARTIAL]).aggregate(
+        total=Sum('total_amount') - Sum('paid_amount')
+    )['total'] or Decimal('0.00')
 
     # 5. Employees Master
     employees_qs = Employee.objects.filter(is_deleted=False)
@@ -799,6 +810,9 @@ def business_setup_hub_view(request):
     # 6. Categories & Budgets
     categories_count = ExpenseCategory.objects.filter(is_deleted=False, is_active=True).count()
     budgets_count = Budget.objects.filter(is_deleted=False).count()
+
+    # Net Business Opening Capital Equation
+    net_opening_capital = total_opening_balance + total_opening_receivables - total_opening_payables
 
     # 7. Verification Checklist Items (Read-only status calculations)
     verification_checklist = [
@@ -862,7 +876,7 @@ def business_setup_hub_view(request):
             'name': 'Opening Balances',
             'status': 'PASS' if accounts_count > 0 else 'PENDING',
             'details': f'Opening Funds: ₹ {total_opening_balance:,.2f} | Receivables: ₹ {total_opening_receivables:,.2f} | Payables: ₹ {total_opening_payables:,.2f}',
-            'link': 'finance:accounts',
+            'link': 'finance:setup_reconciliation',
             'link_label': 'Review Balances'
         },
     ]
@@ -871,6 +885,11 @@ def business_setup_hub_view(request):
     total_checks = len(verification_checklist)
     overall_readiness_pct = int((passed_count / total_checks) * 100)
 
+    # Detailed Reconciliation Breakdown for Matrix Tab
+    accounts_list = accounts_qs.order_by('account_type', 'account_name')
+    customer_receivables_list = receivables_qs.select_related('customer').order_by('-bill_date')[:15]
+    supplier_payables_list = payables_qs.select_related('supplier').order_by('-bill_date')[:15]
+
     context = {
         'title': 'Master Data Setup & Business Onboarding',
         'accounts_count': accounts_count,
@@ -878,6 +897,7 @@ def business_setup_hub_view(request):
         'bank_accounts_count': bank_accounts_count,
         'upi_accounts_count': upi_accounts_count,
         'total_opening_balance': total_opening_balance,
+        'total_current_balance': total_current_balance,
         'machines_count': machines_count,
         'active_machines_count': active_machines_count,
         'tractors_count': tractors_count,
@@ -886,11 +906,14 @@ def business_setup_hub_view(request):
         'customers_count': customers_count,
         'active_customers_count': active_customers_count,
         'total_opening_receivables': total_opening_receivables,
+        'unpaid_receivables': unpaid_receivables,
         'suppliers_count': suppliers_count,
         'active_suppliers_count': active_suppliers_count,
         'fuel_suppliers_count': fuel_suppliers_count,
         'parts_suppliers_count': parts_suppliers_count,
         'total_opening_payables': total_opening_payables,
+        'unpaid_payables': unpaid_payables,
+        'net_opening_capital': net_opening_capital,
         'employees_count': employees_count,
         'active_employees_count': active_employees_count,
         'drivers_operators_count': drivers_operators_count,
@@ -901,6 +924,124 @@ def business_setup_hub_view(request):
         'passed_count': passed_count,
         'total_checks': total_checks,
         'overall_readiness_pct': overall_readiness_pct,
+        'accounts_list': accounts_list,
+        'customer_receivables_list': customer_receivables_list,
+        'supplier_payables_list': supplier_payables_list,
+        'supported_entities': MasterDataImportService.SUPPORTED_ENTITIES,
     }
 
     return render(request, 'finance/business_setup_hub.html', context)
+
+
+@accountant_or_owner_required
+def master_data_csv_template_view(request, entity_type):
+    """
+    Downloads standard CSV template file for master data onboarding.
+    """
+    try:
+        csv_content = MasterDataImportService.generate_csv_template(entity_type.lower())
+        response = HttpResponse(csv_content, content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="{entity_type}_template.csv"'
+        return response
+    except ValueError as e:
+        messages.error(request, str(e))
+        return redirect('finance:setup_hub')
+
+
+@accountant_or_owner_required
+@require_POST
+def master_data_csv_preview_view(request):
+    """
+    AJAX endpoint for parsing and validating an uploaded master data CSV file.
+    Returns preview rows, column errors, and readiness indicator without modifying database.
+    """
+    entity_type = request.POST.get('entity_type', '').strip().lower()
+    csv_file = request.FILES.get('csv_file')
+
+    if not entity_type or not csv_file:
+        return JsonResponse({
+            'success': False,
+            'error': 'Both entity_type and csv_file are required.'
+        }, status=400)
+
+    result = MasterDataImportService.parse_and_validate(entity_type, csv_file)
+    return JsonResponse(result)
+
+
+@accountant_or_owner_required
+@require_POST
+def master_data_csv_import_view(request):
+    """
+    AJAX endpoint for executing atomic master data CSV import after preview validation.
+    """
+    try:
+        if request.content_type == 'application/json':
+            payload = json.loads(request.body.decode('utf-8'))
+        else:
+            payload = request.POST
+
+        entity_type = payload.get('entity_type', '').strip().lower()
+        preview_rows = payload.get('preview_rows', [])
+
+        if isinstance(preview_rows, str):
+            preview_rows = json.loads(preview_rows)
+
+        if not entity_type or not preview_rows:
+            return JsonResponse({
+                'success': False,
+                'error': 'Missing entity_type or preview_rows payload for import.'
+            }, status=400)
+
+        # Execute atomic import
+        import_result = MasterDataImportService.execute_import(entity_type, preview_rows, request.user)
+
+        log_audit_event(
+            user=request.user,
+            action=AuditLog.ACTION_CREATE,
+            entity_type=f"CSV_{entity_type.upper()}",
+            entity_id=None,
+            changes={
+                'entity_type': entity_type,
+                'imported_count': import_result.get('imported_count', 0),
+                'opening_records': import_result.get('opening_records_created', 0)
+            },
+            request=request
+        )
+
+        return JsonResponse(import_result)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f"Import failed: {str(e)}"
+        }, status=400)
+
+
+@accountant_or_owner_required
+def opening_balance_reconciliation_view(request):
+    """
+    Dedicated dashboard view for reviewing and reconciling all master opening balances
+    across Accounts, Customer Receivables, and Supplier Payables.
+    """
+    accounts = Account.objects.filter(is_deleted=False).order_by('account_type', 'account_name')
+    receivables = Receivable.objects.filter(is_deleted=False, is_reversed=False).select_related('customer').order_by('-bill_date')
+    payables = Payable.objects.filter(is_deleted=False, is_reversed=False).select_related('supplier').order_by('-bill_date')
+
+    total_opening_funds = accounts.aggregate(total=Sum('opening_balance'))['total'] or Decimal('0.00')
+    total_current_funds = accounts.aggregate(total=Sum('current_balance'))['total'] or Decimal('0.00')
+    total_cust_receivables = receivables.aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+    total_supp_payables = payables.aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+
+    net_onboarding_capital = total_opening_funds + total_cust_receivables - total_supp_payables
+
+    context = {
+        'title': 'Opening Balance Reconciliation',
+        'accounts': accounts,
+        'receivables': receivables,
+        'payables': payables,
+        'total_opening_funds': total_opening_funds,
+        'total_current_funds': total_current_funds,
+        'total_cust_receivables': total_cust_receivables,
+        'total_supp_payables': total_supp_payables,
+        'net_onboarding_capital': net_onboarding_capital,
+    }
+    return render(request, 'finance/opening_balance_reconciliation.html', context)

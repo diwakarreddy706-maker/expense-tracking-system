@@ -41,6 +41,10 @@ urlpatterns = [
     path('closing/submit/', views.daily_closing_submit_view, name='daily_closing_submit'),
     path('reversal/<int:transaction_id>/', views.transaction_reversal_view, name='reversal'),
 
-    # Phase 17: Master Data Setup & Onboarding Hub
+    # Phase 17 & 18: Master Data Setup, CSV Import & Reconciliation Hub
     path('setup/', views.business_setup_hub_view, name='setup_hub'),
+    path('setup/templates/<str:entity_type>/', views.master_data_csv_template_view, name='setup_csv_template'),
+    path('setup/preview/', views.master_data_csv_preview_view, name='setup_csv_preview'),
+    path('setup/import/', views.master_data_csv_import_view, name='setup_csv_import'),
+    path('setup/reconciliation/', views.opening_balance_reconciliation_view, name='setup_reconciliation'),
 ]
