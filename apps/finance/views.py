@@ -739,3 +739,168 @@ def daily_closing_submit_view(request):
 @owner_required
 def transaction_reversal_view(request, transaction_id):
     return JsonResponse({'status': 'reversed', 'id': transaction_id})
+
+
+# ============================================================================
+# PHASE 17: MASTER DATA SETUP & BUSINESS ONBOARDING HUB
+# ============================================================================
+
+@accountant_or_owner_required
+def business_setup_hub_view(request):
+    """
+    Centralized Master Data Setup, Onboarding Hub & Readiness Verification Dashboard.
+    Provides read-only summaries of all core business master entities,
+    readiness badges, deep links for data entry, and CSV template documentation.
+    """
+    from apps.machines.models import Machine, MachineType
+    from apps.employees.models import Employee, EmployeeCompensation
+    from apps.expenses.models import ExpenseCategory
+    from apps.budgets.models import Budget
+
+    # 1. Accounts Master
+    accounts_qs = Account.objects.filter(is_deleted=False)
+    accounts_count = accounts_qs.count()
+    cash_accounts_count = accounts_qs.filter(account_type__in=[Account.TYPE_CASH, Account.TYPE_PETTY_CASH]).count()
+    bank_accounts_count = accounts_qs.filter(account_type__in=[Account.TYPE_BANK_SAVINGS, Account.TYPE_BANK_CURRENT]).count()
+    upi_accounts_count = accounts_qs.filter(account_type=Account.TYPE_UPI_WALLET).count()
+    total_opening_balance = accounts_qs.aggregate(total=Sum('opening_balance'))['total'] or Decimal('0.00')
+
+    # 2. Machinery Master
+    machines_qs = Machine.objects.filter(is_deleted=False)
+    machines_count = machines_qs.count()
+    active_machines_count = machines_qs.filter(is_active=True).count()
+    tractors_count = machines_qs.filter(machine_type__code='TRACTOR').count()
+    harvesters_count = machines_qs.filter(machine_type__code__in=['PADDY_HARVESTER', 'COMBINE_HARVESTER']).count()
+    implements_count = machines_qs.filter(machine_type__code__in=['IMPLEMENT', 'OTHER']).count()
+
+    # 3. Customers Master
+    customers_qs = Customer.objects.filter(is_deleted=False)
+    customers_count = customers_qs.count()
+    active_customers_count = customers_qs.filter(status=Customer.STATUS_ACTIVE).count()
+    receivables_qs = Receivable.objects.filter(is_deleted=False, is_reversed=False)
+    total_opening_receivables = receivables_qs.aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+
+    # 4. Suppliers Master
+    suppliers_qs = Supplier.objects.filter(is_deleted=False)
+    suppliers_count = suppliers_qs.count()
+    active_suppliers_count = suppliers_qs.filter(status=Supplier.STATUS_ACTIVE).count()
+    fuel_suppliers_count = suppliers_qs.filter(supplier_type='FUEL_PUMP').count()
+    parts_suppliers_count = suppliers_qs.filter(supplier_type='SPARE_PARTS').count()
+    payables_qs = Payable.objects.filter(is_deleted=False, is_reversed=False)
+    total_opening_payables = payables_qs.aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+
+    # 5. Employees Master
+    employees_qs = Employee.objects.filter(is_deleted=False)
+    employees_count = employees_qs.count()
+    active_employees_count = employees_qs.filter(status=Employee.STATUS_ACTIVE).count()
+    drivers_operators_count = employees_qs.filter(role__in=[Employee.ROLE_TRACTOR_DRIVER, Employee.ROLE_HARVESTER_OPERATOR]).count()
+    active_compensations_count = EmployeeCompensation.objects.filter(is_active=True).count()
+
+    # 6. Categories & Budgets
+    categories_count = ExpenseCategory.objects.filter(is_deleted=False, is_active=True).count()
+    budgets_count = Budget.objects.filter(is_deleted=False).count()
+
+    # 7. Verification Checklist Items (Read-only status calculations)
+    verification_checklist = [
+        {
+            'name': 'Business Profile',
+            'status': 'PASS',
+            'details': 'AgriBOS ERP v1.0 • Currency: INR (₹) • Timezone: Asia/Kolkata',
+            'link': None,
+            'link_label': 'Configured'
+        },
+        {
+            'name': 'Financial Accounts',
+            'status': 'PASS' if accounts_count > 0 else 'PENDING',
+            'details': f'{accounts_count} active account(s) (Cash: {cash_accounts_count}, Bank: {bank_accounts_count}, UPI: {upi_accounts_count})',
+            'link': 'finance:accounts',
+            'link_label': 'Manage Accounts'
+        },
+        {
+            'name': 'Machinery Fleet',
+            'status': 'PASS' if machines_count > 0 else 'PENDING',
+            'details': f'{machines_count} machine(s) registered ({active_machines_count} active in fleet)',
+            'link': 'machines:list',
+            'link_label': 'Manage Fleet'
+        },
+        {
+            'name': 'Farmers / Customers',
+            'status': 'PASS' if customers_count > 0 else 'PENDING',
+            'details': f'{customers_count} customer(s) registered ({active_customers_count} active)',
+            'link': 'finance:customers',
+            'link_label': 'Manage Customers'
+        },
+        {
+            'name': 'Suppliers & Vendors',
+            'status': 'PASS' if suppliers_count > 0 else 'PENDING',
+            'details': f'{suppliers_count} vendor(s) registered ({fuel_suppliers_count} fuel, {parts_suppliers_count} parts)',
+            'link': 'finance:suppliers',
+            'link_label': 'Manage Suppliers'
+        },
+        {
+            'name': 'Employees & Operators',
+            'status': 'PASS' if employees_count > 0 else 'PENDING',
+            'details': f'{employees_count} staff member(s) ({drivers_operators_count} operators/drivers)',
+            'link': 'employees:list',
+            'link_label': 'Manage Staff'
+        },
+        {
+            'name': 'Wage Configuration',
+            'status': 'PASS' if active_compensations_count > 0 or employees_count == 0 else 'PENDING',
+            'details': f'{active_compensations_count} custom compensation rate rule(s) configured',
+            'link': 'employees:wages',
+            'link_label': 'Configure Wages'
+        },
+        {
+            'name': 'Expense Categories',
+            'status': 'PASS' if categories_count > 0 else 'PENDING',
+            'details': f'{categories_count} active expense categories',
+            'link': 'expenses:categories',
+            'link_label': 'Manage Categories'
+        },
+        {
+            'name': 'Opening Balances',
+            'status': 'PASS' if accounts_count > 0 else 'PENDING',
+            'details': f'Opening Funds: ₹ {total_opening_balance:,.2f} | Receivables: ₹ {total_opening_receivables:,.2f} | Payables: ₹ {total_opening_payables:,.2f}',
+            'link': 'finance:accounts',
+            'link_label': 'Review Balances'
+        },
+    ]
+
+    passed_count = sum(1 for item in verification_checklist if item['status'] == 'PASS')
+    total_checks = len(verification_checklist)
+    overall_readiness_pct = int((passed_count / total_checks) * 100)
+
+    context = {
+        'title': 'Master Data Setup & Business Onboarding',
+        'accounts_count': accounts_count,
+        'cash_accounts_count': cash_accounts_count,
+        'bank_accounts_count': bank_accounts_count,
+        'upi_accounts_count': upi_accounts_count,
+        'total_opening_balance': total_opening_balance,
+        'machines_count': machines_count,
+        'active_machines_count': active_machines_count,
+        'tractors_count': tractors_count,
+        'harvesters_count': harvesters_count,
+        'implements_count': implements_count,
+        'customers_count': customers_count,
+        'active_customers_count': active_customers_count,
+        'total_opening_receivables': total_opening_receivables,
+        'suppliers_count': suppliers_count,
+        'active_suppliers_count': active_suppliers_count,
+        'fuel_suppliers_count': fuel_suppliers_count,
+        'parts_suppliers_count': parts_suppliers_count,
+        'total_opening_payables': total_opening_payables,
+        'employees_count': employees_count,
+        'active_employees_count': active_employees_count,
+        'drivers_operators_count': drivers_operators_count,
+        'active_compensations_count': active_compensations_count,
+        'categories_count': categories_count,
+        'budgets_count': budgets_count,
+        'verification_checklist': verification_checklist,
+        'passed_count': passed_count,
+        'total_checks': total_checks,
+        'overall_readiness_pct': overall_readiness_pct,
+    }
+
+    return render(request, 'finance/business_setup_hub.html', context)

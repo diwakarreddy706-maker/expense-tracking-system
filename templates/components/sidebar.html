@@ -175,14 +175,21 @@
     </a>
     {% endif %}
 
-    <!-- Section: Administration -->
-    {% if role == 'OWNER' or request.user.is_superuser %}
-    <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400 border-t border-[#1E293B] mt-3">Administration</div>
+    <!-- Section: Administration & Master Setup -->
+    {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
+    <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400 border-t border-[#1E293B] mt-3">Administration & Setup</div>
 
+    <a href="{% url 'finance:setup_hub' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'finance' and request.resolver_match.url_name == 'setup_hub' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-database-gear w-5 text-center text-base text-indigo-400"></i>
+      <span>Master Data Setup</span>
+    </a>
+
+    {% if role == 'OWNER' or request.user.is_superuser %}
     <a href="{% url 'accounts:user_list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name == 'user_list' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-person-gear w-5 text-center text-base text-amber-400"></i>
       <span>User Management</span>
     </a>
+    {% endif %}
     {% endif %}
 
     {% endwith %}

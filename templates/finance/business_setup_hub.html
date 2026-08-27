@@ -1,0 +1,377 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Master Data Setup & Business Onboarding | AgriBOS ERP{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="{ activeTab: 'overview', csvModal: false, activeCsv: 'machines' }">
+
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[#131A26] border border-[#28354A] p-5 rounded-2xl shadow-lg">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-900/30 flex-shrink-0">
+        <i class="bi bi-database-gear text-2xl"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-[#F9FAFB] tracking-tight">Master Data Setup & Business Onboarding</h1>
+        <p class="text-sm text-[#9CA3AF]">Configure core business profiles, machinery fleet, accounts, clients, vendors, and opening balances.</p>
+      </div>
+    </div>
+
+    <!-- Quick Action / Status Badge -->
+    <div class="flex items-center gap-3">
+      <div class="px-4 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] flex items-center gap-2.5">
+        <div class="w-2.5 h-2.5 rounded-full {% if overall_readiness_pct == 100 %}bg-emerald-400 animate-pulse{% elif overall_readiness_pct >= 50 %}bg-amber-400 animate-pulse{% else %}bg-rose-400 animate-pulse{% endif %}"></div>
+        <span class="text-xs font-semibold text-gray-300">Readiness:</span>
+        <span class="text-xs font-mono font-bold {% if overall_readiness_pct == 100 %}text-emerald-400{% elif overall_readiness_pct >= 50 %}text-amber-400{% else %}text-rose-400{% endif %}">{{ overall_readiness_pct }}% ({{ passed_count }}/{{ total_checks }} Passed)</span>
+      </div>
+      <button 
+        type="button" 
+        @click="csvModal = true" 
+        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 text-xs font-semibold transition-colors focus:outline-none"
+      >
+        <i class="bi bi-filetype-csv text-sm"></i>
+        <span>CSV Schemas</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="flex border-b border-[#28354A] space-x-2 overflow-x-auto pb-1">
+    <button 
+      type="button" 
+      @click="activeTab = 'overview'" 
+      :class="activeTab === 'overview' ? 'border-emerald-400 text-emerald-400 font-bold bg-[#131A26]/80' : 'border-transparent text-gray-400 hover:text-gray-200'"
+      class="px-4 py-2.5 border-b-2 text-sm transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap"
+    >
+      <i class="bi bi-check2-circle"></i>
+      <span>Readiness Checklist</span>
+    </button>
+    <button 
+      type="button" 
+      @click="activeTab = 'modules'" 
+      :class="activeTab === 'modules' ? 'border-emerald-400 text-emerald-400 font-bold bg-[#131A26]/80' : 'border-transparent text-gray-400 hover:text-gray-200'"
+      class="px-4 py-2.5 border-b-2 text-sm transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap"
+    >
+      <i class="bi bi-grid-3x3-gap"></i>
+      <span>Master Data Modules</span>
+    </button>
+    <button 
+      type="button" 
+      @click="activeTab = 'balances'" 
+      :class="activeTab === 'balances' ? 'border-emerald-400 text-emerald-400 font-bold bg-[#131A26]/80' : 'border-transparent text-gray-400 hover:text-gray-200'"
+      class="px-4 py-2.5 border-b-2 text-sm transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap"
+    >
+      <i class="bi bi-cash-stack"></i>
+      <span>Opening Balances</span>
+    </button>
+  </div>
+
+  <!-- TAB 1: READINESS CHECKLIST -->
+  <div x-show="activeTab === 'overview'" class="space-y-6" x-transition>
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl overflow-hidden shadow-lg">
+      <div class="p-4 bg-[#162030] border-b border-[#28354A] flex items-center justify-between">
+        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="bi bi-clipboard2-check text-emerald-400"></i>
+          <span>Production Onboarding Audit Checklist</span>
+        </h2>
+        <span class="text-xs text-gray-400 font-mono">{{ passed_count }} / {{ total_checks }} Requirements Active</span>
+      </div>
+
+      <div class="divide-y divide-[#28354A]">
+        {% for item in verification_checklist %}
+        <div class="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-[#1A2333]/50 transition-colors">
+          <div class="flex items-start sm:items-center gap-3">
+            {% if item.status == 'PASS' %}
+            <div class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5 sm:mt-0">
+              <i class="bi bi-check-lg text-sm font-bold"></i>
+            </div>
+            {% else %}
+            <div class="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 flex-shrink-0 mt-0.5 sm:mt-0">
+              <i class="bi bi-exclamation-triangle text-xs"></i>
+            </div>
+            {% endif %}
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-semibold text-white">{{ item.name }}</span>
+                <span class="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded {% if item.status == 'PASS' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% else %}bg-amber-500/10 text-amber-400 border border-amber-500/20{% endif %}">
+                  {{ item.status }}
+                </span>
+              </div>
+              <p class="text-xs text-gray-400 mt-0.5">{{ item.details }}</p>
+            </div>
+          </div>
+
+          {% if item.link %}
+          <div class="flex-shrink-0 self-end sm:self-auto">
+            <a href="{% url item.link %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0B0F17] hover:bg-gray-800 text-xs font-semibold text-gray-200 border border-[#28354A] transition-colors">
+              <span>{{ item.link_label }}</span>
+              <i class="bi bi-arrow-right text-[10px] text-gray-400"></i>
+            </a>
+          </div>
+          {% else %}
+          <span class="text-xs text-gray-400 font-mono self-end sm:self-auto">✓ System Verified</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: MASTER DATA MODULES GRID -->
+  <div x-show="activeTab === 'modules'" class="space-y-6" x-transition>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+      <!-- 1. Machinery Fleet Master -->
+      <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-colors">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
+              <i class="bi bi-truck text-lg"></i>
+            </div>
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              {{ machines_count }} Total
+            </span>
+          </div>
+          <h3 class="text-base font-bold text-white mb-1">Machinery Fleet Registry</h3>
+          <p class="text-xs text-gray-400 mb-4">Tractors, combine harvesters, paddy harvesters, implements, meter units, and registration numbers.</p>
+          <div class="space-y-1.5 py-2 border-y border-[#28354A] text-xs text-gray-300">
+            <div class="flex justify-between"><span>Active Fleet:</span><span class="font-mono font-bold text-emerald-400">{{ active_machines_count }}</span></div>
+            <div class="flex justify-between"><span>Tractors:</span><span class="font-mono text-gray-300">{{ tractors_count }}</span></div>
+            <div class="flex justify-between"><span>Harvesters:</span><span class="font-mono text-gray-300">{{ harvesters_count }}</span></div>
+            <div class="flex justify-between"><span>Implements / Other:</span><span class="font-mono text-gray-300">{{ implements_count }}</span></div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 mt-4 pt-2">
+          <a href="{% url 'machines:list' %}" class="flex-1 text-center py-2 rounded-xl bg-[#0B0F17] hover:bg-gray-800 text-xs font-semibold text-gray-200 border border-[#28354A]">View Registry</a>
+          <a href="{% url 'machines:create' %}" class="px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white flex items-center gap-1" title="Add Machine"><i class="bi bi-plus-lg"></i> Add</a>
+        </div>
+      </div>
+
+      <!-- 2. Financial Accounts Master -->
+      <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-colors">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <i class="bi bi-bank2 text-lg"></i>
+            </div>
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              {{ accounts_count }} Accounts
+            </span>
+          </div>
+          <h3 class="text-base font-bold text-white mb-1">Financial Accounts & Wallets</h3>
+          <p class="text-xs text-gray-400 mb-4">Cash boxes, bank accounts, UPI digital wallets, IFSC, masked account numbers, and opening balances.</p>
+          <div class="space-y-1.5 py-2 border-y border-[#28354A] text-xs text-gray-300">
+            <div class="flex justify-between"><span>Cash Boxes:</span><span class="font-mono text-gray-300">{{ cash_accounts_count }}</span></div>
+            <div class="flex justify-between"><span>Bank Accounts:</span><span class="font-mono text-gray-300">{{ bank_accounts_count }}</span></div>
+            <div class="flex justify-between"><span>UPI Wallets:</span><span class="font-mono text-gray-300">{{ upi_accounts_count }}</span></div>
+            <div class="flex justify-between"><span>Total Opening Balance:</span><span class="font-mono font-bold text-emerald-400">₹ {{ total_opening_balance|floatformat:2 }}</span></div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 mt-4 pt-2">
+          <a href="{% url 'finance:accounts' %}" class="flex-1 text-center py-2 rounded-xl bg-[#0B0F17] hover:bg-gray-800 text-xs font-semibold text-gray-200 border border-[#28354A]">View Accounts</a>
+          <a href="{% url 'finance:account_create' %}" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white flex items-center gap-1" title="Add Account"><i class="bi bi-plus-lg"></i> Add</a>
+        </div>
+      </div>
+
+      <!-- 3. Customers / Farmers Master -->
+      <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-colors">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400">
+              <i class="bi bi-person-lines-fill text-lg"></i>
+            </div>
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-teal-500/10 text-teal-400 border border-teal-500/20">
+              {{ customers_count }} Farmers
+            </span>
+          </div>
+          <h3 class="text-base font-bold text-white mb-1">Farmers & Clients Master</h3>
+          <p class="text-xs text-gray-400 mb-4">Farmer directory, mobile contact details, village locations, customer status, and opening receivables.</p>
+          <div class="space-y-1.5 py-2 border-y border-[#28354A] text-xs text-gray-300">
+            <div class="flex justify-between"><span>Active Clients:</span><span class="font-mono font-bold text-teal-400">{{ active_customers_count }}</span></div>
+            <div class="flex justify-between"><span>Total Receivables:</span><span class="font-mono text-emerald-400">₹ {{ total_opening_receivables|floatformat:2 }}</span></div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 mt-4 pt-2">
+          <a href="{% url 'finance:customers' %}" class="flex-1 text-center py-2 rounded-xl bg-[#0B0F17] hover:bg-gray-800 text-xs font-semibold text-gray-200 border border-[#28354A]">View Customers</a>
+          <a href="{% url 'finance:customer_create' %}" class="px-3 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-xs font-semibold text-white flex items-center gap-1" title="Add Customer"><i class="bi bi-plus-lg"></i> Add</a>
+        </div>
+      </div>
+
+      <!-- 4. Suppliers & Vendors Master -->
+      <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-colors">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <i class="bi bi-shop-window text-lg"></i>
+            </div>
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              {{ suppliers_count }} Vendors
+            </span>
+          </div>
+          <h3 class="text-base font-bold text-white mb-1">Suppliers & Outlets</h3>
+          <p class="text-xs text-gray-400 mb-4">Diesel fuel petrol pumps, spare parts vendors, workshops, credit payment terms, and opening payables.</p>
+          <div class="space-y-1.5 py-2 border-y border-[#28354A] text-xs text-gray-300">
+            <div class="flex justify-between"><span>Fuel Pumps:</span><span class="font-mono text-gray-300">{{ fuel_suppliers_count }}</span></div>
+            <div class="flex justify-between"><span>Spare Parts / Workshops:</span><span class="font-mono text-gray-300">{{ parts_suppliers_count }}</span></div>
+            <div class="flex justify-between"><span>Total Payables:</span><span class="font-mono text-rose-400">₹ {{ total_opening_payables|floatformat:2 }}</span></div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 mt-4 pt-2">
+          <a href="{% url 'finance:suppliers' %}" class="flex-1 text-center py-2 rounded-xl bg-[#0B0F17] hover:bg-gray-800 text-xs font-semibold text-gray-200 border border-[#28354A]">View Suppliers</a>
+          <a href="{% url 'finance:supplier_create' %}" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-xs font-semibold text-white flex items-center gap-1" title="Add Supplier"><i class="bi bi-plus-lg"></i> Add</a>
+        </div>
+      </div>
+
+      <!-- 5. Employees & Wages Master -->
+      <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-colors">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+              <i class="bi bi-people-fill text-lg"></i>
+            </div>
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              {{ employees_count }} Staff
+            </span>
+          </div>
+          <h3 class="text-base font-bold text-white mb-1">Staff, Drivers & Operators</h3>
+          <p class="text-xs text-gray-400 mb-4">Harvester operators, tractor drivers, mechanics, wage types (hourly, acre, daily, monthly), and base rates.</p>
+          <div class="space-y-1.5 py-2 border-y border-[#28354A] text-xs text-gray-300">
+            <div class="flex justify-between"><span>Active Staff:</span><span class="font-mono text-purple-400">{{ active_employees_count }}</span></div>
+            <div class="flex justify-between"><span>Drivers & Operators:</span><span class="font-mono text-gray-300">{{ drivers_operators_count }}</span></div>
+            <div class="flex justify-between"><span>Compensation Rules:</span><span class="font-mono text-gray-300">{{ active_compensations_count }}</span></div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 mt-4 pt-2">
+          <a href="{% url 'employees:list' %}" class="flex-1 text-center py-2 rounded-xl bg-[#0B0F17] hover:bg-gray-800 text-xs font-semibold text-gray-200 border border-[#28354A]">View Staff</a>
+          <a href="{% url 'employees:create' %}" class="px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-semibold text-white flex items-center gap-1" title="Add Employee"><i class="bi bi-plus-lg"></i> Add</a>
+        </div>
+      </div>
+
+      <!-- 6. Expense Categories Master -->
+      <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-colors">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+              <i class="bi bi-tags-fill text-lg"></i>
+            </div>
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              {{ categories_count }} Categories
+            </span>
+          </div>
+          <h3 class="text-base font-bold text-white mb-1">Expense Categories & Budgets</h3>
+          <p class="text-xs text-gray-400 mb-4">Fuel, machine maintenance, spare parts, wages, rent, shop supplies, color coding, icons, and monthly budgets.</p>
+          <div class="space-y-1.5 py-2 border-y border-[#28354A] text-xs text-gray-300">
+            <div class="flex justify-between"><span>Active Categories:</span><span class="font-mono text-indigo-400">{{ categories_count }}</span></div>
+            <div class="flex justify-between"><span>Monthly Budgets:</span><span class="font-mono text-gray-300">{{ budgets_count }}</span></div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 mt-4 pt-2">
+          <a href="{% url 'expenses:categories' %}" class="flex-1 text-center py-2 rounded-xl bg-[#0B0F17] hover:bg-gray-800 text-xs font-semibold text-gray-200 border border-[#28354A]">View Categories</a>
+          <a href="{% url 'expenses:category_create' %}" class="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white flex items-center gap-1" title="Add Category"><i class="bi bi-plus-lg"></i> Add</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TAB 3: OPENING BALANCES & RECONCILIATION -->
+  <div x-show="activeTab === 'balances'" class="space-y-6" x-transition>
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-lg space-y-4">
+      <div class="border-b border-[#28354A] pb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="bi bi-shield-check text-emerald-400"></i>
+          <span>Authoritative Opening Balances & Accounting Invariants</span>
+        </h3>
+        <p class="text-xs text-gray-400 mt-1">
+          Opening balances establish the financial starting point for live accounting. All calculations follow strict double-entry ledger rules.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-[#0B0F17] border border-[#28354A] p-4 rounded-xl">
+          <div class="text-xs text-gray-400 mb-1">Total Initial Cash & Bank Funds</div>
+          <div class="text-lg font-mono font-bold text-emerald-400">₹ {{ total_opening_balance|floatformat:2 }}</div>
+          <div class="text-[11px] text-gray-400 mt-2">Configured in <a href="{% url 'finance:accounts' %}" class="text-emerald-400 hover:underline">Business Accounts</a>.</div>
+        </div>
+
+        <div class="bg-[#0B0F17] border border-[#28354A] p-4 rounded-xl">
+          <div class="text-xs text-gray-400 mb-1">Opening Farmer Receivables (To Receive)</div>
+          <div class="text-lg font-mono font-bold text-teal-400">₹ {{ total_opening_receivables|floatformat:2 }}</div>
+          <div class="text-[11px] text-gray-400 mt-2">Configured in <a href="{% url 'finance:receivables' %}" class="text-teal-400 hover:underline">Customer Receivables</a>.</div>
+        </div>
+
+        <div class="bg-[#0B0F17] border border-[#28354A] p-4 rounded-xl">
+          <div class="text-xs text-gray-400 mb-1">Opening Vendor Payables (To Pay)</div>
+          <div class="text-lg font-mono font-bold text-rose-400">₹ {{ total_opening_payables|floatformat:2 }}</div>
+          <div class="text-[11px] text-gray-400 mt-2">Configured in <a href="{% url 'finance:payables' %}" class="text-rose-400 hover:underline">Supplier Payables</a>.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSV TEMPLATES MODAL -->
+  <div 
+    x-show="csvModal" 
+    class="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+    x-transition
+    style="display: none;"
+  >
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 text-left" @click.away="csvModal = false">
+      <div class="flex items-center justify-between border-b border-[#28354A] pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="bi bi-filetype-csv text-indigo-400"></i>
+          <span>Structured Master Data CSV Schemas</span>
+        </h3>
+        <button type="button" @click="csvModal = false" class="text-gray-400 hover:text-white p-1 rounded-lg">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="flex gap-2 overflow-x-auto pb-2 border-b border-[#28354A]">
+        <button type="button" @click="activeCsv = 'machines'" :class="activeCsv === 'machines' ? 'bg-indigo-600 text-white font-bold' : 'bg-[#0B0F17] text-gray-400'" class="px-3 py-1.5 rounded-lg text-xs transition-colors">machines.csv</button>
+        <button type="button" @click="activeCsv = 'customers'" :class="activeCsv === 'customers' ? 'bg-indigo-600 text-white font-bold' : 'bg-[#0B0F17] text-gray-400'" class="px-3 py-1.5 rounded-lg text-xs transition-colors">customers.csv</button>
+        <button type="button" @click="activeCsv = 'suppliers'" :class="activeCsv === 'suppliers' ? 'bg-indigo-600 text-white font-bold' : 'bg-[#0B0F17] text-gray-400'" class="px-3 py-1.5 rounded-lg text-xs transition-colors">suppliers.csv</button>
+        <button type="button" @click="activeCsv = 'employees'" :class="activeCsv === 'employees' ? 'bg-indigo-600 text-white font-bold' : 'bg-[#0B0F17] text-gray-400'" class="px-3 py-1.5 rounded-lg text-xs transition-colors">employees.csv</button>
+        <button type="button" @click="activeCsv = 'accounts'" :class="activeCsv === 'accounts' ? 'bg-indigo-600 text-white font-bold' : 'bg-[#0B0F17] text-gray-400'" class="px-3 py-1.5 rounded-lg text-xs transition-colors">accounts.csv</button>
+      </div>
+
+      <!-- CSV Code Preview -->
+      <div class="bg-[#0B0F17] border border-[#28354A] p-4 rounded-xl font-mono text-xs text-emerald-400 overflow-x-auto">
+        <template x-if="activeCsv === 'machines'">
+          <pre>machine_code,name,machine_type_code,registration_no,meter_unit,current_meter_reading,status
+MCH-TRAC-01,John Deere 5310,TRACTOR,KA-05-AA-1234,HOURS,1250.00,AVAILABLE
+MCH-HARV-01,Kubota DC68G,PADDY_HARVESTER,KA-05-BB-5678,HOURS,820.00,AVAILABLE
+MCH-ROTO-01,Shaktiman Rotary Tiller,IMPLEMENT,,ACRES,0.00,AVAILABLE</pre>
+        </template>
+        <template x-if="activeCsv === 'customers'">
+          <pre>customer_code,name,phone,location_address,status
+CUST-001,Ramesh Patel,+91 9876543210,Kolar Village,ACTIVE
+CUST-002,Suresh Gowda,+91 9876543211,Malur Town,ACTIVE</pre>
+        </template>
+        <template x-if="activeCsv === 'suppliers'">
+          <pre>supplier_code,name,supplier_type,phone,location_address,payment_terms
+SUPP-001,Sri Balaji Fuel Station,FUEL_PUMP,+91 9876543220,Main Highway,Net 15
+SUPP-002,Kisan Auto Spares,SPARE_PARTS,+91 9876543221,Industrial Area,Net 30</pre>
+        </template>
+        <template x-if="activeCsv === 'employees'">
+          <pre>employee_code,full_name,phone_number,role,wage_type,base_rate,status
+EMP-001,Manjunath K,+91 9876543230,HARVESTER_OPERATOR,ACRE,450.00,ACTIVE
+EMP-002,Venkatesh R,+91 9876543231,TRACTOR_DRIVER,DAILY,650.00,ACTIVE</pre>
+        </template>
+        <template x-if="activeCsv === 'accounts'">
+          <pre>account_name,account_type,account_number,bank_name,ifsc_code,opening_balance
+Main Cash Box,CASH,,,0.00,50000.00
+SBI Current A/c,BANK_CURRENT,123456784091,State Bank of India,SBIN0001234,150000.00
+Business UPI,UPI_WALLET,agribos@sbi,,0.00,25000.00</pre>
+        </template>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button type="button" @click="csvModal = false" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-white">Close</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
