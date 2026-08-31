@@ -14,7 +14,7 @@
     </div>
     <p class="text-xs text-gray-400 mt-1 mb-0">Official harvesting voucher, session timings, advance collection, and farmer Udhar Katha record.</p>
   </div>
-  <div class="flex items-center gap-2.5">
+  <div class="flex flex-wrap items-center gap-2.5">
     <a href="{% url 'machines:work_list' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] no-underline">
       <i class="bi bi-arrow-left"></i>
       <span>All Bills</span>
@@ -23,9 +23,13 @@
       <i class="bi bi-plus-lg"></i>
       <span>+ New Bill</span>
     </a>
+    <a href="{{ whatsapp_url }}" target="_blank" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-bold text-xs shadow-sm transition-all no-underline">
+      <i class="bi bi-whatsapp text-sm"></i>
+      <span>WhatsApp Farmer</span>
+    </a>
     <button type="button" onclick="window.print()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs shadow-sm transition-all border-0 cursor-pointer">
       <i class="bi bi-printer-fill"></i>
-      <span>Print / Save PDF</span>
+      <span>Print / PDF</span>
     </button>
   </div>
 </div>

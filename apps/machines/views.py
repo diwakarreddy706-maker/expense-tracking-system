@@ -1289,8 +1289,34 @@ def work_entry_invoice_view(request, entry_id):
         id=entry_id,
         is_deleted=False
     )
+    import urllib.parse
+    phone = re.sub(r'\D', '', entry.customer.phone or '')
+    if phone and not phone.startswith('91') and len(phone) == 10:
+        phone = '91' + phone
+
+    wa_msg = (
+        f"🌾 *SRI BASAVESHWARA & CO.*\n"
+        f"*Harvesting Bill & Farmer Receipt*\n"
+        f"--------------------------------\n"
+        f"• Bill No: {entry.manual_bill_no or entry.work_code}\n"
+        f"• Date: {entry.work_date.strftime('%d-%m-%Y')}\n"
+        f"• Farmer: {entry.customer.name} ({entry.customer.location_address or 'Field'})\n"
+        f"• Machine: {entry.machine.name}\n"
+        f"• Timings: {entry.start_time or ''} - {entry.end_time or ''} ({entry.net_working_hours} hrs)\n"
+        f"• Cutting Rate: ₹{entry.hourly_rate:,.2f}/hr\n"
+        f"--------------------------------\n"
+        f"• Gross Total: ₹{entry.total_amount:,.2f}\n"
+        f"• Advance Paid: ₹{entry.advance_amount:,.2f}\n"
+        f"• Balance in Udhar: ₹{entry.udhar_amount:,.2f}\n"
+        f"--------------------------------\n"
+        f"Thank you for choosing Sri Basaveshwara & Co."
+    )
+    encoded_msg = urllib.parse.quote(wa_msg)
+    whatsapp_url = f"https://api.whatsapp.com/send?phone={phone}&text={encoded_msg}" if phone else f"https://api.whatsapp.com/send?text={encoded_msg}"
+
     return render(request, 'machines/work_entry_invoice.html', {
         'entry': entry,
+        'whatsapp_url': whatsapp_url,
         'title': f"Bill & Receipt: {entry.manual_bill_no or entry.work_code}",
     })
 
