@@ -55,6 +55,7 @@ EXPOSE 8000
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
     DJANGO_SETTINGS_MODULE=expense_tracking_core.settings.production
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
