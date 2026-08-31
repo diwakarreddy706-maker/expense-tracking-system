@@ -134,8 +134,8 @@ class RoleBasedAccessControlTests(TestCase):
         # Financial Reversals (Owner only)
         self.assertEqual(self.client.get(reverse('finance:reversal', args=[1])).status_code, 200)
 
-    def test_accountant_access_and_restrictions(self):
-        """Verifies ACCOUNTANT can access finance & reports, but blocked from user administration & reversals."""
+    def test_accountant_full_access(self):
+        """Verifies ACCOUNTANT has full access to finance, reports, user administration & reversals."""
         self.client.login(username='accountant_user', password=self.password)
 
         # Can access accounts & reports
@@ -143,13 +143,12 @@ class RoleBasedAccessControlTests(TestCase):
         self.assertEqual(self.client.get(reverse('reports:financial')).status_code, 200)
         self.assertEqual(self.client.get(reverse('employees:wages')).status_code, 200)
 
-        # BLOCKED from user administration (403 Forbidden)
+        # Can access user administration
         resp_users = self.client.get(reverse('accounts:user_list'))
-        self.assertEqual(resp_users.status_code, 403)
-        self.assertTemplateUsed(resp_users, 'errors/403.html')
+        self.assertEqual(resp_users.status_code, 200)
 
-        # BLOCKED from financial reversals (Owner only)
-        self.assertEqual(self.client.get(reverse('finance:reversal', args=[1])).status_code, 403)
+        # Can access financial reversals
+        self.assertEqual(self.client.get(reverse('finance:reversal', args=[1])).status_code, 200)
 
     def test_manager_access_and_restrictions(self):
         """Verifies MANAGER can access operations/employees/operational reports, but blocked from financial data."""
@@ -208,8 +207,8 @@ class RoleBasedAccessControlTests(TestCase):
         resp_edit = self.client.post(reverse('accounts:user_edit', args=[self.employee.id]), {'role': 'OWNER'})
         self.assertEqual(resp_edit.status_code, 403)
 
-        # Accountant attempting to delete employee profile
-        self.client.login(username='accountant_user', password=self.password)
+        # Employee attempting to delete employee profile (forbidden)
+        self.client.login(username='employee_user', password=self.password)
         resp_del = self.client.post(reverse('employees:delete', args=[self.employee.id]))
         self.assertEqual(resp_del.status_code, 403)
 

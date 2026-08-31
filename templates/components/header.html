@@ -83,7 +83,7 @@
             <span>Profile &amp; Security</span>
           </a>
 
-          {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+          {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
           <a href="{% url 'accounts:user_list' %}" class="flex items-center gap-2.5 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800/80 no-underline">
             <i class="bi bi-people text-cyan-400"></i>
             <span>User Management</span>

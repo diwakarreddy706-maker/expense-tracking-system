@@ -87,7 +87,7 @@
     <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">Machinery & Fleet</div>
 
     <!-- Machines Directory -->
-    {% if role == 'OWNER' or role == 'MANAGER' or request.user.is_superuser %}
+    {% if role == 'OWNER' or role == 'MANAGER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <a href="{% url 'machines:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'list' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-truck w-5 text-center text-base text-blue-400"></i>
       <span>Machines Registry</span>
@@ -184,7 +184,7 @@
       <span>Master Data Setup</span>
     </a>
 
-    {% if role == 'OWNER' or request.user.is_superuser %}
+    {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <a href="{% url 'accounts:user_list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name == 'user_list' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-person-gear w-5 text-center text-base text-amber-400"></i>
       <span>User Management</span>

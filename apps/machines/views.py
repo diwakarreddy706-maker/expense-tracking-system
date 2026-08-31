@@ -26,7 +26,7 @@ from apps.expenses.models import Expense, ExpenseCategory
 from apps.employees.models import Employee
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def machine_list_view(request):
     """Lists agricultural machinery with search and status filtering."""
     query = request.GET.get('q', '').strip()
@@ -51,7 +51,7 @@ def machine_list_view(request):
     })
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def machine_create_view(request):
     """Creates a new machine record."""
     if request.method == 'POST':
@@ -77,7 +77,7 @@ def machine_create_view(request):
     })
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def machine_edit_view(request, machine_id):
     """Edits an existing machine."""
     machine = get_object_or_404(Machine, id=machine_id, is_deleted=False)
@@ -179,7 +179,7 @@ def booking_list_view(request):
     })
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def booking_create_view(request):
     """Creates a new customer machine booking."""
     if request.method == 'POST':
@@ -234,7 +234,7 @@ def booking_detail_view(request, booking_id):
     })
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def booking_edit_view(request, booking_id):
     """Edits an existing booking."""
     booking = get_object_or_404(MachineBooking, id=booking_id, is_deleted=False)
@@ -261,7 +261,7 @@ def booking_edit_view(request, booking_id):
     })
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def booking_confirm_view(request, booking_id):
     """Confirms booking and assigns machine and operator."""
     booking = get_object_or_404(MachineBooking, id=booking_id, is_deleted=False)
@@ -289,7 +289,7 @@ def booking_confirm_view(request, booking_id):
     })
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def booking_dispatch_view(request, booking_id):
     """Dispatches confirmed machine to field."""
     booking = get_object_or_404(MachineBooking, id=booking_id, is_deleted=False)
@@ -303,7 +303,7 @@ def booking_dispatch_view(request, booking_id):
     return redirect('machines:booking_detail', booking_id=booking.id)
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def booking_start_work_view(request, booking_id):
     """Marks work as started (IN_PROGRESS)."""
     booking = get_object_or_404(MachineBooking, id=booking_id, is_deleted=False)
@@ -316,7 +316,7 @@ def booking_start_work_view(request, booking_id):
     return redirect('machines:booking_detail', booking_id=booking.id)
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def booking_complete_work_view(request, booking_id):
     """Marks work as completed (COMPLETED)."""
     booking = get_object_or_404(MachineBooking, id=booking_id, is_deleted=False)
@@ -329,7 +329,7 @@ def booking_complete_work_view(request, booking_id):
     return redirect('machines:booking_detail', booking_id=booking.id)
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def booking_cancel_view(request, booking_id):
     """Cancels a booking."""
     booking = get_object_or_404(MachineBooking, id=booking_id, is_deleted=False)
@@ -661,7 +661,7 @@ def maintenance_job_list_view(request):
     })
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def maintenance_job_create_view(request):
     """Creates a new Maintenance or Breakdown Job."""
     initial = {}
@@ -750,7 +750,7 @@ def maintenance_job_detail_view(request, job_id):
     })
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def maintenance_job_edit_view(request, job_id):
     """Edits an existing maintenance job."""
     job = get_object_or_404(MaintenanceJob, id=job_id, is_deleted=False)
@@ -783,7 +783,7 @@ def maintenance_job_edit_view(request, job_id):
     })
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def maintenance_job_start_view(request, job_id):
     """Transitions a job to IN_REPAIR and marks machine UNDER_MAINTENANCE."""
     if request.method == 'POST':
@@ -797,7 +797,7 @@ def maintenance_job_start_view(request, job_id):
     return redirect('machines:maintenance_job_detail', job_id=job_id)
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def maintenance_job_complete_view(request, job_id):
     """Completes maintenance and safely returns machine to ACTIVE."""
     if request.method == 'POST':
@@ -826,7 +826,7 @@ def maintenance_job_complete_view(request, job_id):
     return redirect('machines:maintenance_job_detail', job_id=job_id)
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def maintenance_job_cancel_view(request, job_id):
     """Cancels a maintenance job."""
     if request.method == 'POST':
@@ -851,7 +851,7 @@ def maintenance_job_delete_view(request, job_id):
     return redirect('machines:maintenance_job_detail', job_id=job_id)
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def maintenance_part_add_view(request, job_id):
     """Adds a spare part item to an editable maintenance job."""
     job = get_object_or_404(MaintenanceJob, id=job_id, is_deleted=False)
@@ -880,7 +880,7 @@ def maintenance_part_add_view(request, job_id):
     return redirect('machines:maintenance_job_detail', job_id=job_id)
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def maintenance_part_delete_view(request, job_id, part_id):
     """Deletes a spare part item from a maintenance job."""
     if request.method == 'POST':
@@ -942,7 +942,7 @@ def maintenance_schedule_list_view(request):
     })
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def maintenance_schedule_create_view(request):
     """Creates a new preventive maintenance schedule."""
     if request.method == 'POST':
@@ -980,7 +980,7 @@ def maintenance_schedule_create_view(request):
     })
 
 
-@role_required(['OWNER', 'MANAGER'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def maintenance_schedule_edit_view(request, schedule_id):
     """Edits a preventive maintenance schedule."""
     schedule = get_object_or_404(MachineMaintenanceSchedule, id=schedule_id)

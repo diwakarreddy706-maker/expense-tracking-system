@@ -118,7 +118,7 @@
               {% endif %}
             </td>
             <td class="py-3.5 px-4 text-right">
-              {% if not pay.is_reversed and request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+              {% if not pay.is_reversed and request.user.profile.role in 'OWNER,ACCOUNTANT' or request.user.is_superuser %}
                 <button
                   type="button"
                   class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors"

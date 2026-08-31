@@ -96,7 +96,7 @@
                 <a href="{% url 'finance:customer_edit' c.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="Edit Customer" aria-label="Edit Customer">
                   <i class="bi bi-pencil-square"></i>
                 </a>
-                {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+                {% if request.user.profile.role in 'OWNER,ACCOUNTANT' or request.user.is_superuser %}
                   <a href="{% url 'finance:customer_delete' c.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors no-underline text-xs" title="Delete" aria-label="Delete Customer" onclick="return confirm('Soft delete customer {{ c.name }}?');">
                     <i class="bi bi-trash"></i>
                   </a>

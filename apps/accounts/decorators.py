@@ -26,8 +26,8 @@ def role_required(allowed_roles):
             user_role = getattr(request.user, 'profile', None)
             role_name = user_role.role if user_role else 'EMPLOYEE'
 
-            # Superusers always have full OWNER privileges
-            if request.user.is_superuser or role_name in allowed_roles:
+            # Superusers, OWNER, and ACCOUNTANT have full system access across all modules
+            if request.user.is_superuser or role_name in ['OWNER', 'ACCOUNTANT'] or role_name in allowed_roles:
                 return view_func(request, *args, **kwargs)
 
             if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.path.startswith('/api/'):
@@ -41,7 +41,7 @@ def role_required(allowed_roles):
 
 
 def owner_required(view_func):
-    return role_required(['OWNER'])(view_func)
+    return role_required(['OWNER', 'ACCOUNTANT'])(view_func)
 
 
 def accountant_or_owner_required(view_func):
@@ -65,6 +65,8 @@ class RoleRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
         profile = getattr(self.request.user, 'profile', None)
         if not profile:
             return False
+        if profile.role in ['OWNER', 'ACCOUNTANT']:
+            return True
         return profile.role in self.allowed_roles
 
     def handle_no_permission(self) -> Any:

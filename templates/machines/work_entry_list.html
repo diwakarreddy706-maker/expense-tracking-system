@@ -202,7 +202,7 @@
                 <a href="{% url 'machines:work_edit' e.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="Edit Entry" aria-label="Edit Entry">
                   <i class="bi bi-pencil"></i>
                 </a>
-                {% if request.user.profile.role == 'OWNER' or request.user.is_superuser %}
+                {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
                   <form method="post" action="{% url 'machines:work_delete' e.id %}" class="inline" onsubmit="return confirm('Are you sure you want to delete work entry {{ e.work_code }}?');">
                     {% csrf_token %}
                     <button type="submit" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors text-xs" title="Delete Entry" aria-label="Delete Entry">

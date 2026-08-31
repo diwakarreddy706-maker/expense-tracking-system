@@ -473,13 +473,13 @@ class MachineBookingDispatchWorkflowTests(TestCase):
         resp = self.client.get('/machines/bookings/add/')
         self.assertEqual(resp.status_code, 200)
 
-        # 3. Accountant can view list and dispatch board but forbidden on create/dispatch
+        # 3. Accountant can view list and dispatch board AND create bookings
         self.client.force_login(self.accountant)
         resp = self.client.get('/machines/bookings/')
         self.assertEqual(resp.status_code, 200)
 
         resp = self.client.get('/machines/bookings/add/')
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 200)
 
         # 4. Employee is forbidden from viewing bookings
         self.client.force_login(self.employee)
