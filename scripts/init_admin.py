@@ -52,8 +52,61 @@ def init_admin():
     print(f"{status} superuser '{username}' with OWNER role successfully.")
 
 
+def seed_master_defaults():
+    """Seeds baseline machinery types and expense categories if empty."""
+    from apps.machines.models import MachineType
+    from apps.expenses.models import ExpenseCategory
+
+    # 1. Machine Types
+    default_machine_types = [
+        ('Tractor', 'TRACTOR'),
+        ('Combine Harvester', 'COMBINE_HARVESTER'),
+        ('Power Tiller', 'POWER_TILLER'),
+        ('Earth Mover / JCB', 'EARTH_MOVER'),
+        ('Rotavator / Cultivator', 'ROTAVATOR'),
+        ('Sprayer / Drone', 'SPRAYER'),
+        ('Thresher / Sheller', 'THRESHER'),
+        ('Laser Land Leveler', 'LASER_LEVELER'),
+        ('Baler', 'BALER'),
+        ('Support Vehicle / Trailer', 'TRAILER'),
+        ('Other Equipment', 'OTHER'),
+    ]
+    created_types = 0
+    for name, code in default_machine_types:
+        _, c = MachineType.objects.get_or_create(code=code, defaults={'name': name})
+        if c:
+            created_types += 1
+    if created_types:
+        print(f"Seeded {created_types} standard MachineType records.")
+
+    # 2. Expense Categories
+    default_categories = [
+        ('Fuel & Lubricants', 'CAT-FUEL', '#F59E0B', 'bi-fuel-pump'),
+        ('Machine Maintenance & Repairs', 'CAT-MAINT', '#EF4444', 'bi-tools'),
+        ('Spare Parts', 'CAT-SPARES', '#3B82F6', 'bi-gear-wide-connected'),
+        ('Employee Wages & Labor', 'CAT-WAGES', '#8B5CF6', 'bi-people'),
+        ('Workshop Supplies', 'CAT-SUPPLIES', '#10B981', 'bi-box-seam'),
+        ('Electricity & Utilities', 'CAT-UTILITIES', '#EC4899', 'bi-lightning-charge'),
+        ('Rent & Lease', 'CAT-RENT', '#6366F1', 'bi-building'),
+        ('Taxes & Insurance', 'CAT-TAXES', '#14B8A6', 'bi-file-earmark-text'),
+        ('Transport & Freight', 'CAT-TRANSPORT', '#F97316', 'bi-truck'),
+        ('General Overhead', 'CAT-OVERHEAD', '#64748B', 'bi-briefcase'),
+    ]
+    created_cats = 0
+    for name, code, color, icon in default_categories:
+        _, c = ExpenseCategory.objects.get_or_create(
+            code=code,
+            defaults={'name': name, 'color_hex': color, 'icon': icon, 'is_active': True}
+        )
+        if c:
+            created_cats += 1
+    if created_cats:
+        print(f"Seeded {created_cats} default ExpenseCategory records.")
+
+
 if __name__ == '__main__':
     try:
         init_admin()
+        seed_master_defaults()
     except Exception as e:
-        print(f"Admin initialization warning: {e}")
+        print(f"Admin initialization / seeding warning: {e}")

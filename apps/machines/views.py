@@ -4,6 +4,8 @@ from django.db.models import Q, Sum, Count
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from decimal import Decimal
+import re
+from django.http import JsonResponse
 from apps.accounts.decorators import role_required, owner_required
 from apps.audit.utils import log_audit_event
 from apps.audit.models import AuditLog
@@ -24,6 +26,28 @@ from .services.maintenance_service import MaintenanceService
 from apps.finance.models import Customer, Supplier, Account
 from apps.expenses.models import Expense, ExpenseCategory
 from apps.employees.models import Employee
+
+
+DEFAULT_MACHINE_TYPES = [
+    ('Tractor', 'TRACTOR'),
+    ('Combine Harvester', 'COMBINE_HARVESTER'),
+    ('Power Tiller', 'POWER_TILLER'),
+    ('Earth Mover / JCB', 'EARTH_MOVER'),
+    ('Rotavator / Cultivator', 'ROTAVATOR'),
+    ('Sprayer / Drone', 'SPRAYER'),
+    ('Thresher / Sheller', 'THRESHER'),
+    ('Laser Land Leveler', 'LASER_LEVELER'),
+    ('Baler', 'BALER'),
+    ('Support Vehicle / Trailer', 'TRAILER'),
+    ('Other Equipment', 'OTHER'),
+]
+
+
+def ensure_default_machine_types():
+    """Seeds standard equipment types if table is empty."""
+    if not MachineType.objects.exists():
+        for name, code in DEFAULT_MACHINE_TYPES:
+            MachineType.objects.get_or_create(code=code, defaults={'name': name})
 
 
 @role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
@@ -54,6 +78,7 @@ def machine_list_view(request):
 @role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def machine_create_view(request):
     """Creates a new machine record."""
+    ensure_default_machine_types()
     if request.method == 'POST':
         form = MachineForm(request.POST)
         if form.is_valid():
@@ -80,6 +105,7 @@ def machine_create_view(request):
 @role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def machine_edit_view(request, machine_id):
     """Edits an existing machine."""
+    ensure_default_machine_types()
     machine = get_object_or_404(Machine, id=machine_id, is_deleted=False)
     if request.method == 'POST':
         form = MachineForm(request.POST, instance=machine)
@@ -120,6 +146,30 @@ def machine_delete_view(request, machine_id):
     )
     messages.warning(request, f"Machine '{machine.name}' deleted.")
     return redirect('machines:list')
+
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def machine_type_create_ajax_view(request):
+    """Creates a new MachineType via AJAX."""
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        code = request.POST.get('code', '').strip()
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Equipment type name is required.'}, status=400)
+        if not code:
+            code = re.sub(r'[^a-zA-Z0-9]+', '_', name).strip('_').upper()[:30]
+
+        mtype, created = MachineType.objects.get_or_create(
+            name__iexact=name,
+            defaults={'name': name, 'code': code}
+        )
+        return JsonResponse({
+            'success': True,
+            'id': mtype.id,
+            'name': str(mtype),
+            'created': created
+        })
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
 
 
 # ==============================================================================
@@ -182,6 +232,7 @@ def booking_list_view(request):
 @role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
 def booking_create_view(request):
     """Creates a new customer machine booking."""
+    ensure_default_machine_types()
     if request.method == 'POST':
         form = MachineBookingForm(request.POST)
         if form.is_valid():

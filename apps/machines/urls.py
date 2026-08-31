@@ -7,6 +7,7 @@ urlpatterns = [
     # Machine Master
     path('', views.machine_list_view, name='list'),
     path('add/', views.machine_create_view, name='create'),
+    path('types/add-ajax/', views.machine_type_create_ajax_view, name='type_create_ajax'),
     path('<int:machine_id>/edit/', views.machine_edit_view, name='edit'),
     path('<int:machine_id>/delete/', views.machine_delete_view, name='delete'),
 

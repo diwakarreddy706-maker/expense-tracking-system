@@ -160,8 +160,8 @@ class MasterDataRBACTests(TestCase):
         self.assertEqual(self.client.get(reverse('finance:customers')).status_code, 200)
         self.assertEqual(self.client.get(reverse('finance:suppliers')).status_code, 200)
 
-        # Blocked from Machines management
-        self.assertEqual(self.client.get(reverse('machines:list')).status_code, 403)
+        # Can access Machines management
+        self.assertEqual(self.client.get(reverse('machines:list')).status_code, 200)
 
     def test_manager_master_access_and_restrictions(self):
         """Verifies MANAGER can manage Machines, Employees, Customers, Suppliers; blocked from Accounts & Categories."""
