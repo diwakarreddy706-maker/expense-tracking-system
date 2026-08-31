@@ -21,18 +21,26 @@
 <body class="min-h-screen bg-[#0B0F17] flex items-center justify-center p-4 selection:bg-emerald-500 selection:text-white">
 
   <div class="w-full max-w-md">
-    <!-- Brand Header -->
-    <div class="text-center mb-8">
-      <div class="inline-block relative group mb-4">
-        <!-- Ambient emerald glow -->
-        <div class="absolute -inset-1.5 bg-gradient-to-r from-emerald-500/30 to-teal-500/30 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition duration-300"></div>
-        <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-white p-1.5 border border-emerald-500/30 shadow-2xl flex items-center justify-center">
-          <img src="{% static 'icons/logo.png' %}" alt="Sri Basaveshwara & Co Logo" class="w-full h-full object-contain">
+    <!-- Brand Header (Centered, Clear & Visual) -->
+    <div class="text-center mb-6 sm:mb-8 flex flex-col items-center">
+      <div class="relative group mb-4 cursor-default">
+        <!-- Ambient emerald halo glow -->
+        <div class="absolute -inset-2 bg-gradient-to-tr from-emerald-500/40 via-teal-400/30 to-emerald-600/40 rounded-full blur-xl opacity-80 group-hover:opacity-100 transition duration-300"></div>
+        <!-- High-res circular emblem container -->
+        <div class="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-white p-2 border-2 border-emerald-500/50 shadow-2xl shadow-emerald-950/80 flex items-center justify-center overflow-hidden transform group-hover:scale-105 transition-transform duration-300">
+          <img src="{% static 'icons/logo.png' %}" alt="Sri Basaveshwara & Co Logo" class="w-full h-full object-contain drop-shadow-sm">
         </div>
       </div>
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Sri Basaveshwara &amp; Co</h1>
-      <p class="text-xs sm:text-sm text-emerald-400 font-semibold mt-1">Harvesting Machines &amp; Financial ERP</p>
-      <p class="text-[11px] text-gray-500 mt-0.5">Powering Harvests, Growing Futures</p>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
+        Sri Basaveshwara &amp; Co
+      </h1>
+      <div class="inline-flex items-center gap-2 mt-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-xs font-semibold text-emerald-300 tracking-wide">Harvesting Machines &amp; Financial ERP</span>
+      </div>
+      <p class="text-[11px] text-gray-400 font-medium mt-1">
+        Powering Harvests, Growing Futures
+      </p>
     </div>
 
     <!-- Login Card -->
