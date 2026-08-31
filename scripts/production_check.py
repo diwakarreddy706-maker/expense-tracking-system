@@ -9,8 +9,14 @@ import sys
 from pathlib import Path
 
 # Setup Django environment with production settings
+from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
+
+prod_env = BASE_DIR / '.env.production'
+if prod_env.exists():
+    load_dotenv(prod_env, override=True)
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'expense_tracking_core.settings.production')
 
 import django
