@@ -9,7 +9,16 @@ from .base import *
 DEBUG = False
 
 # Strict host headers in production (comma-separated list in env)
-ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',') if host.strip()]
+# Automatically handles wildcard syntax like *.onrender.com by converting to Django's .onrender.com
+raw_allowed_hosts = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',') if host.strip()]
+ALLOWED_HOSTS = []
+for h in raw_allowed_hosts:
+    if h.startswith('*.'):
+        ALLOWED_HOSTS.append(h[1:])  # Convert *.onrender.com -> .onrender.com
+    else:
+        ALLOWED_HOSTS.append(h)
+if '.onrender.com' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('.onrender.com')
 
 # CSRF Trusted Origins for reverse proxy & custom domain integration
 CSRF_TRUSTED_ORIGINS = [
@@ -17,6 +26,8 @@ CSRF_TRUSTED_ORIGINS = [
     for origin in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
     if origin.strip()
 ]
+if 'https://*.onrender.com' not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
 
 # Reverse Proxy SSL Header Configuration
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
