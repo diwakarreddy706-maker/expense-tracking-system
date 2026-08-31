@@ -8,16 +8,13 @@
 >
   <!-- Sidebar Header / Brand -->
   <div class="h-16 flex items-center justify-between px-5 border-b border-[#28354A] bg-[#0F172A]/70 backdrop-blur-sm">
-    <a href="{% url 'dashboard:index' %}" class="flex items-center gap-3 text-white no-underline group focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg p-1">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-900/30 group-hover:scale-105 transition-transform duration-200">
-        <i class="bi bi-wallet2 text-lg"></i>
-      </div>
-      <div>
-        <div class="font-bold text-sm tracking-tight text-white flex items-center gap-1.5">
-          <span>AgriBOS</span>
-          <span class="text-[10px] uppercase font-semibold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ERP</span>
+    <a href="{% url 'dashboard:index' %}" class="flex items-center gap-2.5 text-white no-underline group focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg p-1">
+      <img src="{% static 'icons/icon-192.png' %}" alt="Sri Basaveshwara & Co Logo" class="w-10 h-10 rounded-xl object-contain bg-white/5 border border-[#28354A] shadow-md shadow-emerald-950/40 group-hover:scale-105 transition-transform duration-200">
+      <div class="min-w-0">
+        <div class="font-bold text-xs tracking-tight text-white flex items-center gap-1 truncate">
+          <span>Sri Basaveshwara</span>
         </div>
-        <div class="text-[11px] text-gray-400 font-medium">Expense & Machinery</div>
+        <div class="text-[10px] text-emerald-400 font-medium truncate">Harvesting Machines</div>
       </div>
     </a>
 
