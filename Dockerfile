@@ -60,4 +60,4 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD curl -f http://127.0.0.1:${PORT:-8000}/health/ || exit 1
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn --config deploy/gunicorn/gunicorn.conf.py expense_tracking_core.wsgi:application"]
+CMD ["sh", "-c", "python scripts/pre_migrate_cleanup.py && python manage.py migrate --noinput && gunicorn --config deploy/gunicorn/gunicorn.conf.py expense_tracking_core.wsgi:application"]
