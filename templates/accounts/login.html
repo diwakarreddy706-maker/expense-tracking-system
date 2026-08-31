@@ -23,11 +23,16 @@
   <div class="w-full max-w-md">
     <!-- Brand Header -->
     <div class="text-center mb-8">
-      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-4 shadow-lg shadow-emerald-950/40">
-        <i class="bi bi-shield-check text-2xl"></i>
+      <div class="inline-block relative group mb-4">
+        <!-- Ambient emerald glow -->
+        <div class="absolute -inset-1.5 bg-gradient-to-r from-emerald-500/30 to-teal-500/30 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition duration-300"></div>
+        <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-white p-1.5 border border-emerald-500/30 shadow-2xl flex items-center justify-center">
+          <img src="{% static 'icons/logo.png' %}" alt="Sri Basaveshwara & Co Logo" class="w-full h-full object-contain">
+        </div>
       </div>
-      <h1 class="text-2xl font-extrabold text-white tracking-tight">AgriBOS ERP</h1>
-      <p class="text-xs text-gray-400 mt-1">Agricultural Machinery &amp; Cost Intelligence System</p>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Sri Basaveshwara &amp; Co</h1>
+      <p class="text-xs sm:text-sm text-emerald-400 font-semibold mt-1">Harvesting Machines &amp; Financial ERP</p>
+      <p class="text-[11px] text-gray-500 mt-0.5">Powering Harvests, Growing Futures</p>
     </div>
 
     <!-- Login Card -->
