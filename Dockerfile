@@ -45,8 +45,9 @@ RUN groupadd -g 1001 appgroup && \
 # Copy application source code
 COPY . /app
 
-# Ensure directories exist and permissions are set
+# Ensure directories exist, scripts are executable, and permissions are set
 RUN mkdir -p /app/staticfiles /app/media /app/logs && \
+    chmod +x /app/docker-entrypoint.sh && \
     chown -R appuser:appgroup /app
 
 USER appuser
@@ -61,4 +62,4 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD curl -f http://127.0.0.1:${PORT:-8000}/health/ || exit 1
 
-CMD ["sh", "-c", "python scripts/pre_migrate_cleanup.py && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python scripts/init_admin.py && gunicorn --config deploy/gunicorn/gunicorn.conf.py expense_tracking_core.wsgi:application"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

@@ -29,27 +29,33 @@ def init_admin():
         print("ADMIN_PASSWORD environment variable not set. Skipping automatic admin initialization.")
         return
 
-    user, created = User.objects.get_or_create(
-        username=username,
-        defaults={
-            'email': email,
-            'is_staff': True,
-            'is_superuser': True,
-        }
-    )
+    try:
+        user = User.objects.filter(username=username).first()
+        if not user:
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                is_staff=True,
+                is_superuser=True
+            )
+            created = True
+        else:
+            user.set_password(password)
+            user.email = email
+            user.is_staff = True
+            user.is_superuser = True
+            user.save()
+            created = False
 
-    user.set_password(password)
-    user.email = email
-    user.is_staff = True
-    user.is_superuser = True
-    user.save()
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        profile.role = UserProfile.ROLE_OWNER
+        profile.save()
 
-    profile, _ = UserProfile.objects.get_or_create(user=user)
-    profile.role = UserProfile.ROLE_OWNER
-    profile.save()
-
-    status = "Created" if created else "Updated"
-    print(f"{status} superuser '{username}' with OWNER role successfully.")
+        status = "Created" if created else "Updated"
+        print(f"{status} superuser '{username}' with OWNER role successfully.")
+    except Exception as e:
+        print(f"init_admin warning: {e}")
 
 
 def seed_master_defaults():
@@ -73,9 +79,12 @@ def seed_master_defaults():
     ]
     created_types = 0
     for name, code in default_machine_types:
-        _, c = MachineType.objects.get_or_create(code=code, defaults={'name': name})
-        if c:
-            created_types += 1
+        try:
+            if not MachineType.objects.filter(code=code).exists() and not MachineType.objects.filter(name=name).exists():
+                MachineType.objects.create(code=code, name=name)
+                created_types += 1
+        except Exception:
+            pass
     if created_types:
         print(f"Seeded {created_types} standard MachineType records.")
 
@@ -94,12 +103,14 @@ def seed_master_defaults():
     ]
     created_cats = 0
     for name, code, color, icon in default_categories:
-        _, c = ExpenseCategory.objects.get_or_create(
-            code=code,
-            defaults={'name': name, 'color_hex': color, 'icon': icon, 'is_active': True}
-        )
-        if c:
-            created_cats += 1
+        try:
+            if not ExpenseCategory.objects.filter(code=code).exists() and not ExpenseCategory.objects.filter(name=name).exists():
+                ExpenseCategory.objects.create(
+                    code=code, name=name, color_hex=color, icon=icon, is_active=True
+                )
+                created_cats += 1
+        except Exception:
+            pass
     if created_cats:
         print(f"Seeded {created_cats} default ExpenseCategory records.")
 
