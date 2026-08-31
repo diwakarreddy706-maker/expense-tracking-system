@@ -71,6 +71,32 @@
             {% if form.billing_type.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.billing_type.errors.0 }}</div>{% endif %}
           </div>
         </div>
+
+        <!-- Farmer & Machine Auto-filled Metadata Panel -->
+        <div id="autofillInfoPanel" class="p-3.5 rounded-xl border border-[#28354A] bg-[#0B0F17]/70 grid grid-cols-1 sm:grid-cols-4 gap-3 my-4">
+          <div>
+            <span class="text-[10px] uppercase font-mono text-gray-400 block">Farmer Name</span>
+            <span class="text-xs font-bold text-white block mt-0.5" id="dispFarmerName">--</span>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-mono text-gray-400 block">Mobile Number</span>
+            <span class="text-xs font-mono text-emerald-400 block mt-0.5" id="dispFarmerPhone">--</span>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-mono text-gray-400 block">Village Name</span>
+            <span class="text-xs font-semibold text-gray-300 block mt-0.5" id="dispFarmerVillage">--</span>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-mono text-gray-400 block">Outstanding Udhar</span>
+            <span class="text-xs font-mono font-bold text-rose-400 block mt-0.5" id="dispFarmerUdhar">₹0.00</span>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Manual Bill / Voucher No. (Optional)</label>
+          {{ form.manual_bill_no }}
+          <span class="text-[10px] text-gray-500 mt-1 block">Leave blank for auto-generated sequential number (e.g. WRK-20260831-0001)</span>
+        </div>
       </div>
 
       <!-- Section 2: Dynamic Customer Billing Calculation -->
@@ -147,6 +173,76 @@
             <div class="bg-[#131A26] p-3 rounded-xl border border-emerald-500/40 text-center">
               <span class="text-[10px] text-emerald-400 font-mono uppercase font-bold block">TOTAL BILL AMOUNT</span>
               <div class="font-bold text-emerald-400 font-mono text-xl mt-1" id="dispTotalTractor">₹0.00</div>
+        </div>
+      </div>
+
+      <!-- Section 2.5: Payment, Advance & Farmer Credit (Udhar) Settlement -->
+      <div>
+        <div class="flex items-center justify-between pb-2.5 mb-4 border-b border-[#28354A]">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <i class="bi bi-wallet2 text-xs"></i>
+            </div>
+            <h3 class="text-sm font-bold text-white tracking-tight m-0">3. Payment, Advance &amp; Farmer Credit (Udhar) Settlement</h3>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            Katha Ledger Sync Active
+          </span>
+        </div>
+
+        <div class="p-4 rounded-2xl border border-[#28354A] bg-[#0B0F17]/70 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Payment Mode <span class="text-rose-400">*</span></label>
+              {{ form.payment_mode }}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Advance / On-Site Cash (₹)</label>
+              {{ form.advance_amount }}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Deposit Into Account (If Paid)</label>
+              {{ form.payment_account }}
+            </div>
+          </div>
+
+          <!-- Financial Summary Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-[#28354A]">
+            <div class="bg-[#131A26] p-3 rounded-xl border border-[#28354A] text-center">
+              <span class="text-[10px] text-gray-400 font-mono uppercase block">TOTAL BILL AMOUNT</span>
+              <div class="font-bold text-white font-mono text-base mt-1" id="dispSummaryTotal">₹0.00</div>
+            </div>
+            <div class="bg-[#131A26] p-3 rounded-xl border border-emerald-500/40 text-center">
+              <span class="text-[10px] text-emerald-400 font-mono uppercase font-bold block">ADVANCE COLLECTED</span>
+              <div class="font-bold text-emerald-400 font-mono text-base mt-1" id="dispSummaryAdvance">₹0.00</div>
+            </div>
+            <div class="bg-[#131A26] p-3 rounded-xl border border-rose-500/40 text-center">
+              <span class="text-[10px] text-rose-400 font-mono uppercase font-bold block">BALANCE ADDED TO UDHAR</span>
+              <div class="font-bold text-rose-400 font-mono text-base mt-1" id="dispSummaryUdhar">₹0.00</div>
+            </div>
+          </div>
+
+          <!-- Rented Harvester Diesel Deduction Panel -->
+          <div id="rentedDieselPanel" class="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 hidden">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                <i class="bi bi-fuel-pump"></i> Rented Harvester Owner Settlement Preview
+              </span>
+              <span class="text-[10px] text-amber-300 font-mono" id="dispRentedOwnerBadge">Rented Owner</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs text-gray-400 mb-1">Diesel Provided (Liters)</label>
+                {{ form.fuel_liters }}
+              </div>
+              <div>
+                <label class="block text-xs text-gray-400 mb-1">Diesel Rate (₹/Liter)</label>
+                {{ form.fuel_rate }}
+              </div>
+              <div class="bg-[#131A26] p-2 rounded-lg border border-[#28354A] text-center">
+                <span class="text-[10px] text-gray-400 block">ESTIMATED NET OWNER PAYOUT</span>
+                <div class="font-bold text-emerald-400 font-mono text-sm mt-0.5" id="dispNetOwnerPayout">₹0.00</div>
+              </div>
             </div>
           </div>
         </div>
@@ -330,6 +426,90 @@ document.addEventListener('DOMContentLoaded', function() {
     return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
   }
 
+  let currentMachineData = null;
+
+  function updatePaymentSummary(totalBill) {
+    const advInput = document.getElementById('advanceAmount');
+    const adv = parseFloat(advInput ? advInput.value : 0) || 0.0;
+    const udhar = Math.max(0.0, totalBill - adv);
+
+    const dispTotal = document.getElementById('dispSummaryTotal');
+    const dispAdv = document.getElementById('dispSummaryAdvance');
+    const dispUdh = document.getElementById('dispSummaryUdhar');
+
+    if (dispTotal) dispTotal.innerText = '₹' + totalBill.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (dispAdv) dispAdv.innerText = '₹' + adv.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (dispUdh) dispUdh.innerText = '₹' + udhar.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    // Calculate rented harvester owner payout
+    if (currentMachineData && currentMachineData.is_rented) {
+      const rentedPanel = document.getElementById('rentedDieselPanel');
+      if (rentedPanel) rentedPanel.classList.remove('hidden');
+      const ownerBadge = document.getElementById('dispRentedOwnerBadge');
+      if (ownerBadge) ownerBadge.innerText = 'Owner: ' + (currentMachineData.owner_name || 'Rented Fleet');
+
+      const fLiters = parseFloat(document.getElementById('fuelLiters') ? document.getElementById('fuelLiters').value : 0) || 0.0;
+      const fRate = parseFloat(document.getElementById('fuelRate') ? document.getElementById('fuelRate').value : 95.0) || 95.0;
+      const dieselDeduct = fLiters * fRate;
+      const commDeduct = totalBill * 0.10; // 10% commission
+      const netOwner = Math.max(0.0, totalBill - commDeduct - dieselDeduct);
+
+      const dispNet = document.getElementById('dispNetOwnerPayout');
+      if (dispNet) dispNet.innerText = '₹' + netOwner.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } else {
+      const rentedPanel = document.getElementById('rentedDieselPanel');
+      if (rentedPanel) rentedPanel.classList.add('hidden');
+    }
+  }
+
+  // Farmer Dynamic AJAX Autofill
+  if (customerSelect) {
+    customerSelect.addEventListener('change', function() {
+      const cid = customerSelect.value;
+      if (!cid) return;
+      fetch('/machines/ajax/farmer/' + cid + '/')
+        .then(res => res.json())
+        .then(data => {
+          const fn = document.getElementById('dispFarmerName');
+          const fp = document.getElementById('dispFarmerPhone');
+          const fv = document.getElementById('dispFarmerVillage');
+          const fu = document.getElementById('dispFarmerUdhar');
+          if (fn) fn.innerText = data.name || '--';
+          if (fp) fp.innerText = data.phone || '--';
+          if (fv) fv.innerText = data.village || '--';
+          if (fu) fu.innerText = '₹' + parseFloat(data.outstanding_udhar || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        })
+        .catch(() => {});
+    });
+    if (customerSelect.value) customerSelect.dispatchEvent(new Event('change'));
+  }
+
+  // Machine Dynamic AJAX Autofill
+  if (machineSelect) {
+    machineSelect.addEventListener('change', function() {
+      const mid = machineSelect.value;
+      if (!mid) return;
+      fetch('/machines/ajax/machine/' + mid + '/')
+        .then(res => res.json())
+        .then(data => {
+          currentMachineData = data;
+          if (hourlyRate && (!hourlyRate.value || hourlyRate.value === '0.00')) {
+            hourlyRate.value = data.hourly_rate;
+          }
+          recalculateHarvester();
+        })
+        .catch(() => {});
+    });
+    if (machineSelect.value) machineSelect.dispatchEvent(new Event('change'));
+  }
+
+  const advInput = document.getElementById('advanceAmount');
+  if (advInput) advInput.addEventListener('input', () => recalculateAll());
+  const fLitInput = document.getElementById('fuelLiters');
+  if (fLitInput) fLitInput.addEventListener('input', () => recalculateAll());
+  const fRateInput = document.getElementById('fuelRate');
+  if (fRateInput) fRateInput.addEventListener('input', () => recalculateAll());
+
   function recalculateHarvester() {
     if (!startTime || !endTime) return;
     const sMin = parseTimeToMinutes(startTime.value);
@@ -350,10 +530,12 @@ document.addEventListener('DOMContentLoaded', function() {
       if (dispElapsedTime) dispElapsedTime.innerText = elapsedHours.toFixed(2) + ' hrs';
       if (dispNetHours) dispNetHours.innerText = netHours.toFixed(2) + ' hrs';
       if (dispTotalHarvester) dispTotalHarvester.innerText = '₹' + totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      updatePaymentSummary(totalAmount);
     } else {
       if (dispElapsedTime) dispElapsedTime.innerText = '0.00 hrs';
       if (dispNetHours) dispNetHours.innerText = '0.00 hrs';
       if (dispTotalHarvester) dispTotalHarvester.innerText = '₹0.00';
+      updatePaymentSummary(0.0);
     }
   }
 
@@ -365,6 +547,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dispTotalTractor) {
       dispTotalTractor.innerText = '₹' + total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
+    updatePaymentSummary(total);
   }
 
   function recalculateMeter() {
@@ -392,32 +575,18 @@ document.addEventListener('DOMContentLoaded', function() {
     recalculateMeter();
   }
 
-  if (machineSelect) {
-    machineSelect.addEventListener('change', function() {
-      const selectedOption = machineSelect.options[machineSelect.selectedIndex];
-      if (selectedOption && billingTypeSelect) {
-        const text = selectedOption.text.toLowerCase();
-        if (text.includes('harvester')) {
-          billingTypeSelect.value = 'TIME_HOURLY';
-          updateBillingMode();
-        } else if (text.includes('tractor') || text.includes('tiller')) {
-          if (billingTypeSelect.value === 'TIME_HOURLY') {
-            billingTypeSelect.value = 'ACRE';
-            updateBillingMode();
-          }
-        }
-      }
-    });
-  }
-
-  if (billingTypeSelect) billingTypeSelect.addEventListener('change', updateBillingMode);
   if (startTime) startTime.addEventListener('input', recalculateHarvester);
   if (endTime) endTime.addEventListener('input', recalculateHarvester);
   if (breakHours) breakHours.addEventListener('input', recalculateHarvester);
   if (hourlyRate) hourlyRate.addEventListener('input', recalculateHarvester);
   if (quantityInput) quantityInput.addEventListener('input', recalculateTractor);
   if (unitRateInput) unitRateInput.addEventListener('input', recalculateTractor);
+  if (startMeter) startMeter.addEventListener('input', recalculateMeter);
+  if (endMeter) endMeter.addEventListener('input', recalculateMeter);
+  if (billingTypeSelect) billingTypeSelect.addEventListener('change', updateBillingMode);
+
   updateBillingMode();
+  recalculateAll();
 
   // Quick Add Customer via AJAX
   const saveCustomerBtn = document.getElementById('saveCustomerBtn');

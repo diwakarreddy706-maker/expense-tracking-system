@@ -11,14 +11,16 @@ from apps.audit.utils import log_audit_event
 from apps.audit.models import AuditLog
 from .models import (
     Machine, MachineType, MachineBooking, MachineWorkEntry,
-    MachineMaintenanceSchedule, MaintenanceJob, MaintenancePartUsage
+    MachineMaintenanceSchedule, MaintenanceJob, MaintenancePartUsage,
+    RentedHarvesterOwner, HarvesterCompliance, RentedHarvesterSettlement
 )
 from .forms import (
     MachineForm, MachineTypeForm, MachineBookingForm,
     BookingConfirmForm, BookingDispatchForm, BookingCancelForm,
     MachineWorkEntryForm, MachineMaintenanceScheduleForm,
     MaintenanceJobForm, MaintenancePartUsageForm,
-    MaintenanceCompleteForm, MaintenanceExpensePostForm
+    MaintenanceCompleteForm, MaintenanceExpensePostForm,
+    RentedHarvesterOwnerForm, HarvesterComplianceForm
 )
 from .services.work_service import WorkService
 from .services.booking_service import BookingService
@@ -531,14 +533,22 @@ def work_entry_create_view(request):
                 unit_rate=cd.get('unit_rate', Decimal('0.00')),
                 start_meter=cd.get('start_meter'),
                 end_meter=cd.get('end_meter'),
+                manual_bill_no=cd.get('manual_bill_no'),
+                advance_amount=cd.get('advance_amount', Decimal('0.00')),
+                udhar_amount=cd.get('udhar_amount', Decimal('0.00')),
+                payment_mode=cd.get('payment_mode', 'UDHAR'),
+                payment_account=cd.get('payment_account'),
+                fuel_liters=cd.get('fuel_liters', Decimal('0.00')),
+                fuel_rate=cd.get('fuel_rate', Decimal('95.00')),
                 notes=cd.get('notes'),
                 created_by=request.user,
                 request=request
             )
-            messages.success(request, f"Work Entry '{entry.work_code}' recorded. Billed Total: ₹{entry.total_amount:,.2f}")
+            adv_info = f" (Advance Paid: ₹{entry.advance_amount:,.2f}, Balance Udhar: ₹{entry.udhar_amount:,.2f})" if entry.advance_amount or entry.udhar_amount else ""
+            messages.success(request, f"Harvesting Bill '{entry.work_code}' recorded. Total: ₹{entry.total_amount:,.2f}{adv_info}")
             if entry.booking:
                 return redirect('machines:booking_detail', booking_id=entry.booking.id)
-            return redirect('machines:work_list')
+            return redirect('machines:work_invoice', entry_id=entry.id)
     else:
         form = MachineWorkEntryForm(initial=initial_data)
 
@@ -1097,3 +1107,223 @@ def machine_service_history_view(request, machine_id):
         'total_maintenance_cost': total_maintenance_cost,
         'title': f"Service History: {machine.name} ({machine.machine_code})",
     })
+
+
+# ==============================================================================
+# RENTED COMBINE HARVESTER OWNERS & SETTLEMENTS (STEP 1 & STEP 5)
+# ==============================================================================
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def rented_owners_list_view(request):
+    """
+    Rented Combine Harvester Owners 360 & Settlement Ledger Hub.
+    """
+    query = request.GET.get('q', '').strip()
+    active_tab = request.GET.get('tab', 'ledger')
+
+    owners = RentedHarvesterOwner.objects.filter(is_deleted=False).prefetch_related('machines', 'settlements').order_by('name')
+    if query:
+        owners = owners.filter(
+            Q(name__icontains=query) |
+            Q(owner_code__icontains=query) |
+            Q(phone_number__icontains=query) |
+            Q(village__icontains=query)
+        )
+
+    settlements = RentedHarvesterSettlement.objects.select_related('owner', 'work_entry', 'work_entry__machine', 'work_entry__customer').order_by('-created_at')
+
+    # Metrics
+    total_owners_count = owners.count()
+    rented_machines_count = Machine.objects.filter(is_deleted=False, ownership_type=Machine.OWNERSHIP_RENTED).count()
+    total_gross_settlements = settlements.aggregate(s=Sum('gross_earnings'))['s'] or Decimal('0.00')
+    total_pending_payout = settlements.filter(status=RentedHarvesterSettlement.STATUS_PENDING).aggregate(s=Sum('net_payable'))['s'] or Decimal('0.00')
+
+    form = RentedHarvesterOwnerForm()
+
+    return render(request, 'machines/rented_owners_list.html', {
+        'owners': owners,
+        'settlements': settlements,
+        'form': form,
+        'active_tab': active_tab,
+        'query': query,
+        'total_owners_count': total_owners_count,
+        'rented_machines_count': rented_machines_count,
+        'total_gross_settlements': total_gross_settlements,
+        'total_pending_payout': total_pending_payout,
+        'title': 'Rented Fleet Owners 360° | Sri Basaveshwara & Co',
+    })
+
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def rented_owner_create_view(request):
+    """Creates a new third-party combine harvester owner."""
+    if request.method == 'POST':
+        form = RentedHarvesterOwnerForm(request.POST)
+        if form.is_valid():
+            owner = form.save()
+            messages.success(request, f"Rented Harvester Owner '{owner.name}' registered successfully.")
+            return redirect('machines:rented_owners')
+        else:
+            messages.error(request, "Please correct the errors in the owner form.")
+    return redirect('machines:rented_owners')
+
+
+@role_required(['OWNER', 'ACCOUNTANT'])
+def rented_settlement_settle_view(request, settlement_id):
+    """Marks a rented owner payout settlement as paid / settled."""
+    settlement = get_object_or_404(RentedHarvesterSettlement, id=settlement_id)
+    if request.method == 'POST':
+        ref = request.POST.get('reference_no', '').strip()
+        settlement.status = RentedHarvesterSettlement.STATUS_SETTLED
+        settlement.settled_at = timezone.now()
+        settlement.settlement_reference = ref or f"PAID-{timezone.now().strftime('%Y%m%d%H%M')}"
+        settlement.save(update_fields=['status', 'settled_at', 'settlement_reference', 'updated_at'])
+        messages.success(request, f"Settlement of ₹{settlement.net_payable:,.2f} marked as SETTLED to {settlement.owner.name}.")
+    return redirect('machines:rented_owners')
+
+
+# ==============================================================================
+# HARVESTER & TRANSIT TRUCK COMPLIANCE (STEP 2)
+# ==============================================================================
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def harvester_compliance_list_view(request):
+    """
+    RTO Compliance & Expiry Reminder Center for Harvesters and Transit Trucks.
+    """
+    query = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('filter', 'all').strip()
+
+    records = HarvesterCompliance.objects.filter(is_deleted=False).select_related('machine', 'rented_owner').order_by('registration_no')
+    if query:
+        records = records.filter(
+            Q(registration_no__icontains=query) |
+            Q(vehicle_name__icontains=query) |
+            Q(owner_name__icontains=query)
+        )
+
+    # Calculate live status on records
+    expired_count = 0
+    expiring_soon_count = 0
+    valid_count = 0
+
+    evaluated_records = []
+    for r in records:
+        overall = r.overall_status
+        r.evaluated_overall = overall
+        if overall == 'EXPIRED':
+            expired_count += 1
+        elif overall == 'EXPIRING_SOON':
+            expiring_soon_count += 1
+        else:
+            valid_count += 1
+
+        if status_filter == 'expired' and overall != 'EXPIRED':
+            continue
+        elif status_filter == 'expiring' and overall != 'EXPIRING_SOON':
+            continue
+        evaluated_records.append(r)
+
+    total_count = len(records)
+    health_pct = round((valid_count / total_count * 100)) if total_count > 0 else 100
+
+    form = HarvesterComplianceForm()
+
+    return render(request, 'machines/compliance_list.html', {
+        'records': evaluated_records,
+        'form': form,
+        'total_count': total_count,
+        'expired_count': expired_count,
+        'expiring_soon_count': expiring_soon_count,
+        'valid_count': valid_count,
+        'health_pct': health_pct,
+        'status_filter': status_filter,
+        'query': query,
+        'title': 'Truck Compliance & Expiry Reminder Center',
+    })
+
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def harvester_compliance_create_view(request):
+    """Registers a new vehicle/harvester compliance record."""
+    if request.method == 'POST':
+        form = HarvesterComplianceForm(request.POST)
+        if form.is_valid():
+            comp = form.save()
+            messages.success(request, f"Compliance record for '{comp.registration_no}' ({comp.vehicle_name}) saved.")
+            return redirect('machines:compliance_list')
+        else:
+            messages.error(request, "Please correct the errors in the compliance form.")
+    return redirect('machines:compliance_list')
+
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def harvester_compliance_whatsapp_view(request, compliance_id):
+    """Generates the pre-filled WhatsApp alert redirect for vehicle compliance renewal."""
+    comp = get_object_or_404(HarvesterCompliance, id=compliance_id, is_deleted=False)
+    msg = comp.generate_whatsapp_alert_text()
+    phone = comp.owner_phone or ''
+    # Clean phone number (strip spaces/dashes)
+    clean_phone = re.sub(r'\D', '', phone)
+    if clean_phone and not clean_phone.startswith('91') and len(clean_phone) == 10:
+        clean_phone = '91' + clean_phone
+    import urllib.parse
+    encoded_msg = urllib.parse.quote(msg)
+    whatsapp_url = f"https://api.whatsapp.com/send?phone={clean_phone}&text={encoded_msg}" if clean_phone else f"https://api.whatsapp.com/send?text={encoded_msg}"
+    return redirect(whatsapp_url)
+
+
+# ==============================================================================
+# PRINTABLE HARVESTING BILL INVOICE & UDHAR RECEIPT (STEP 3 & 4)
+# ==============================================================================
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def work_entry_invoice_view(request, entry_id):
+    """
+    Renders the printable official Harvesting Bill & Udhar Receipt for a farmer.
+    """
+    entry = get_object_or_404(
+        MachineWorkEntry.objects.select_related(
+            'machine', 'customer', 'operator', 'receivable', 'harvester_settlement', 'harvester_settlement__owner'
+        ),
+        id=entry_id,
+        is_deleted=False
+    )
+    return render(request, 'machines/work_entry_invoice.html', {
+        'entry': entry,
+        'title': f"Bill & Receipt: {entry.manual_bill_no or entry.work_code}",
+    })
+
+
+# ==============================================================================
+# AJAX HELPERS FOR FARMER & MACHINE AUTOFILL
+# ==============================================================================
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def farmer_details_ajax_view(request, customer_id):
+    """Returns customer details (name, phone, village/location, current udhar balance) for instant form autofill."""
+    customer = get_object_or_404(Customer, id=customer_id, is_deleted=False)
+    # Calculate outstanding balance from unpaid receivables
+    unpaid = customer.receivables.filter(is_deleted=False).aggregate(s=Sum('balance_amount'))['s'] or Decimal('0.00')
+    return JsonResponse({
+        'name': customer.name,
+        'phone': customer.phone or '',
+        'village': customer.location_address or '',
+        'outstanding_udhar': str(unpaid)
+    })
+
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def machine_details_ajax_view(request, machine_id):
+    """Returns machine details (hourly rate, ownership, owner name) for instant form autofill."""
+    machine = get_object_or_404(Machine, id=machine_id, is_deleted=False)
+    return JsonResponse({
+        'name': machine.name,
+        'machine_code': machine.machine_code,
+        'hourly_rate': str(machine.hourly_rate),
+        'ownership_type': machine.ownership_type,
+        'is_rented': machine.ownership_type == Machine.OWNERSHIP_RENTED,
+        'owner_name': machine.rented_owner.name if machine.rented_owner else None,
+        'owner_rate': str(machine.rented_owner.standard_hourly_rate) if machine.rented_owner else str(machine.hourly_rate),
+    })
+

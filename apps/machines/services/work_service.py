@@ -6,7 +6,9 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.contrib.auth.models import User
 
-from apps.machines.models import Machine, MachineWorkEntry
+from apps.machines.models import Machine, MachineWorkEntry, RentedHarvesterSettlement
+from apps.finance.models import CustomerPayment
+from apps.finance.services.settlement_service import CustomerReceivableService
 from apps.audit.utils import log_audit_event
 from apps.audit.models import AuditLog
 
@@ -137,6 +139,13 @@ class WorkService:
         unit_rate=Decimal('0.00'),
         start_meter=None,
         end_meter=None,
+        manual_bill_no=None,
+        advance_amount=Decimal('0.00'),
+        udhar_amount=Decimal('0.00'),
+        payment_mode='UDHAR',
+        payment_account=None,
+        fuel_liters=Decimal('0.00'),
+        fuel_rate=Decimal('95.00'),
         notes=None,
         created_by: User,
         request=None
@@ -177,6 +186,7 @@ class WorkService:
             raise ValidationError(f"Invalid billing type: {billing_type}")
 
         # Instantiate model
+        # Save work entry with billing and advance metadata
         entry = MachineWorkEntry(
             booking=booking,
             work_code=work_code,
@@ -196,10 +206,74 @@ class WorkService:
             start_meter=start_meter,
             end_meter=end_meter,
             meter_difference=meter_diff,
+            manual_bill_no=manual_bill_no,
+            advance_amount=advance_amount,
+            udhar_amount=udhar_amount,
+            payment_mode=payment_mode,
             notes=notes,
             created_by=created_by
         )
         entry.save()
+
+        # Step 4: Farmer Credit Ledger (Udhar) Integration
+        if total_amount > Decimal('0.00'):
+            try:
+                rcv = CustomerReceivableService.create_receivable(
+                    user=created_by,
+                    customer=customer,
+                    total_amount=total_amount,
+                    bill_date=work_date,
+                    invoice_no=manual_bill_no or work_code,
+                    notes=f"Harvesting Work: {work_code} ({machine.name})",
+                    request=request
+                )
+                entry.receivable = rcv
+                entry.save(update_fields=['receivable'])
+
+                # If Advance was collected on site, record receipt into selected Account
+                if advance_amount > Decimal('0.00') and payment_account:
+                    pay_method = CustomerPayment.METHOD_CASH if payment_mode == 'CASH' else (
+                        CustomerPayment.METHOD_UPI if payment_mode == 'UPI' else CustomerPayment.METHOD_CASH
+                    )
+                    CustomerReceivableService.record_payment(
+                        user=created_by,
+                        receivable_id=rcv.id,
+                        amount=advance_amount,
+                        account=payment_account,
+                        payment_method=pay_method,
+                        payment_date=work_date,
+                        reference_no=f"ADV-{work_code}",
+                        notes=f"Advance collected on-site for harvesting bill {work_code}",
+                        request=request
+                    )
+            except Exception as e:
+                logger.warning(f"Receivable creation warning for {work_code}: {e}")
+
+        # Step 5: Automated Rented Harvester Settlement
+        if machine.ownership_type == Machine.OWNERSHIP_RENTED and machine.rented_owner:
+            owner = machine.rented_owner
+            comm_pct = owner.commission_percentage or Decimal('10.00')
+            comm_amt = (total_amount * comm_pct / Decimal('100.00')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+            
+            f_liters = Decimal(str(fuel_liters or '0.00'))
+            f_rate = Decimal(str(fuel_rate or '95.00'))
+            diesel_amt = (f_liters * f_rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+            
+            net_pay = (total_amount - comm_amt - diesel_amt).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+            settle_code = f"SETTLE-{work_code.replace('WRK-', '')}"
+            RentedHarvesterSettlement.objects.create(
+                settlement_code=settle_code,
+                work_entry=entry,
+                owner=owner,
+                gross_earnings=total_amount,
+                commission_percentage=comm_pct,
+                commission_amount=comm_amt,
+                diesel_liters=f_liters,
+                diesel_amount=diesel_amt,
+                net_payable=net_pay,
+                notes=f"Auto-generated for harvesting session {work_code}"
+            )
 
         # Update machine's current meter reading if end_meter is higher
         if end_meter is not None and end_meter > machine.current_meter_reading:
@@ -222,6 +296,8 @@ class WorkService:
                 'net_working_hours': str(net_working_hours),
                 'quantity': str(quantity),
                 'total_amount': str(total_amount),
+                'advance_amount': str(advance_amount),
+                'udhar_amount': str(udhar_amount),
                 'meter_difference': str(meter_diff)
             },
             request=request

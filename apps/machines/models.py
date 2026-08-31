@@ -23,6 +23,46 @@ class MachineType(models.Model):
         return f"{self.name} ({self.code})"
 
 
+class RentedHarvesterOwner(models.Model):
+    """
+    Seasonal Rented Combine Harvester Owner (Step 1).
+    Manages third-party harvester machine owners, bank details, rental rates, and company commission.
+    """
+    owner_code = models.CharField(max_length=30, unique=True, db_index=True)
+    name = models.CharField(max_length=100, db_index=True, help_text="Full Name of Harvester Owner")
+    phone_number = models.CharField(max_length=20, db_index=True)
+    village = models.CharField(max_length=100, blank=True, null=True)
+    bank_name = models.CharField(max_length=100, blank=True, null=True)
+    account_number = models.CharField(max_length=50, blank=True, null=True)
+    ifsc_code = models.CharField(max_length=20, blank=True, null=True)
+    upi_id = models.CharField(max_length=50, blank=True, null=True)
+    commission_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('10.00'),
+        help_text="Company commission % on gross harvesting billing"
+    )
+    standard_hourly_rate = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('2400.00'),
+        help_text="Default farmer cutting rate per hour in INR"
+    )
+    is_active = models.BooleanField(default=True, db_index=True)
+    is_deleted = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'rented_harvester_owners'
+        verbose_name = 'Rented Harvester Owner'
+        verbose_name_plural = 'Rented Harvester Owners'
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.owner_code} - {self.name} ({self.village or 'Field Owner'})"
+
+
 class Machine(models.Model):
     """
     Agricultural Machinery & Equipment Master.
@@ -48,14 +88,42 @@ class Machine(models.Model):
         (METER_KM, 'Odometer (Kilometers)'),
     ]
 
+    OWNERSHIP_COMPANY = 'COMPANY_OWNED'
+    OWNERSHIP_RENTED = 'RENTED'
+
+    OWNERSHIP_CHOICES = [
+        (OWNERSHIP_COMPANY, 'Company Owned Fleet'),
+        (OWNERSHIP_RENTED, 'Rented Fleet (Third-Party Owner)'),
+    ]
+
     machine_code = models.CharField(max_length=30, unique=True, db_index=True)
-    name = models.CharField(max_length=100, help_text="Equipment name / Model (e.g. John Deere 5310)")
+    name = models.CharField(max_length=100, help_text="Equipment name / Model (e.g. John Deere 5310, Class Crop Tiger 37)")
     machine_type = models.ForeignKey(
         MachineType,
         on_delete=models.PROTECT,
         related_name='machines'
     )
     registration_no = models.CharField(max_length=50, blank=True, null=True, unique=True)
+    ownership_type = models.CharField(
+        max_length=20,
+        choices=OWNERSHIP_CHOICES,
+        default=OWNERSHIP_COMPANY,
+        db_index=True
+    )
+    rented_owner = models.ForeignKey(
+        RentedHarvesterOwner,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='machines',
+        help_text="Assigned owner if this is a seasonal rented harvester"
+    )
+    hourly_rate = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('2400.00'),
+        help_text="Standard hourly commercial rate in INR (e.g. ₹2,400/hr)"
+    )
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
@@ -100,7 +168,8 @@ class Machine(models.Model):
         ordering = ['machine_code']
 
     def __str__(self):
-        return f"{self.machine_code} - {self.name} ({self.get_status_display()})"
+        owner_str = f" [{self.rented_owner.name}]" if self.ownership_type == self.OWNERSHIP_RENTED and self.rented_owner else ""
+        return f"{self.machine_code} - {self.name}{owner_str} ({self.get_status_display()})"
 
 
 class MachineBooking(models.Model):
@@ -331,6 +400,46 @@ class MachineWorkEntry(models.Model):
         help_text="Machine usage delta = end_meter - start_meter (for service/maintenance only)"
     )
 
+    # Billing, Advance & Farmer Credit (Udhar) Settlement
+    manual_bill_no = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="Manual voucher / bill number (optional)"
+    )
+    advance_amount = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Advance / cash collected on site in INR"
+    )
+    udhar_amount = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Credit balance added to Farmer Udhar Katha in INR"
+    )
+    payment_mode = models.CharField(
+        max_length=20,
+        choices=[
+            ('CASH', 'Cash in Hand'),
+            ('UPI', 'UPI / Digital Payment'),
+            ('BANK_TRANSFER', 'Bank Transfer'),
+            ('UDHAR', 'Udhar (Credit)'),
+            ('SPLIT', 'Advance + Udhar'),
+        ],
+        default='UDHAR',
+        db_index=True
+    )
+    receivable = models.ForeignKey(
+        'finance.Receivable',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='harvesting_work_entries',
+        help_text="Linked Customer Receivable for farmer ledger tracking"
+    )
+
     notes = models.TextField(blank=True, null=True)
     created_by = models.ForeignKey(
         User,
@@ -349,6 +458,194 @@ class MachineWorkEntry(models.Model):
 
     def __str__(self):
         return f"{self.work_code} - {self.machine.name} ({self.customer.name}) - ₹{self.total_amount}"
+
+
+class HarvesterCompliance(models.Model):
+    """
+    Harvester & Transport Truck RTO / Document Compliance (Step 2).
+    Tracks insurance policies, road tax, national permits, and fitness certificates (FC)
+    specifically for combine harvesters and their transport transit trucks.
+    """
+    TYPE_HARVESTER = 'COMBINE_HARVESTER'
+    TYPE_TRUCK = 'TRANSPORT_TRUCK'
+    TYPE_TRAILER = 'TIPPING_TRAILER'
+
+    VEHICLE_TYPE_CHOICES = [
+        (TYPE_TRUCK, 'Harvester Transport Truck'),
+        (TYPE_HARVESTER, 'Combine Harvester'),
+        (TYPE_TRAILER, 'Heavy Tipping Trailer'),
+    ]
+
+    compliance_code = models.CharField(max_length=30, unique=True, db_index=True)
+    vehicle_name = models.CharField(max_length=100, help_text="e.g. Tata 1613 Harvester Transport Truck, Class Crop Tiger 37")
+    registration_no = models.CharField(max_length=50, unique=True, db_index=True, help_text="e.g. KA-36 TR 9901")
+    vehicle_type = models.CharField(max_length=30, choices=VEHICLE_TYPE_CHOICES, default=TYPE_TRUCK, db_index=True)
+    machine = models.ForeignKey(Machine, on_delete=models.SET_NULL, null=True, blank=True, related_name='compliance_records')
+    rented_owner = models.ForeignKey(RentedHarvesterOwner, on_delete=models.SET_NULL, null=True, blank=True, related_name='compliance_records')
+    owner_name = models.CharField(max_length=100, default='Sri Basaveshwara Fleet', help_text="Fleet or Rented Owner Name")
+    owner_phone = models.CharField(max_length=20, blank=True, null=True)
+
+    # Compliance Certificates
+    insurance_policy_no = models.CharField(max_length=100, blank=True, null=True)
+    insurance_expiry = models.DateField(null=True, blank=True, db_index=True)
+    road_tax_receipt_no = models.CharField(max_length=100, blank=True, null=True)
+    road_tax_expiry = models.DateField(null=True, blank=True, db_index=True)
+    nc_permit_no = models.CharField(max_length=100, blank=True, null=True)
+    nc_permit_expiry = models.DateField(null=True, blank=True, db_index=True)
+    fitness_cert_no = models.CharField(max_length=100, blank=True, null=True)
+    fitness_expiry = models.DateField(null=True, blank=True, db_index=True)
+    puc_expiry = models.DateField(null=True, blank=True)
+
+    notes = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    is_deleted = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'harvester_compliance'
+        verbose_name = 'Harvester & Transport Compliance'
+        verbose_name_plural = 'Harvester & Transport Compliances'
+        ordering = ['registration_no']
+
+    def __str__(self):
+        return f"{self.registration_no} - {self.vehicle_name} ({self.get_vehicle_type_display()})"
+
+    @property
+    def insurance_status(self):
+        return self._calc_status(self.insurance_expiry)
+
+    @property
+    def road_tax_status(self):
+        return self._calc_status(self.road_tax_expiry)
+
+    @property
+    def permit_status(self):
+        return self._calc_status(self.nc_permit_expiry)
+
+    @property
+    def fitness_status(self):
+        return self._calc_status(self.fitness_expiry)
+
+    @property
+    def overall_status(self):
+        statuses = [self.insurance_status, self.road_tax_status, self.permit_status, self.fitness_status]
+        if 'EXPIRED' in statuses:
+            return 'EXPIRED'
+        if 'EXPIRING_SOON' in statuses:
+            return 'EXPIRING_SOON'
+        return 'VALID'
+
+    def _calc_status(self, exp_date):
+        if not exp_date:
+            return 'NOT_RECORDED'
+        today = timezone.now().date()
+        diff = (exp_date - today).days
+        if diff < 0:
+            return 'EXPIRED'
+        elif diff <= 30:
+            return 'EXPIRING_SOON'
+        return 'VALID'
+
+    def generate_whatsapp_alert_text(self):
+        msg = f"*RTO & Compliance Renewal Alert - Sri Basaveshwara & Co*\n\n"
+        msg += f"Vehicle: {self.vehicle_name}\nReg No: {self.registration_no}\nOwner: {self.owner_name}\n\n"
+        if self.insurance_expiry:
+            msg += f"• Insurance: {self.insurance_expiry.strftime('%d-%m-%Y')} [{self.insurance_status}]\n"
+        if self.road_tax_expiry:
+            msg += f"• Road Tax: {self.road_tax_expiry.strftime('%d-%m-%Y')} [{self.road_tax_status}]\n"
+        if self.nc_permit_expiry:
+            msg += f"• N/C Permit: {self.nc_permit_expiry.strftime('%d-%m-%Y')} [{self.permit_status}]\n"
+        if self.fitness_expiry:
+            msg += f"• Fitness (FC): {self.fitness_expiry.strftime('%d-%m-%Y')} [{self.fitness_status}]\n"
+        msg += f"\nPlease renew early to prevent RTO fines and transit stoppage during harvesting season."
+        return msg
+
+
+class RentedHarvesterSettlement(models.Model):
+    """
+    Rented Harvester Owner Payout & Settlement Ledger (Step 5).
+    Calculates: Net Payable = Gross Work Billed - Company Commission - Diesel Provided - Other Deductions.
+    """
+    STATUS_PENDING = 'PENDING'
+    STATUS_SETTLED = 'SETTLED'
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending Payout'),
+        (STATUS_SETTLED, 'Settled / Paid to Owner'),
+    ]
+
+    settlement_code = models.CharField(max_length=30, unique=True, db_index=True)
+    work_entry = models.OneToOneField(
+        MachineWorkEntry,
+        on_delete=models.CASCADE,
+        related_name='harvester_settlement'
+    )
+    owner = models.ForeignKey(
+        RentedHarvesterOwner,
+        on_delete=models.PROTECT,
+        related_name='settlements'
+    )
+    gross_earnings = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        help_text="Gross bill amount from harvesting work entry"
+    )
+    commission_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('10.00'),
+        help_text="Company commission percentage"
+    )
+    commission_amount = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
+    diesel_liters = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Diesel liters provided from company stock"
+    )
+    diesel_amount = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Diesel cost deducted from owner settlement in INR"
+    )
+    other_deductions = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Other operational deductions in INR"
+    )
+    net_payable = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        help_text="Net payable to owner = Gross - Commission - Diesel - Other"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+        db_index=True
+    )
+    settled_at = models.DateTimeField(null=True, blank=True)
+    settlement_reference = models.CharField(max_length=100, blank=True, null=True, help_text="Bank UTR / Cash Voucher No")
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'rented_harvester_settlements'
+        verbose_name = 'Rented Harvester Settlement'
+        verbose_name_plural = 'Rented Harvester Settlements'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.settlement_code} - {self.owner.name}: Net ₹{self.net_payable} ({self.get_status_display()})"
+
 
 
 class MachineMaintenanceSchedule(models.Model):

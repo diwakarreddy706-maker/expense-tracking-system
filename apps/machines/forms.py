@@ -3,7 +3,8 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 from .models import (
     Machine, MachineType, MachineBooking, MachineWorkEntry,
-    MachineMaintenanceSchedule, MaintenanceJob, MaintenancePartUsage
+    MachineMaintenanceSchedule, MaintenanceJob, MaintenancePartUsage,
+    RentedHarvesterOwner, HarvesterCompliance, RentedHarvesterSettlement
 )
 from apps.finance.models import Customer, Supplier, Account
 from apps.expenses.models import ExpenseCategory, Expense
@@ -13,20 +14,83 @@ from .services.booking_service import BookingService
 from .services.maintenance_service import MaintenanceService
 
 
+class RentedHarvesterOwnerForm(forms.ModelForm):
+    """Form for registering and managing seasonal rented combine harvester owners."""
+    class Meta:
+        model = RentedHarvesterOwner
+        fields = [
+            'owner_code', 'name', 'phone_number', 'village',
+            'bank_name', 'account_number', 'ifsc_code', 'upi_id',
+            'commission_percentage', 'standard_hourly_rate', 'is_active'
+        ]
+        widgets = {
+            'owner_code': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'e.g. RHO-001'}),
+            'name': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Owner Full Name'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': '10-digit mobile number'}),
+            'village': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Village / Town'}),
+            'bank_name': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Bank Name (e.g. SBI, Canara)'}),
+            'account_number': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Bank Account Number'}),
+            'ifsc_code': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'IFSC Code'}),
+            'upi_id': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'UPI ID (e.g. owner@upi)'}),
+            'commission_percentage': forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'placeholder': '10.00'}),
+            'standard_hourly_rate': forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'placeholder': '2400.00'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class HarvesterComplianceForm(forms.ModelForm):
+    """Form for recording RTO, Insurance, Permit & Fitness Compliance for Harvesters and Transit Trucks."""
+    class Meta:
+        model = HarvesterCompliance
+        fields = [
+            'compliance_code', 'vehicle_name', 'registration_no', 'vehicle_type',
+            'machine', 'rented_owner', 'owner_name', 'owner_phone',
+            'insurance_policy_no', 'insurance_expiry',
+            'road_tax_receipt_no', 'road_tax_expiry',
+            'nc_permit_no', 'nc_permit_expiry',
+            'fitness_cert_no', 'fitness_expiry',
+            'puc_expiry', 'notes'
+        ]
+        widgets = {
+            'compliance_code': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'e.g. CMP-TRK-01'}),
+            'vehicle_name': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'e.g. Tata 1613 Harvester Transport Truck'}),
+            'registration_no': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'e.g. KA-36 TR 9901'}),
+            'vehicle_type': forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'}),
+            'machine': forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'}),
+            'rented_owner': forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'}),
+            'owner_name': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Owner / Fleet Name'}),
+            'owner_phone': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Owner / Driver Mobile'}),
+            'insurance_policy_no': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Policy No.'}),
+            'insurance_expiry': forms.DateInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'date'}),
+            'road_tax_receipt_no': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Tax Receipt No.'}),
+            'road_tax_expiry': forms.DateInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'date'}),
+            'nc_permit_no': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Permit No.'}),
+            'nc_permit_expiry': forms.DateInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'date'}),
+            'fitness_cert_no': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'FC Certificate No.'}),
+            'fitness_expiry': forms.DateInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'date'}),
+            'puc_expiry': forms.DateInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'date'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control bg-dark text-white border-secondary', 'rows': 2}),
+        }
+
+
 class MachineForm(forms.ModelForm):
     """Form for Agricultural Machinery & Equipment master."""
     class Meta:
         model = Machine
         fields = [
             'machine_code', 'name', 'machine_type', 'registration_no',
+            'ownership_type', 'rented_owner', 'hourly_rate',
             'status', 'default_operator', 'current_meter_reading',
             'meter_unit', 'purchase_date', 'purchase_price', 'is_active'
         ]
         widgets = {
             'machine_code': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'e.g. MCH-TRAC-01'}),
-            'name': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Model Name (e.g. John Deere 5310)'}),
+            'name': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Model Name (e.g. Class Crop Tiger 37)'}),
             'machine_type': forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'}),
             'registration_no': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'RTO Registration No.'}),
+            'ownership_type': forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'}),
+            'rented_owner': forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'}),
+            'hourly_rate': forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'placeholder': '2400.00'}),
             'status': forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'}),
             'default_operator': forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'}),
             'current_meter_reading': forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01'}),
@@ -223,6 +287,45 @@ class MachineWorkEntryForm(forms.ModelForm):
         widget=forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'id': 'endMeter', 'placeholder': 'End Meter Reading'})
     )
 
+    # Step 3 & 4: Commercial Billing, Advance & Farmer Credit
+    manual_bill_no = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Auto-generated if blank', 'id': 'manualBillNo'})
+    )
+    payment_mode = forms.ChoiceField(
+        choices=[
+            ('UDHAR', 'Udhar (Full Credit to Farmer)'),
+            ('SPLIT', 'Advance Paid + Balance Udhar'),
+            ('CASH', 'Full Cash Payment'),
+            ('UPI', 'Full UPI / Online Payment'),
+        ],
+        required=False,
+        initial='UDHAR',
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary', 'id': 'paymentModeSelect'})
+    )
+    advance_amount = forms.DecimalField(
+        required=False,
+        initial=Decimal('0.00'),
+        widget=forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'id': 'advanceAmount', 'placeholder': '0.00'})
+    )
+    payment_account = forms.ModelChoiceField(
+        queryset=Account.objects.filter(is_deleted=False, is_active=True),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary', 'id': 'paymentAccountSelect'})
+    )
+
+    # Step 5: Diesel Fuel Deduction for Rented Harvesters (Optional)
+    fuel_liters = forms.DecimalField(
+        required=False,
+        initial=Decimal('0.00'),
+        widget=forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'id': 'fuelLiters', 'placeholder': '0.00'})
+    )
+    fuel_rate = forms.DecimalField(
+        required=False,
+        initial=Decimal('95.00'),
+        widget=forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'id': 'fuelRate', 'placeholder': '95.00'})
+    )
+
     class Meta:
         model = MachineWorkEntry
         fields = [
@@ -230,6 +333,7 @@ class MachineWorkEntryForm(forms.ModelForm):
             'start_time', 'end_time', 'break_hours', 'hourly_rate',
             'quantity', 'unit_rate',
             'start_meter', 'end_meter',
+            'manual_bill_no', 'advance_amount', 'payment_mode',
             'notes'
         ]
         widgets = {
@@ -308,6 +412,16 @@ class MachineWorkEntryForm(forms.ModelForm):
                 self.add_error('end_meter', e.message if hasattr(e, 'message') else str(e))
         else:
             cleaned_data['meter_difference'] = Decimal('0.00')
+
+        # 3. Advance & Udhar Calculation
+        total_amt = cleaned_data.get('total_amount', Decimal('0.00'))
+        adv = cleaned_data.get('advance_amount') or Decimal('0.00')
+        if adv < Decimal('0.00'):
+            self.add_error('advance_amount', 'Advance amount cannot be negative.')
+        elif adv > total_amt:
+            self.add_error('advance_amount', f"Advance amount (₹{adv}) cannot exceed total bill (₹{total_amt}).")
+        else:
+            cleaned_data['udhar_amount'] = (total_amt - adv).quantize(Decimal('0.01'))
 
         return cleaned_data
 

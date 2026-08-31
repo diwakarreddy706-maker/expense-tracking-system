@@ -94,6 +94,16 @@
       <i class="bi bi-truck w-5 text-center text-base text-blue-400"></i>
       <span>Machines Registry</span>
     </a>
+
+    <a href="{% url 'machines:rented_owners' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'rented_owners' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-person-badge-fill w-5 text-center text-base text-cyan-400"></i>
+      <span>Rented Fleet Owners</span>
+    </a>
+
+    <a href="{% url 'machines:compliance_list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'compliance_list' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-shield-check w-5 text-center text-base text-amber-400"></i>
+      <span>Vehicle Compliance</span>
+    </a>
     {% endif %}
 
     <!-- Bookings & Dispatch -->

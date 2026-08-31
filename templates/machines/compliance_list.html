@@ -1,0 +1,336 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | AgriBOS ERP{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+  <div>
+    <div class="flex items-center gap-2">
+      <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Truck Compliance &amp; Expiry Reminder Center</h2>
+      <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+        VEHICLE COMPLIANCE LEDGER
+      </span>
+    </div>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Audit transport truck &amp; combine harvester insurance policies, road tax receipts, national permits (N/C), FC status, and dispatch owner WhatsApp renewal alerts.</p>
+  </div>
+  <div class="flex items-center gap-2.5">
+    <button type="button" onclick="window.print()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-gray-300 font-semibold text-xs border border-[#28354A] transition-all no-underline shadow-sm cursor-pointer">
+      <i class="bi bi-printer"></i>
+      <span>Print Compliance Audit</span>
+    </button>
+    <button type="button" data-bs-toggle="modal" data-bs-target="#newComplianceModal" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline cursor-pointer border-0">
+      <i class="bi bi-plus-lg"></i>
+      <span>+ Register Transport Truck</span>
+    </button>
+  </div>
+</div>
+
+<!-- KPI Summary Cards (Matching Screenshot 1) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-[#131A26] border border-[#28354A] border-l-4 border-l-cyan-500 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden">
+    <span class="text-xs text-gray-400 font-mono block">TRUCK FLEET MONITORED</span>
+    <div class="text-2xl font-extrabold text-white font-mono mt-1">{{ total_count }} <span class="text-sm font-normal text-gray-400">Trucks &amp; Harvesters</span></div>
+    <span class="text-[11px] text-gray-500 block mt-1">Transport Trucks &amp; Tipping Trailers</span>
+    <div class="absolute top-4 right-4 w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+      <i class="bi bi-truck text-base"></i>
+    </div>
+  </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] border-l-4 border-l-rose-500 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden">
+    <span class="text-xs text-gray-400 font-mono block">EXPIRED / OVERDUE</span>
+    <div class="text-2xl font-extrabold text-rose-400 font-mono mt-1">{{ expired_count }} <span class="text-sm font-normal text-rose-300">Urgent Alerts</span></div>
+    <span class="text-[11px] text-rose-400/80 block mt-1 flex items-center gap-1">
+      <i class="bi bi-exclamation-octagon"></i> High RTO Fine Risk
+    </span>
+    <div class="absolute top-4 right-4 w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+      <i class="bi bi-exclamation-triangle-fill text-base"></i>
+    </div>
+  </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] border-l-4 border-l-amber-500 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden">
+    <span class="text-xs text-gray-400 font-mono block">EXPIRING IN 30 DAYS</span>
+    <div class="text-2xl font-extrabold text-amber-400 font-mono mt-1">{{ expiring_soon_count }} <span class="text-sm font-normal text-amber-300">Upcoming</span></div>
+    <span class="text-[11px] text-gray-500 block mt-1">Send owner renewal notices</span>
+    <div class="absolute top-4 right-4 w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+      <i class="bi bi-clock-history text-base"></i>
+    </div>
+  </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] border-l-4 border-l-emerald-500 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden">
+    <span class="text-xs text-gray-400 font-mono block">COMPLIANCE HEALTH</span>
+    <div class="text-2xl font-extrabold text-emerald-400 font-mono mt-1">{{ health_pct }}% <span class="text-sm font-normal text-emerald-300">Fleet Valid</span></div>
+    <div class="w-full bg-[#0B0F17] rounded-full h-1.5 mt-2 overflow-hidden">
+      <div class="bg-emerald-500 h-1.5 rounded-full" style="width: {{ health_pct }}%"></div>
+    </div>
+    <div class="absolute top-4 right-4 w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+      <i class="bi bi-shield-check text-base"></i>
+    </div>
+  </div>
+</div>
+
+<!-- Search Bar & Filters (Matching Screenshot 1) -->
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <form method="get" class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="relative flex-1 max-w-md">
+      <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+        <i class="bi bi-search text-xs"></i>
+      </span>
+      <input type="text" name="q" value="{{ query }}" placeholder="Search Truck Reg No (e.g. KA-36 TR 9901), Model, Transport..." class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] text-gray-200 placeholder-gray-500 text-xs focus:outline-none focus:border-cyan-500">
+    </div>
+
+    <div class="flex items-center gap-2">
+      <a href="?filter=all{% if query %}&q={{ query }}{% endif %}" class="px-3 py-1.5 rounded-xl text-xs font-semibold no-underline transition-colors {% if status_filter == 'all' or not status_filter %}bg-amber-600 text-white shadow-sm{% else %}bg-[#0B0F17] text-gray-400 hover:text-white border border-[#28354A]{% endif %}">
+        ALL TRUCKS ({{ total_count }})
+      </a>
+      <a href="?filter=expired{% if query %}&q={{ query }}{% endif %}" class="px-3 py-1.5 rounded-xl text-xs font-semibold no-underline transition-colors {% if status_filter == 'expired' %}bg-rose-600 text-white shadow-sm{% else %}bg-[#0B0F17] text-gray-400 hover:text-white border border-[#28354A]{% endif %}">
+        <i class="bi bi-exclamation-triangle mr-1"></i> EXPIRED OVERDUE ({{ expired_count }})
+      </a>
+      <a href="?filter=expiring{% if query %}&q={{ query }}{% endif %}" class="px-3 py-1.5 rounded-xl text-xs font-semibold no-underline transition-colors {% if status_filter == 'expiring' %}bg-amber-600 text-white shadow-sm{% else %}bg-[#0B0F17] text-gray-400 hover:text-white border border-[#28354A]{% endif %}">
+        <i class="bi bi-clock mr-1"></i> EXPIRING IN 30 DAYS ({{ expiring_soon_count }})
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- Compliance Table (Matching Screenshot 1 & 2) -->
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl overflow-hidden shadow-sm">
+  <div class="px-5 py-4 border-b border-[#28354A] flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <i class="bi bi-file-earmark-medical text-amber-400"></i>
+      <h3 class="text-sm font-bold text-white tracking-tight m-0">TRANSPORT TRUCK INSURANCE, ROAD TAX &amp; N/C PERMIT AUDIT LEDGER</h3>
+    </div>
+    <span class="text-xs text-gray-400 font-mono">{{ records|length }} Trucks Audited</span>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="border-b border-[#28354A] bg-[#0B0F17]/50 text-[11px] font-mono uppercase text-gray-400">
+          <th class="py-3.5 px-4 font-semibold">Vehicle &amp; Reg No</th>
+          <th class="py-3.5 px-4 font-semibold">Owner &amp; Contact</th>
+          <th class="py-3.5 px-4 font-semibold">Insurance Policy</th>
+          <th class="py-3.5 px-4 font-semibold">Road Tax Receipt</th>
+          <th class="py-3.5 px-4 font-semibold">N/C Permit Status</th>
+          <th class="py-3.5 px-4 font-semibold">Fitness (FC)</th>
+          <th class="py-3.5 px-4 font-semibold text-center">Actions &amp; Reminders</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-[#28354A]/60 text-xs">
+        {% for r in records %}
+          <tr class="hover:bg-white/[0.02] transition-colors">
+            <!-- Vehicle & Reg No -->
+            <td class="py-3.5 px-4">
+              <span class="inline-block px-2.5 py-1 rounded bg-amber-400 text-black font-extrabold font-mono text-xs border border-amber-500 shadow-sm">
+                {{ r.registration_no }}
+              </span>
+              <span class="text-xs text-gray-300 font-semibold block mt-1">{{ r.vehicle_name }}</span>
+              <span class="text-[10px] text-gray-500">{{ r.get_vehicle_type_display }}</span>
+            </td>
+
+            <!-- Owner & Contact -->
+            <td class="py-3.5 px-4">
+              <span class="font-bold text-white block">{{ r.owner_name|default:"Basaveshwara Fleet" }}</span>
+              {% if r.owner_phone %}
+                <span class="text-[11px] text-emerald-400 font-mono flex items-center gap-1 mt-0.5">
+                  <i class="bi bi-telephone-fill text-[10px]"></i> {{ r.owner_phone }}
+                </span>
+              {% endif %}
+            </td>
+
+            <!-- Insurance Policy -->
+            <td class="py-3.5 px-4">
+              <span class="text-gray-300 font-mono block text-[11px]">{{ r.insurance_policy_no|default:"POL-DEFAULT" }}</span>
+              {% if r.insurance_status == 'VALID' %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <i class="bi bi-shield-check"></i> VALID
+                </span>
+              {% elif r.insurance_status == 'EXPIRING_SOON' %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <i class="bi bi-clock"></i> DUE SOON
+                </span>
+              {% else %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                  <i class="bi bi-x-circle"></i> EXPIRED
+                </span>
+              {% endif %}
+              <span class="text-[10px] text-gray-500 block mt-0.5">Exp: {{ r.insurance_expiry|date:"d-m-Y"|default:"--" }}</span>
+            </td>
+
+            <!-- Road Tax Receipt -->
+            <td class="py-3.5 px-4">
+              <span class="text-gray-300 font-mono block text-[11px]">{{ r.road_tax_receipt_no|default:"TAX-RECEIPT" }}</span>
+              {% if r.road_tax_status == 'VALID' %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <i class="bi bi-check-circle"></i> VALID
+                </span>
+              {% elif r.road_tax_status == 'EXPIRING_SOON' %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <i class="bi bi-clock"></i> DUE SOON
+                </span>
+              {% else %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                  <i class="bi bi-x-circle"></i> EXPIRED
+                </span>
+              {% endif %}
+              <span class="text-[10px] text-gray-500 block mt-0.5">Exp: {{ r.road_tax_expiry|date:"d-m-Y"|default:"--" }}</span>
+            </td>
+
+            <!-- N/C Permit Status -->
+            <td class="py-3.5 px-4">
+              <span class="text-gray-300 font-mono block text-[11px]">{{ r.nc_permit_no|default:"PERMIT-NC" }}</span>
+              {% if r.permit_status == 'VALID' %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <i class="bi bi-check-circle"></i> VALID
+                </span>
+              {% elif r.permit_status == 'EXPIRING_SOON' %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <i class="bi bi-clock"></i> DUE SOON
+                </span>
+              {% else %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                  <i class="bi bi-x-circle"></i> EXPIRED
+                </span>
+              {% endif %}
+              <span class="text-[10px] text-gray-500 block mt-0.5">Exp: {{ r.nc_permit_expiry|date:"d-m-Y"|default:"--" }}</span>
+            </td>
+
+            <!-- Fitness (FC) -->
+            <td class="py-3.5 px-4">
+              <div class="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-center">
+                <span class="font-mono text-emerald-400 font-semibold text-[11px]">FC: {{ r.fitness_expiry|date:"Y-m-d"|default:"--" }}</span>
+              </div>
+            </td>
+
+            <!-- Actions & Reminders -->
+            <td class="py-3.5 px-4 text-center">
+              <div class="flex items-center justify-center gap-2">
+                <a href="{% url 'machines:compliance_whatsapp' r.id %}" target="_blank" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-[11px] no-underline shadow-sm transition-colors">
+                  <i class="bi bi-whatsapp"></i>
+                  <span>WhatsApp Alert</span>
+                </a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" class="py-12 text-center text-gray-400">
+              <i class="bi bi-truck text-3xl block mb-2 text-gray-600"></i>
+              No transport trucks or harvesters recorded in compliance ledger.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Register Compliance Modal -->
+<div class="modal fade" id="newComplianceModal" tabindex="-1" aria-labelledby="newComplianceModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-[#131A26] border border-[#28354A] rounded-2xl shadow-xl">
+      <div class="modal-header border-b border-[#28354A] px-6 py-4">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+            <i class="bi bi-shield-plus text-xs"></i>
+          </div>
+          <h5 class="modal-title text-base font-bold text-white tracking-tight m-0" id="newComplianceModalLabel">Register Transport Truck / Harvester Compliance</h5>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form method="post" action="{% url 'machines:compliance_create' %}" class="p-6 space-y-4">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1">Compliance Code <span class="text-rose-400">*</span></label>
+            {{ form.compliance_code }}
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1">Registration No (e.g. KA-36 TR 9901) <span class="text-rose-400">*</span></label>
+            {{ form.registration_no }}
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1">Vehicle Type <span class="text-rose-400">*</span></label>
+            {{ form.vehicle_type }}
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1">Vehicle Model / Description <span class="text-rose-400">*</span></label>
+            {{ form.vehicle_name }}
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1">Link Machine (If Harvester)</label>
+            {{ form.machine }}
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Owner / Fleet Name</label>
+            {{ form.owner_name }}
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Owner Mobile (For WhatsApp Alerts)</label>
+            {{ form.owner_phone }}
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-[#28354A]">
+          <h6 class="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-3">Compliance Expiry Dates &amp; Certificates</h6>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+            <div>
+              <label class="block text-xs text-gray-300 mb-1">Insurance Policy No</label>
+              {{ form.insurance_policy_no }}
+            </div>
+            <div>
+              <label class="block text-xs text-gray-300 mb-1">Insurance Expiry Date</label>
+              {{ form.insurance_expiry }}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+            <div>
+              <label class="block text-xs text-gray-300 mb-1">Road Tax Receipt No</label>
+              {{ form.road_tax_receipt_no }}
+            </div>
+            <div>
+              <label class="block text-xs text-gray-300 mb-1">Road Tax Expiry Date</label>
+              {{ form.road_tax_expiry }}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+            <div>
+              <label class="block text-xs text-gray-300 mb-1">National Permit (N/C) No</label>
+              {{ form.nc_permit_no }}
+            </div>
+            <div>
+              <label class="block text-xs text-gray-300 mb-1">Permit Expiry Date</label>
+              {{ form.nc_permit_expiry }}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-gray-300 mb-1">Fitness Certificate (FC) No</label>
+              {{ form.fitness_cert_no }}
+            </div>
+            <div>
+              <label class="block text-xs text-gray-300 mb-1">Fitness Expiry Date</label>
+              {{ form.fitness_expiry }}
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#28354A]">
+          <button type="button" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A]" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs border-0 cursor-pointer">Save Compliance</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

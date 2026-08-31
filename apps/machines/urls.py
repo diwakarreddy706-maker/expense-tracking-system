@@ -29,6 +29,21 @@ urlpatterns = [
     path('work/add/', views.work_entry_create_view, name='work_create'),
     path('work/<int:entry_id>/edit/', views.work_entry_edit_view, name='work_edit'),
     path('work/<int:entry_id>/delete/', views.work_entry_delete_view, name='work_delete'),
+    path('work/<int:entry_id>/invoice/', views.work_entry_invoice_view, name='work_invoice'),
+
+    # Step 1 & 5: Rented Combine Harvester Owners & Settlements
+    path('rented-owners/', views.rented_owners_list_view, name='rented_owners'),
+    path('rented-owners/add/', views.rented_owner_create_view, name='rented_owner_create'),
+    path('rented-owners/settlement/<int:settlement_id>/settle/', views.rented_settlement_settle_view, name='rented_settlement_settle'),
+
+    # Step 2: Harvester & Transit Truck Compliance
+    path('compliance/', views.harvester_compliance_list_view, name='compliance_list'),
+    path('compliance/add/', views.harvester_compliance_create_view, name='compliance_create'),
+    path('compliance/<int:compliance_id>/whatsapp/', views.harvester_compliance_whatsapp_view, name='compliance_whatsapp'),
+
+    # AJAX Form Lookups
+    path('ajax/farmer/<int:customer_id>/', views.farmer_details_ajax_view, name='farmer_details_ajax'),
+    path('ajax/machine/<int:machine_id>/', views.machine_details_ajax_view, name='machine_details_ajax'),
 
     # Phase 15: Machinery Maintenance & Service Management
     path('maintenance/', views.maintenance_dashboard_view, name='maintenance_dashboard'),

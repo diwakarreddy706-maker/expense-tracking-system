@@ -1,0 +1,336 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | AgriBOS ERP{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+  <div>
+    <div class="flex items-center gap-2">
+      <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Rented Fleet Owners 360°</h2>
+      <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        ಮಾಲೀಕರ ಖಾತೆ
+      </span>
+    </div>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Manage seasonal rented combine harvester owners, bank accounts, fuel deductions, and net settlement payouts.</p>
+  </div>
+  <div class="flex items-center gap-2.5">
+    <button type="button" data-bs-toggle="modal" data-bs-target="#newOwnerModal" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline cursor-pointer border-0">
+      <i class="bi bi-plus-lg"></i>
+      <span>+ Register Rented Owner</span>
+    </button>
+  </div>
+</div>
+
+<!-- KPI Summary Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-[#131A26] border border-[#28354A] border-l-4 border-l-emerald-500 rounded-2xl p-4 sm:p-5 shadow-sm">
+    <span class="text-xs text-gray-400 font-mono block">REGISTERED OWNERS</span>
+    <div class="text-2xl font-extrabold text-white font-mono mt-1">{{ total_owners_count }} <span class="text-sm font-normal text-gray-400">Accounts</span></div>
+    <span class="text-[11px] text-gray-500 block mt-1">Seasonal third-party owners</span>
+  </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] border-l-4 border-l-cyan-500 rounded-2xl p-4 sm:p-5 shadow-sm">
+    <span class="text-xs text-gray-400 font-mono block">RENTED HARVESTERS</span>
+    <div class="text-2xl font-extrabold text-cyan-400 font-mono mt-1">{{ rented_machines_count }} <span class="text-sm font-normal text-gray-400">Fleet Active</span></div>
+    <span class="text-[11px] text-gray-500 block mt-1">Hired combine machines</span>
+  </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] border-l-4 border-l-amber-500 rounded-2xl p-4 sm:p-5 shadow-sm">
+    <span class="text-xs text-gray-400 font-mono block">GROSS WORK BILLED</span>
+    <div class="text-2xl font-extrabold text-amber-400 font-mono mt-1">₹{{ total_gross_settlements|floatformat:2 }}</div>
+    <span class="text-[11px] text-gray-500 block mt-1">Harvesting revenue generated</span>
+  </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] border-l-4 border-l-rose-500 rounded-2xl p-4 sm:p-5 shadow-sm">
+    <span class="text-xs text-gray-400 font-mono block">PENDING OWNER PAYOUTS</span>
+    <div class="text-2xl font-extrabold text-rose-400 font-mono mt-1">₹{{ total_pending_payout|floatformat:2 }}</div>
+    <span class="text-[11px] text-gray-500 block mt-1">Net payable after commission &amp; diesel</span>
+  </div>
+</div>
+
+<!-- Tabs & Search -->
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+      <a href="?tab=ledger" class="px-3 py-1.5 rounded-xl text-xs font-semibold no-underline transition-colors {% if active_tab == 'ledger' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30{% else %}text-gray-400 hover:text-white bg-[#0B0F17] border border-[#28354A]{% endif %}">
+        <i class="bi bi-receipt mr-1"></i> Settlement Payout Ledger ({{ settlements.count }})
+      </a>
+      <a href="?tab=directory" class="px-3 py-1.5 rounded-xl text-xs font-semibold no-underline transition-colors {% if active_tab == 'directory' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30{% else %}text-gray-400 hover:text-white bg-[#0B0F17] border border-[#28354A]{% endif %}">
+        <i class="bi bi-people mr-1"></i> Owner Directory &amp; Bank Register ({{ total_owners_count }})
+      </a>
+    </div>
+
+    <form method="get" class="flex items-center gap-2">
+      <input type="hidden" name="tab" value="{{ active_tab }}">
+      <div class="relative w-full sm:w-64">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+          <i class="bi bi-search text-xs"></i>
+        </span>
+        <input type="text" name="q" value="{{ query }}" placeholder="Search Owner, Phone, Bank..." class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[#0B0F17] border border-[#28354A] text-gray-200 placeholder-gray-500 text-xs focus:outline-none focus:border-emerald-500">
+      </div>
+      <button type="submit" class="px-3 py-1.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A]">Filter</button>
+    </form>
+  </div>
+</div>
+
+<!-- Tab Content -->
+{% if active_tab == 'ledger' %}
+  <!-- Settlement Payout Ledger -->
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl overflow-hidden shadow-sm">
+    <div class="px-5 py-4 border-b border-[#28354A] flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i class="bi bi-cash-stack text-emerald-400"></i>
+        <h3 class="text-sm font-bold text-white tracking-tight m-0">HARVESTER OWNER SETTLEMENT &amp; PAYOUT AUDIT</h3>
+      </div>
+      <span class="text-xs text-gray-400 font-mono">{{ settlements.count }} Settlements Logged</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-[#28354A] bg-[#0B0F17]/50 text-[11px] font-mono uppercase text-gray-400">
+            <th class="py-3.5 px-4 font-semibold">Settlement / Date</th>
+            <th class="py-3.5 px-4 font-semibold">Harvester Owner</th>
+            <th class="py-3.5 px-4 font-semibold">Work Session / Farmer</th>
+            <th class="py-3.5 px-4 font-semibold text-right">Gross Billed</th>
+            <th class="py-3.5 px-4 font-semibold text-right">Comm. ({{ comm_pct|default:"10%" }})</th>
+            <th class="py-3.5 px-4 font-semibold text-right">Diesel Deduct</th>
+            <th class="py-3.5 px-4 font-semibold text-right text-emerald-400">Net Payable</th>
+            <th class="py-3.5 px-4 font-semibold text-center">Status</th>
+            <th class="py-3.5 px-4 font-semibold text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#28354A]/60 text-xs">
+          {% for st in settlements %}
+            <tr class="hover:bg-white/[0.02] transition-colors">
+              <td class="py-3 px-4">
+                <span class="font-mono text-white font-semibold">{{ st.settlement_code }}</span>
+                <span class="text-[11px] text-gray-500 block">{{ st.created_at|date:"d M Y, h:i A" }}</span>
+              </td>
+              <td class="py-3 px-4">
+                <span class="font-semibold text-gray-200 block">{{ st.owner.name }}</span>
+                <span class="text-[11px] text-gray-400 font-mono">{{ st.owner.phone_number }}</span>
+              </td>
+              <td class="py-3 px-4">
+                <span class="text-white block">{{ st.work_entry.machine.name }}</span>
+                <span class="text-[11px] text-emerald-400">Farmer: {{ st.work_entry.customer.name }} ({{ st.work_entry.net_working_hours }} hrs)</span>
+              </td>
+              <td class="py-3 px-4 text-right font-mono text-gray-300 font-semibold">
+                ₹{{ st.gross_earnings|floatformat:2 }}
+              </td>
+              <td class="py-3 px-4 text-right font-mono text-rose-400">
+                -₹{{ st.commission_amount|floatformat:2 }}
+              </td>
+              <td class="py-3 px-4 text-right font-mono text-amber-400">
+                -₹{{ st.diesel_amount|floatformat:2 }}
+                {% if st.diesel_liters > 0 %}
+                  <span class="text-[10px] text-gray-500 block">({{ st.diesel_liters }} L)</span>
+                {% endif %}
+              </td>
+              <td class="py-3 px-4 text-right font-mono text-emerald-400 font-bold text-sm">
+                ₹{{ st.net_payable|floatformat:2 }}
+              </td>
+              <td class="py-3 px-4 text-center">
+                {% if st.status == 'SETTLED' %}
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    SETTLED
+                  </span>
+                {% else %}
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    PENDING
+                  </span>
+                {% endif %}
+              </td>
+              <td class="py-3 px-4 text-center">
+                {% if st.status == 'PENDING' %}
+                  <form method="post" action="{% url 'machines:rented_settlement_settle' st.id %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" onclick="return confirm('Mark payout of ₹{{ st.net_payable }} as SETTLED to {{ st.owner.name }}?');" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-[11px] transition-colors border-0 cursor-pointer">
+                      Settle Payout
+                    </button>
+                  </form>
+                {% else %}
+                  <span class="text-[11px] text-gray-500 font-mono">{{ st.settlement_reference|default:"Disbursed" }}</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9" class="py-8 text-center text-gray-400">
+                <i class="bi bi-inbox text-3xl block mb-2 text-gray-600"></i>
+                No rented harvester settlements recorded yet.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <!-- Owner Directory & Bank Register -->
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl overflow-hidden shadow-sm">
+    <div class="px-5 py-4 border-b border-[#28354A] flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i class="bi bi-person-lines-fill text-cyan-400"></i>
+        <h3 class="text-sm font-bold text-white tracking-tight m-0">HARVESTER OWNER DIRECTORY &amp; BANK DISBURSEMENT REGISTER</h3>
+      </div>
+      <span class="text-xs text-gray-400 font-mono">{{ owners.count }} Registered</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-[#28354A] bg-[#0B0F17]/50 text-[11px] font-mono uppercase text-gray-400">
+            <th class="py-3.5 px-4 font-semibold">Code / Owner Name</th>
+            <th class="py-3.5 px-4 font-semibold">Contact &amp; Village</th>
+            <th class="py-3.5 px-4 font-semibold">Bank / Disbursal Account</th>
+            <th class="py-3.5 px-4 font-semibold">UPI ID</th>
+            <th class="py-3.5 px-4 font-semibold text-center">Comm. %</th>
+            <th class="py-3.5 px-4 font-semibold text-right">Std. Rate</th>
+            <th class="py-3.5 px-4 font-semibold text-center">Fleet Harvesters</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#28354A]/60 text-xs">
+          {% for o in owners %}
+            <tr class="hover:bg-white/[0.02] transition-colors">
+              <td class="py-3 px-4">
+                <span class="font-mono text-cyan-400 font-semibold block">{{ o.owner_code }}</span>
+                <span class="font-bold text-white text-sm">{{ o.name }}</span>
+              </td>
+              <td class="py-3 px-4">
+                <span class="text-gray-300 font-mono block">{{ o.phone_number }}</span>
+                <span class="text-[11px] text-gray-500">{{ o.village|default:"Field Base" }}</span>
+              </td>
+              <td class="py-3 px-4">
+                {% if o.account_number %}
+                  <span class="text-white font-mono block">{{ o.bank_name }}: {{ o.account_number }}</span>
+                  <span class="text-[10px] text-gray-400 font-mono">IFSC: {{ o.ifsc_code }}</span>
+                {% else %}
+                  <span class="text-gray-500 italic">Not provided</span>
+                {% endif %}
+              </td>
+              <td class="py-3 px-4">
+                {% if o.upi_id %}
+                  <span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-mono text-[11px]">{{ o.upi_id }}</span>
+                {% else %}
+                  <span class="text-gray-500">--</span>
+                {% endif %}
+              </td>
+              <td class="py-3 px-4 text-center font-mono text-white">
+                {{ o.commission_percentage }}%
+              </td>
+              <td class="py-3 px-4 text-right font-mono text-emerald-400 font-semibold">
+                ₹{{ o.standard_hourly_rate }}/hr
+              </td>
+              <td class="py-3 px-4 text-center">
+                <span class="px-2 py-0.5 rounded bg-gray-800 text-gray-300 border border-[#28354A] font-semibold text-xs">
+                  {{ o.machines.count }} Machines
+                </span>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7" class="py-12 text-center text-gray-400">
+                <div class="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mx-auto mb-3">
+                  <i class="bi bi-people text-xl"></i>
+                </div>
+                <h4 class="text-sm font-bold text-white mb-1">No Rented Machine Owners Registered Yet</h4>
+                <p class="text-xs text-gray-500 max-w-sm mx-auto mb-4">Register third-party rented combine harvester owners to track seasonal work, company commissions, fuel deductions, and disburse bank payouts.</p>
+                <button type="button" data-bs-toggle="modal" data-bs-target="#newOwnerModal" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors border-0 cursor-pointer">
+                  + Register First Rented Fleet Owner
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- Register Owner Modal -->
+<div class="modal fade" id="newOwnerModal" tabindex="-1" aria-labelledby="newOwnerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-[#131A26] border border-[#28354A] rounded-2xl shadow-xl">
+      <div class="modal-header border-b border-[#28354A] px-6 py-4">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <i class="bi bi-person-plus-fill text-xs"></i>
+          </div>
+          <h5 class="modal-title text-base font-bold text-white tracking-tight m-0" id="newOwnerModalLabel">Register Rented Harvester Owner</h5>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form method="post" action="{% url 'machines:rented_owner_create' %}" class="p-6 space-y-4">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1">Owner Code <span class="text-rose-400">*</span></label>
+            {{ form.owner_code }}
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1">Owner Full Name <span class="text-rose-400">*</span></label>
+            {{ form.name }}
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1">Phone / Mobile <span class="text-rose-400">*</span></label>
+            {{ form.phone_number }}
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1">Village / Town</label>
+            {{ form.village }}
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-[#28354A]">
+          <h6 class="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-3">Bank Details &amp; Disbursal Settings</h6>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">Bank Name</label>
+              {{ form.bank_name }}
+            </div>
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">Account Number</label>
+              {{ form.account_number }}
+            </div>
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">IFSC Code</label>
+              {{ form.ifsc_code }}
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">UPI ID (e.g. name@okhdfcbank)</label>
+            {{ form.upi_id }}
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-[#28354A]">
+          <h6 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-3">Commercial Terms &amp; Commission</h6>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">Company Commission (%)</label>
+              {{ form.commission_percentage }}
+              <span class="text-[10px] text-gray-500 block mt-1">Default cut on gross harvesting work billed</span>
+            </div>
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">Standard Hourly Cutting Rate (₹/hr)</label>
+              {{ form.standard_hourly_rate }}
+              <span class="text-[10px] text-gray-500 block mt-1">Default rate to bill the farmer (e.g. ₹2,400)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#28354A]">
+          <button type="button" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A]" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs border-0 cursor-pointer">Save &amp; Register Owner</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
