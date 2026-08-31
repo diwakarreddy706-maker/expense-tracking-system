@@ -1,19 +1,87 @@
-{% extends 'base.html' %}
-
-{% block title %}500 - Internal Server Error | AgriBOS ERP{% endblock %}
-
-{% block content %}
-<div class="max-w-md mx-auto my-12 text-center">
-  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-8 shadow-sm">
-    <div class="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 mx-auto mb-4">
-      <i class="bi bi-cpu text-3xl"></i>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>500 - Internal Server Error | AgriBOS ERP</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    body {
+      background-color: #0B0F17;
+      color: #E2E8F0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+    .card {
+      background-color: #131A26;
+      border: 1px solid #28354A;
+      border-radius: 1rem;
+      padding: 2.5rem 2rem;
+      max-width: 28rem;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .icon-box {
+      width: 4rem;
+      height: 4rem;
+      border-radius: 1rem;
+      background: rgba(244, 63, 94, 0.1);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FB7185;
+      margin: 0 auto 1.5rem auto;
+      font-size: 2rem;
+    }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin: 0 0 0.5rem 0;
+      color: #FFFFFF;
+    }
+    p {
+      font-size: 0.875rem;
+      color: #94A3B8;
+      line-height: 1.5;
+      margin: 0 0 1.75rem 0;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.75rem;
+      background-color: #059669;
+      color: #FFFFFF;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: background-color 0.2s;
+    }
+    .btn:hover {
+      background-color: #10B981;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon-box">
+      <i class="bi bi-cpu"></i>
     </div>
-    <h2 class="text-xl font-extrabold text-white tracking-tight m-0 mb-2">500 - Internal Server Error</h2>
-    <p class="text-xs text-gray-400 leading-relaxed mb-6">An unexpected system condition occurred. The event has been logged for system administrator review.</p>
-    <a href="{% url 'dashboard:index' %}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all no-underline">
-      <i class="bi bi-house"></i>
-      <span>Return to Dashboard</span>
+    <h1>500 - Server Initializing</h1>
+    <p>The system is initializing database connections or running startup procedures. Please refresh in a few moments.</p>
+    <a href="/" class="btn">
+      <i class="bi bi-arrow-clockwise"></i>
+      <span>Reload System</span>
     </a>
   </div>
-</div>
-{% endblock %}
+</body>
+</html>

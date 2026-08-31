@@ -26,6 +26,21 @@ STATIC_ROOT = Path(os.getenv('STATIC_ROOT', str(BASE_DIR / 'staticfiles')))
 MEDIA_ROOT = Path(os.getenv('MEDIA_ROOT', str(BASE_DIR / 'media')))
 
 # Production MySQL Database Configuration
+from typing import Any
+
+DB_OPTIONS: dict[str, Any] = {
+    'charset': 'utf8mb4',
+    'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION'",
+}
+
+# Cloud MySQL (TiDB Cloud, AWS RDS, etc.) SSL support
+if os.getenv('DB_SSL', 'False').lower() in ('true', '1', 't') or os.getenv('DB_PORT') == '4000':
+    ca_path = os.getenv('DB_SSL_CA', '/etc/ssl/certs/ca-certificates.crt')
+    if os.path.exists(ca_path):
+        DB_OPTIONS['ssl'] = {'ca': ca_path}
+    else:
+        DB_OPTIONS['ssl'] = {'ssl_mode': 'REQUIRED'}
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -34,10 +49,7 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': os.getenv('DB_HOST', '127.0.0.1'),
         'PORT': os.getenv('DB_PORT', '3306'),
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION'",
-        },
+        'OPTIONS': DB_OPTIONS,
         'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
     }
 }
