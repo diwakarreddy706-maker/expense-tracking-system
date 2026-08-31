@@ -6,7 +6,8 @@ import multiprocessing
 import os
 
 # Server socket
-bind = os.getenv("GUNICORN_BIND", "127.0.0.1:8000")
+port = os.getenv("PORT", "8000")
+bind = os.getenv("GUNICORN_BIND", f"0.0.0.0:{port}")
 backlog = 2048
 
 # Worker processes
