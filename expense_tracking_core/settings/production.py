@@ -29,6 +29,15 @@ CSRF_TRUSTED_ORIGINS = [
 if 'https://*.onrender.com' not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
 
+# Render Cloud Platform Detection (Auto-registers custom Render subdomain)
+render_hostname = os.getenv('RENDER_EXTERNAL_HOSTNAME', '').strip()
+if render_hostname:
+    if render_hostname not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(render_hostname)
+    render_origin = f"https://{render_hostname}"
+    if render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(render_origin)
+
 # Reverse Proxy SSL Header Configuration
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -46,15 +55,16 @@ STORAGES = {
     },
 }
 
-# Production MySQL Database Configuration
+# Production Database Configuration
 from typing import Any
+import urllib.parse
 
 DB_OPTIONS: dict[str, Any] = {
     'charset': 'utf8mb4',
     'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION'",
 }
 
-# Cloud MySQL (TiDB Cloud, AWS RDS, etc.) SSL support
+# Cloud MySQL (TiDB Cloud, AWS RDS, Render, etc.) SSL support
 if os.getenv('DB_SSL', 'False').lower() in ('true', '1', 't') or os.getenv('DB_PORT') == '4000':
     ca_path = os.getenv('DB_SSL_CA', '/etc/ssl/certs/ca-certificates.crt')
     if os.path.exists(ca_path):
@@ -62,18 +72,57 @@ if os.getenv('DB_SSL', 'False').lower() in ('true', '1', 't') or os.getenv('DB_P
     else:
         DB_OPTIONS['ssl'] = {'ssl_mode': 'REQUIRED'}
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-        'PORT': os.getenv('DB_PORT', '3306'),
-        'OPTIONS': DB_OPTIONS,
-        'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
+# Parse DATABASE_URL / MYSQL_URL if provided by cloud provider
+database_url = os.getenv('DATABASE_URL') or os.getenv('MYSQL_URL')
+if database_url:
+    parsed_db = urllib.parse.urlparse(database_url)
+    scheme = parsed_db.scheme.lower()
+
+    if 'sqlite' in scheme:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / (parsed_db.path.lstrip('/') or 'db.sqlite3'),
+            }
+        }
+    elif 'postgres' in scheme:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': parsed_db.path.lstrip('/'),
+                'USER': parsed_db.username or '',
+                'PASSWORD': urllib.parse.unquote(parsed_db.password or ''),
+                'HOST': parsed_db.hostname or '127.0.0.1',
+                'PORT': str(parsed_db.port or 5432),
+                'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
+            }
+        }
+    else:  # MySQL default for AgriBOS
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': parsed_db.path.lstrip('/'),
+                'USER': parsed_db.username or '',
+                'PASSWORD': urllib.parse.unquote(parsed_db.password or ''),
+                'HOST': parsed_db.hostname or '127.0.0.1',
+                'PORT': str(parsed_db.port or 3306),
+                'OPTIONS': DB_OPTIONS,
+                'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
+            }
+        }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+            'PORT': os.getenv('DB_PORT', '3306'),
+            'OPTIONS': DB_OPTIONS,
+            'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
+        }
     }
-}
 
 # Production Security Headers & Cookie Policies
 SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1', 't')

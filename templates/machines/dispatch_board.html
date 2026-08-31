@@ -28,90 +28,141 @@
 
 <!-- Dispatch Lanes (5 Columns) -->
 <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-  <!-- Lane 1: PENDING -->
+  <!-- Lane 1: REQUESTED / PENDING -->
   <div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden flex flex-col">
-    <div class="px-4 py-3 border-b border-amber-500/40 bg-[#162030] flex items-center justify-between">
+    <div class="px-4 py-3 border-b border-amber-500/30 bg-[#162030] flex items-center justify-between">
       <span class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-        <i class="bi bi-clock"></i>
-        <span>Pending ({{ pending_list|length }})</span>
+        <i class="bi bi-clock-history"></i>
+        <span>Requested</span>
+      </span>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+        {{ pending_list|length }}
       </span>
     </div>
-    <div class="p-3 flex-1 flex flex-col gap-2.5 overflow-y-auto max-h-[75vh]">
+    <div class="p-3 flex-1 flex flex-col gap-3 overflow-y-auto max-h-[75vh]">
       {% for b in pending_list %}
-        <div class="bg-[#0B0F17] border border-[#28354A] rounded-xl p-3 shadow-sm hover:border-gray-600 transition-colors">
-          <div class="flex justify-between items-start mb-1">
-            <a href="{% url 'machines:booking_detail' b.id %}" class="text-cyan-400 font-mono font-bold text-xs hover:underline no-underline">{{ b.booking_code }}</a>
-            <span class="px-1.5 py-0.5 rounded text-[10px] bg-gray-800 text-gray-400 font-mono">{{ b.work_date|date:"d M" }}</span>
+        <div class="glass-card card-hover-lift p-3.5 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-start mb-2">
+              <a href="{% url 'machines:booking_detail' b.id %}" class="text-cyan-400 font-mono font-bold text-xs hover:underline no-underline">{{ b.booking_code }}</a>
+              <span class="px-1.5 py-0.5 rounded text-[10px] bg-gray-800 text-gray-400 font-mono tabular-nums">{{ b.work_date|date:"d M" }}</span>
+            </div>
+            <div class="text-white font-bold text-xs mb-1">{{ b.customer.name }}</div>
+            <div class="text-gray-400 text-[11px] mb-2 flex items-center gap-1.5 truncate">
+              <i class="bi bi-truck text-emerald-400"></i>
+              <span>{{ b.machine_type.name }}</span>
+            </div>
+            {% if b.village %}
+              <div class="text-gray-500 text-[10px] mb-2 flex items-center gap-1 truncate">
+                <i class="bi bi-geo-alt text-rose-400"></i>
+                <span>{{ b.village }}</span>
+              </div>
+            {% endif %}
           </div>
-          <div class="text-white font-semibold text-xs mb-0.5">{{ b.customer.name }}</div>
-          <div class="text-gray-400 text-[11px] mb-2.5 flex items-center gap-1">
-            <i class="bi bi-geo-alt text-rose-400"></i>
-            <span>{{ b.village|default:"Field" }} ({{ b.machine_type.name }})</span>
-          </div>
-          <div class="flex items-center justify-between pt-2 border-t border-[#28354A]">
-            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">{{ b.billing_type }}</span>
-            <a href="{% url 'machines:booking_detail' b.id %}" class="px-2.5 py-1 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-400 border border-cyan-500/30 text-[11px] font-semibold transition-colors no-underline">Manage</a>
+          <div class="flex items-center justify-between pt-2.5 border-t border-[#28354A]">
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">{{ b.get_billing_type_display|default:b.billing_type }}</span>
+            {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'MANAGER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
+              <a href="{% url 'machines:booking_confirm' b.id %}" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold transition-colors no-underline shadow-sm">
+                Confirm
+              </a>
+            {% else %}
+              <a href="{% url 'machines:booking_detail' b.id %}" class="px-2.5 py-1 rounded-lg bg-cyan-600/20 text-cyan-400 text-[11px] font-semibold no-underline">View</a>
+            {% endif %}
           </div>
         </div>
       {% empty %}
-        <div class="text-center py-10 text-gray-500 text-xs">No pending bookings.</div>
+        <div class="text-center py-10 text-gray-500 text-xs">No requested jobs.</div>
       {% endfor %}
     </div>
   </div>
 
   <!-- Lane 2: CONFIRMED -->
   <div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden flex flex-col">
-    <div class="px-4 py-3 border-b border-cyan-500/40 bg-[#162030] flex items-center justify-between">
+    <div class="px-4 py-3 border-b border-cyan-500/30 bg-[#162030] flex items-center justify-between">
       <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
         <i class="bi bi-check2-circle"></i>
-        <span>Confirmed ({{ confirmed_list|length }})</span>
+        <span>Confirmed</span>
+      </span>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+        {{ confirmed_list|length }}
       </span>
     </div>
-    <div class="p-3 flex-1 flex flex-col gap-2.5 overflow-y-auto max-h-[75vh]">
+    <div class="p-3 flex-1 flex flex-col gap-3 overflow-y-auto max-h-[75vh]">
       {% for b in confirmed_list %}
-        <div class="bg-[#0B0F17] border border-[#28354A] rounded-xl p-3 shadow-sm hover:border-gray-600 transition-colors">
-          <div class="flex justify-between items-start mb-1">
-            <a href="{% url 'machines:booking_detail' b.id %}" class="text-cyan-400 font-mono font-bold text-xs hover:underline no-underline">{{ b.booking_code }}</a>
-            <span class="px-1.5 py-0.5 rounded text-[10px] bg-cyan-500/10 text-cyan-400 font-mono border border-cyan-500/20">{{ b.work_date|date:"d M" }}</span>
+        <div class="glass-card card-hover-lift p-3.5 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-start mb-2">
+              <a href="{% url 'machines:booking_detail' b.id %}" class="text-cyan-400 font-mono font-bold text-xs hover:underline no-underline">{{ b.booking_code }}</a>
+              <span class="px-1.5 py-0.5 rounded text-[10px] bg-cyan-500/10 text-cyan-400 font-mono border border-cyan-500/20 tabular-nums">{{ b.work_date|date:"d M" }}</span>
+            </div>
+            <div class="text-white font-bold text-xs mb-1">{{ b.customer.name }}</div>
+            <div class="text-amber-300 text-[11px] flex items-center gap-1.5 mb-1 truncate">
+              <i class="bi bi-truck"></i>
+              <span>{{ b.machine.name }}</span>
+            </div>
+            <div class="text-gray-400 text-[11px] mb-2 flex items-center gap-1.5 truncate">
+              <i class="bi bi-person text-gray-500"></i>
+              <span>{{ b.operator.full_name|default:"Unassigned" }}</span>
+            </div>
           </div>
-          <div class="text-white font-semibold text-xs mb-0.5">{{ b.customer.name }}</div>
-          <div class="text-amber-400 text-[11px] flex items-center gap-1"><i class="bi bi-gear-fill"></i>{{ b.machine.name }}</div>
-          <div class="text-gray-400 text-[11px] mb-2.5 flex items-center gap-1"><i class="bi bi-person"></i>{{ b.operator.full_name }}</div>
-          <div class="flex items-center justify-between pt-2 border-t border-[#28354A]">
-            <span class="px-2 py-0.5 rounded text-[10px] bg-gray-800 text-gray-300 border border-gray-700">{{ b.village|default:"Field" }}</span>
-            <a href="{% url 'machines:booking_detail' b.id %}" class="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-bold transition-colors no-underline">Dispatch</a>
+          <div class="flex items-center justify-between pt-2.5 border-t border-[#28354A]">
+            <span class="px-1.5 py-0.5 rounded text-[10px] bg-gray-800 text-gray-300 border border-gray-700 truncate max-w-[80px]">{{ b.village|default:"Field" }}</span>
+            {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'MANAGER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
+              <a href="{% url 'machines:booking_dispatch' b.id %}" class="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-bold transition-colors no-underline shadow-sm">
+                Dispatch
+              </a>
+            {% else %}
+              <a href="{% url 'machines:booking_detail' b.id %}" class="px-2 py-1 text-cyan-400 text-[11px] no-underline">View</a>
+            {% endif %}
           </div>
         </div>
       {% empty %}
-        <div class="text-center py-10 text-gray-500 text-xs">No confirmed bookings.</div>
+        <div class="text-center py-10 text-gray-500 text-xs">No confirmed jobs.</div>
       {% endfor %}
     </div>
   </div>
 
   <!-- Lane 3: DISPATCHED -->
   <div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden flex flex-col">
-    <div class="px-4 py-3 border-b border-blue-500/40 bg-[#162030] flex items-center justify-between">
+    <div class="px-4 py-3 border-b border-blue-500/30 bg-[#162030] flex items-center justify-between">
       <span class="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
         <i class="bi bi-truck"></i>
-        <span>Dispatched ({{ dispatched_list|length }})</span>
+        <span>Dispatched</span>
+      </span>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">
+        {{ dispatched_list|length }}
       </span>
     </div>
-    <div class="p-3 flex-1 flex flex-col gap-2.5 overflow-y-auto max-h-[75vh]">
+    <div class="p-3 flex-1 flex flex-col gap-3 overflow-y-auto max-h-[75vh]">
       {% for b in dispatched_list %}
-        <div class="bg-[#0B0F17] border border-[#28354A] rounded-xl p-3 shadow-sm hover:border-gray-600 transition-colors">
-          <div class="flex justify-between items-start mb-1">
-            <a href="{% url 'machines:booking_detail' b.id %}" class="text-cyan-400 font-mono font-bold text-xs hover:underline no-underline">{{ b.booking_code }}</a>
-            <span class="px-1.5 py-0.5 rounded text-[10px] bg-blue-500/10 text-blue-400 font-semibold border border-blue-500/20">En Route</span>
+        <div class="glass-card card-hover-lift p-3.5 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-start mb-2">
+              <a href="{% url 'machines:booking_detail' b.id %}" class="text-cyan-400 font-mono font-bold text-xs hover:underline no-underline">{{ b.booking_code }}</a>
+              <span class="status-pill status-pill-info text-[9px] py-0 px-1.5">En Route</span>
+            </div>
+            <div class="text-white font-bold text-xs mb-1">{{ b.customer.name }}</div>
+            <div class="text-amber-300 text-[11px] flex items-center gap-1.5 mb-1 truncate">
+              <i class="bi bi-truck"></i>
+              <span>{{ b.machine.name }}</span>
+            </div>
+            <div class="text-gray-400 text-[11px] mb-2 flex items-center gap-1.5 truncate">
+              <i class="bi bi-person text-gray-500"></i>
+              <span>{{ b.operator.full_name }}</span>
+            </div>
           </div>
-          <div class="text-white font-semibold text-xs mb-0.5">{{ b.customer.name }}</div>
-          <div class="text-amber-400 text-[11px] flex items-center gap-1"><i class="bi bi-gear-fill"></i>{{ b.machine.name }}</div>
-          <div class="text-gray-400 text-[11px] mb-2.5 flex items-center gap-1"><i class="bi bi-person"></i>{{ b.operator.full_name }}</div>
-          <div class="flex items-center justify-between pt-2 border-t border-[#28354A]">
-            <span class="text-gray-400 font-mono text-[10px]">{{ b.dispatched_at|date:"H:i" }}</span>
-            <form method="post" action="/machines/bookings/{{ b.id }}/start/">
-              {% csrf_token %}
-              <button type="submit" class="px-3 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-[11px] font-bold shadow-sm transition-colors">Start</button>
-            </form>
+          <div class="flex items-center justify-between pt-2.5 border-t border-[#28354A]">
+            <span class="text-gray-400 font-mono text-[10px] tabular-nums">{{ b.dispatched_at|date:"H:i" }}</span>
+            {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'MANAGER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
+              <form method="post" action="{% url 'machines:booking_start_work' b.id %}" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-[11px] font-bold shadow-sm transition-colors cursor-pointer border-0">
+                  Start Work
+                </button>
+              </form>
+            {% else %}
+              <a href="{% url 'machines:booking_detail' b.id %}" class="px-2 py-1 text-cyan-400 text-[11px] no-underline">View</a>
+            {% endif %}
           </div>
         </div>
       {% empty %}
@@ -122,28 +173,45 @@
 
   <!-- Lane 4: IN PROGRESS -->
   <div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden flex flex-col">
-    <div class="px-4 py-3 border-b border-purple-500/40 bg-[#162030] flex items-center justify-between">
+    <div class="px-4 py-3 border-b border-purple-500/30 bg-[#162030] flex items-center justify-between">
       <span class="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
         <i class="bi bi-gear-wide-connected"></i>
-        <span>In Progress ({{ in_progress_list|length }})</span>
+        <span>In Progress</span>
+      </span>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-500/15 text-purple-400 border border-purple-500/30">
+        {{ in_progress_list|length }}
       </span>
     </div>
-    <div class="p-3 flex-1 flex flex-col gap-2.5 overflow-y-auto max-h-[75vh]">
+    <div class="p-3 flex-1 flex flex-col gap-3 overflow-y-auto max-h-[75vh]">
       {% for b in in_progress_list %}
-        <div class="bg-[#0B0F17] border border-[#28354A] rounded-xl p-3 shadow-sm hover:border-gray-600 transition-colors">
-          <div class="flex justify-between items-start mb-1">
-            <a href="{% url 'machines:booking_detail' b.id %}" class="text-cyan-400 font-mono font-bold text-xs hover:underline no-underline">{{ b.booking_code }}</a>
-            <span class="px-1.5 py-0.5 rounded text-[10px] bg-purple-500/10 text-purple-400 font-semibold border border-purple-500/20">Working</span>
+        <div class="glass-card card-hover-lift p-3.5 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-start mb-2">
+              <a href="{% url 'machines:booking_detail' b.id %}" class="text-cyan-400 font-mono font-bold text-xs hover:underline no-underline">{{ b.booking_code }}</a>
+              <span class="status-pill text-[9px] py-0 px-1.5 bg-purple-500/15 text-purple-300 border border-purple-500/30">Working</span>
+            </div>
+            <div class="text-white font-bold text-xs mb-1">{{ b.customer.name }}</div>
+            <div class="text-amber-300 text-[11px] flex items-center gap-1.5 mb-1 truncate">
+              <i class="bi bi-truck"></i>
+              <span>{{ b.machine.name }}</span>
+            </div>
+            <div class="text-gray-400 text-[11px] mb-2 flex items-center gap-1.5 truncate">
+              <i class="bi bi-person text-gray-500"></i>
+              <span>{{ b.operator.full_name }}</span>
+            </div>
           </div>
-          <div class="text-white font-semibold text-xs mb-0.5">{{ b.customer.name }}</div>
-          <div class="text-amber-400 text-[11px] flex items-center gap-1"><i class="bi bi-gear-fill"></i>{{ b.machine.name }}</div>
-          <div class="text-gray-400 text-[11px] mb-2.5 flex items-center gap-1"><i class="bi bi-person"></i>{{ b.operator.full_name }}</div>
-          <div class="flex items-center justify-between pt-2 border-t border-[#28354A]">
-            <span class="text-gray-400 font-mono text-[10px]">{{ b.started_at|date:"H:i" }}</span>
-            <form method="post" action="/machines/bookings/{{ b.id }}/complete/">
-              {% csrf_token %}
-              <button type="submit" class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold shadow-sm transition-colors">Complete</button>
-            </form>
+          <div class="flex items-center justify-between pt-2.5 border-t border-[#28354A]">
+            <span class="text-gray-400 font-mono text-[10px] tabular-nums">{{ b.started_at|date:"H:i" }}</span>
+            {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'MANAGER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
+              <form method="post" action="{% url 'machines:booking_complete_work' b.id %}" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold shadow-sm transition-colors cursor-pointer border-0">
+                  Complete
+                </button>
+              </form>
+            {% else %}
+              <a href="{% url 'machines:booking_detail' b.id %}" class="px-2 py-1 text-cyan-400 text-[11px] no-underline">View</a>
+            {% endif %}
           </div>
         </div>
       {% empty %}
@@ -154,25 +222,33 @@
 
   <!-- Lane 5: COMPLETED -->
   <div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden flex flex-col">
-    <div class="px-4 py-3 border-b border-emerald-500/40 bg-[#162030] flex items-center justify-between">
+    <div class="px-4 py-3 border-b border-emerald-500/30 bg-[#162030] flex items-center justify-between">
       <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
         <i class="bi bi-check-all"></i>
-        <span>Completed ({{ completed_list|length }})</span>
+        <span>Completed</span>
+      </span>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+        {{ completed_list|length }}
       </span>
     </div>
-    <div class="p-3 flex-1 flex flex-col gap-2.5 overflow-y-auto max-h-[75vh]">
+    <div class="p-3 flex-1 flex flex-col gap-3 overflow-y-auto max-h-[75vh]">
       {% for b in completed_list %}
-        <div class="bg-[#0B0F17] border border-[#28354A] rounded-xl p-3 shadow-sm hover:border-gray-600 transition-colors">
-          <div class="flex justify-between items-start mb-1">
-            <a href="{% url 'machines:booking_detail' b.id %}" class="text-cyan-400 font-mono font-bold text-xs hover:underline no-underline">{{ b.booking_code }}</a>
-            <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">Done</span>
+        <div class="glass-card card-hover-lift p-3.5 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-start mb-2">
+              <a href="{% url 'machines:booking_detail' b.id %}" class="text-cyan-400 font-mono font-bold text-xs hover:underline no-underline">{{ b.booking_code }}</a>
+              <span class="status-pill status-pill-active text-[9px] py-0 px-1.5">Done</span>
+            </div>
+            <div class="text-white font-bold text-xs mb-1">{{ b.customer.name }}</div>
+            <div class="text-gray-300 text-[11px] mb-2 flex items-center gap-1.5 truncate">
+              <i class="bi bi-truck text-emerald-400"></i>
+              <span>{{ b.machine.name }}</span>
+            </div>
           </div>
-          <div class="text-white font-semibold text-xs mb-0.5">{{ b.customer.name }}</div>
-          <div class="text-gray-400 text-[11px] mb-2.5 flex items-center gap-1"><i class="bi bi-gear"></i>{{ b.machine.name }}</div>
-          <div class="pt-2 border-t border-[#28354A]">
-            <a href="{% url 'machines:work_create' %}?booking_id={{ b.id }}" class="inline-flex items-center justify-center gap-1.5 w-full py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold transition-colors no-underline">
+          <div class="pt-2.5 border-t border-[#28354A]">
+            <a href="{% url 'machines:work_create' %}?booking_id={{ b.id }}" class="inline-flex items-center justify-center gap-1.5 w-full py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold transition-colors no-underline">
               <i class="bi bi-receipt"></i>
-              <span>Record Work</span>
+              <span>Record Work / Bill</span>
             </a>
           </div>
         </div>

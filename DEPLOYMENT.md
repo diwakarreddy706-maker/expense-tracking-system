@@ -215,3 +215,31 @@ mysql -u expense_user -p expense_tracking_db < /tmp/restore.sql
 # 3. Clean up temporary file
 rm /tmp/restore.sql
 ```
+
+---
+
+## 8. Deploying to Render.com Cloud Platform
+
+AgriBOS is pre-configured for deployment on **Render.com**.
+
+### Web Service Settings on Render Dashboard
+- **Environment**: `Python 3`
+- **Build Command**: `./build.sh`
+- **Start Command**: `gunicorn --config deploy/gunicorn/gunicorn.conf.py expense_tracking_core.wsgi:application`
+- **Health Check Path**: `/health/`
+
+#### Required Environment Variables:
+| Variable | Value / Description |
+| :--- | :--- |
+| `PYTHON_VERSION` | `3.11.9` |
+| `DJANGO_SETTINGS_MODULE` | `expense_tracking_core.settings.production` |
+| `SECRET_KEY` | *(Click "Generate" in Render)* |
+| `DEBUG` | `False` |
+| `DATABASE_URL` | `mysql://user:pass@host:port/dbname` |
+| `SECURE_SSL_REDIRECT` | `True` |
+| `ADMIN_USERNAME` | `admin` |
+| `ADMIN_PASSWORD` | *(Your secure initial password)* |
+
+> [!NOTE]
+> The application automatically reads `RENDER_EXTERNAL_HOSTNAME` on startup, configuring `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` for your `*.onrender.com` subdomain without requiring manual domain configuration.
+

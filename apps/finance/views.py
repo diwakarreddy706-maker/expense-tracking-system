@@ -159,7 +159,13 @@ def customers_list_view(request):
 def customer_create_view(request):
     """Creates a new customer record."""
     if request.method == 'POST':
-        form = CustomerForm(request.POST)
+        post_data = request.POST.copy()
+        if not post_data.get('customer_code'):
+            import uuid
+            post_data['customer_code'] = f"CUST-{uuid.uuid4().hex[:6].upper()}"
+        if not post_data.get('status'):
+            post_data['status'] = Customer.STATUS_ACTIVE
+        form = CustomerForm(post_data)
         if form.is_valid():
             customer = form.save()
             log_audit_event(
@@ -170,8 +176,12 @@ def customer_create_view(request):
                 changes={'customer_code': customer.customer_code, 'name': customer.name},
                 request=request
             )
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax'):
+                return JsonResponse({'success': True, 'id': customer.id, 'name': customer.name, 'code': customer.customer_code})
             messages.success(request, f"Customer '{customer.name}' ({customer.customer_code}) created.")
             return redirect('finance:customers')
+        elif request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax'):
+            return JsonResponse({'success': False, 'errors': form.errors.get_json_data()})
     else:
         form = CustomerForm()
 
@@ -254,7 +264,24 @@ def suppliers_list_view(request):
 def supplier_create_view(request):
     """Creates a new supplier."""
     if request.method == 'POST':
-        form = SupplierForm(request.POST)
+        post_data = request.POST.copy()
+        if not post_data.get('supplier_code'):
+            import uuid
+            post_data['supplier_code'] = f"SUPP-{uuid.uuid4().hex[:6].upper()}"
+        if not post_data.get('status'):
+            post_data['status'] = Supplier.STATUS_ACTIVE
+        stype = post_data.get('supplier_type', '').upper()
+        if stype in ['FUEL', 'PETROL', 'DIESEL', 'FUEL_PUMP']:
+            post_data['supplier_type'] = Supplier.TYPE_FUEL_PUMP
+        elif stype in ['SPARE_PARTS', 'SPARES', 'PARTS']:
+            post_data['supplier_type'] = Supplier.TYPE_SPARE_PARTS
+        elif stype in ['WORKSHOP', 'REPAIR']:
+            post_data['supplier_type'] = Supplier.TYPE_WORKSHOP
+        elif stype in ['FERTILIZER', 'SEEDS']:
+            post_data['supplier_type'] = Supplier.TYPE_FERTILIZER
+        else:
+            post_data['supplier_type'] = Supplier.TYPE_OTHER
+        form = SupplierForm(post_data)
         if form.is_valid():
             supplier = form.save()
             log_audit_event(
@@ -265,8 +292,12 @@ def supplier_create_view(request):
                 changes={'supplier_code': supplier.supplier_code, 'name': supplier.name},
                 request=request
             )
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax'):
+                return JsonResponse({'success': True, 'id': supplier.id, 'name': supplier.name, 'code': supplier.supplier_code})
             messages.success(request, f"Supplier '{supplier.name}' ({supplier.supplier_code}) created.")
             return redirect('finance:suppliers')
+        elif request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax'):
+            return JsonResponse({'success': False, 'errors': form.errors.get_json_data()})
     else:
         form = SupplierForm()
 

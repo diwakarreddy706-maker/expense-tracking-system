@@ -43,7 +43,12 @@
             {% if form.work_date.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.work_date.errors.0 }}</div>{% endif %}
           </div>
           <div>
-            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Customer / Farmer <span class="text-rose-400">*</span></label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-semibold text-gray-300">Customer / Farmer <span class="text-rose-400">*</span></label>
+              <button type="button" data-bs-toggle="modal" data-bs-target="#newCustomerModal" class="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1 bg-transparent border-0 p-0 cursor-pointer">
+                <i class="bi bi-plus-circle"></i> New Customer
+              </button>
+            </div>
             {{ form.customer }}
             {% if form.customer.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.customer.errors.0 }}</div>{% endif %}
           </div>
@@ -208,6 +213,55 @@
     </form>
   </div>
 </div>
+
+<!-- Modal: Quick Add Customer / Farmer -->
+<div class="modal fade fixed inset-0 z-50 overflow-y-auto" id="newCustomerModal" tabindex="-1" aria-labelledby="newCustomerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-center justify-center p-4">
+    <div class="modal-content relative w-full max-w-md bg-[#131A26] border border-[#28354A] rounded-2xl shadow-2xl overflow-hidden text-gray-100">
+      <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <i class="bi bi-person-plus text-base"></i>
+          </div>
+          <div>
+            <h5 class="text-sm font-bold text-white m-0" id="newCustomerModalLabel">Add Customer / Farmer</h5>
+            <p class="text-[11px] text-gray-400 m-0">Register a new farmer for machinery billing</p>
+          </div>
+        </div>
+        <button type="button" class="text-gray-400 hover:text-white bg-transparent border-0 text-lg leading-none cursor-pointer" data-bs-dismiss="modal" aria-label="Close">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div id="newCustomerAlert" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium"></div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Farmer Name <span class="text-rose-400">*</span></label>
+          <input type="text" id="newCustomerName" class="form-control bg-dark text-white border-secondary" placeholder="e.g. Ramesh Patel" required>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Phone Number</label>
+          <input type="text" id="newCustomerPhone" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 9876543210">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Village / Location</label>
+          <input type="text" id="newCustomerVillage" class="form-control bg-dark text-white border-secondary" placeholder="e.g. Rampur Field #4">
+        </div>
+      </div>
+
+      <div class="px-6 py-3 border-t border-[#28354A] bg-[#162030] flex items-center justify-end gap-2.5">
+        <button type="button" class="px-3.5 py-1.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A]" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="saveCustomerBtn" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors">
+          <i class="bi bi-plus-lg"></i>
+          <span>Save Farmer</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -363,10 +417,78 @@ document.addEventListener('DOMContentLoaded', function() {
   if (hourlyRate) hourlyRate.addEventListener('input', recalculateHarvester);
   if (quantityInput) quantityInput.addEventListener('input', recalculateTractor);
   if (unitRateInput) unitRateInput.addEventListener('input', recalculateTractor);
-  if (startMeter) startMeter.addEventListener('input', recalculateMeter);
-  if (endMeter) endMeter.addEventListener('input', recalculateMeter);
-
   updateBillingMode();
+
+  // Quick Add Customer via AJAX
+  const saveCustomerBtn = document.getElementById('saveCustomerBtn');
+  const customerNameInput = document.getElementById('newCustomerName');
+  const customerPhoneInput = document.getElementById('newCustomerPhone');
+  const customerVillageInput = document.getElementById('newCustomerVillage');
+  const customerAlert = document.getElementById('newCustomerAlert');
+  const mainCustomerSelect = document.getElementById('id_customer');
+
+  if (saveCustomerBtn && mainCustomerSelect) {
+    saveCustomerBtn.addEventListener('click', () => {
+      const name = customerNameInput.value.trim();
+      const phone = customerPhoneInput.value.trim();
+      const village = customerVillageInput ? customerVillageInput.value.trim() : '';
+
+      if (!name) {
+        customerAlert.textContent = 'Please enter a farmer name.';
+        customerAlert.classList.remove('hidden');
+        customerNameInput.focus();
+        return;
+      }
+
+      saveCustomerBtn.disabled = true;
+      saveCustomerBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+      customerAlert.classList.add('hidden');
+
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('phone', phone);
+      if (village) formData.append('village', village);
+      formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+      formData.append('is_ajax', '1');
+
+      fetch("{% url 'finance:customer_create' %}", {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(res => res.json())
+      .then(data => {
+        saveCustomerBtn.disabled = false;
+        saveCustomerBtn.innerHTML = '<i class="bi bi-plus-lg"></i> Save Farmer';
+
+        if (data.success) {
+          const opt = new Option(data.name, data.id, true, true);
+          mainCustomerSelect.add(opt);
+          mainCustomerSelect.dispatchEvent(new Event('change'));
+
+          customerNameInput.value = '';
+          customerPhoneInput.value = '';
+          if (customerVillageInput) customerVillageInput.value = '';
+          const modalEl = document.getElementById('newCustomerModal');
+          const modalInst = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+          modalInst.hide();
+        } else {
+          let errMsg = 'Failed to create customer.';
+          if (data.errors) {
+            errMsg = Object.values(data.errors).map(e => e[0].message).join(' ');
+          }
+          customerAlert.textContent = errMsg;
+          customerAlert.classList.remove('hidden');
+        }
+      })
+      .catch(() => {
+        saveCustomerBtn.disabled = false;
+        saveCustomerBtn.innerHTML = '<i class="bi bi-plus-lg"></i> Save Farmer';
+        customerAlert.textContent = 'Network error while creating farmer.';
+        customerAlert.classList.remove('hidden');
+      });
+    });
+  }
 });
 </script>
 {% endblock %}

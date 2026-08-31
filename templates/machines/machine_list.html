@@ -6,12 +6,24 @@
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
     <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Agricultural Machinery &amp; Fleet Registry</h2>
-    <p class="text-xs text-gray-400 mt-1 mb-0">Tractors, combine harvesters, tillers, and implements registry</p>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Tractors, combine harvesters, tillers, and implements fleet registry</p>
   </div>
   <div class="flex items-center gap-2.5">
-    <a href="{% url 'machines:work_list' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-cyan-300 font-semibold text-xs border border-[#28354A] transition-all no-underline shadow-sm">
+    <!-- View Switcher (Grid / Table) -->
+    <div class="flex items-center p-1 rounded-xl bg-[#182234] border border-[#28354A]">
+      <button type="button" id="viewGridBtn" class="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all text-white bg-emerald-600 shadow-sm" title="Fleet Grid Card View">
+        <i class="bi bi-grid-fill"></i>
+        <span class="hidden sm:inline">Grid</span>
+      </button>
+      <button type="button" id="viewTableBtn" class="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all text-gray-400 hover:text-white" title="Dense Table View">
+        <i class="bi bi-table"></i>
+        <span class="hidden sm:inline">Table</span>
+      </button>
+    </div>
+
+    <a href="{% url 'machines:work_list' %}" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-cyan-300 font-semibold text-xs border border-[#28354A] transition-all no-underline shadow-sm">
       <i class="bi bi-clock-history text-cyan-400"></i>
-      <span>Work &amp; Billing Logs</span>
+      <span class="hidden md:inline">Work Logs</span>
     </a>
     <a href="{% url 'machines:create' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
       <i class="bi bi-plus-lg"></i>
@@ -71,8 +83,116 @@
   </form>
 </div>
 
-<!-- Machines Table -->
-<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+<!-- ========================================================================= -->
+<!-- 1. GRID VIEW (DEFAULT)                                                   -->
+<!-- ========================================================================= -->
+<div id="fleetGridView" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+  {% for m in machines %}
+    <div class="glass-card card-hover-lift p-5 flex flex-col justify-between">
+      <div>
+        <!-- Card Header: Code, Type & Status -->
+        <div class="flex items-start justify-between gap-2 mb-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded font-mono font-bold text-xs bg-cyan-500/10 text-cyan-400 border border-cyan-500/25">
+                {{ m.machine_code }}
+              </span>
+              <span class="text-[11px] text-gray-400 font-medium truncate max-w-[120px]">
+                {{ m.machine_type.name }}
+              </span>
+            </div>
+            <h3 class="text-sm font-bold text-white mt-1.5 mb-0 tracking-tight flex items-center gap-2">
+              <i class="bi bi-truck text-emerald-400"></i>
+              <span>{{ m.name }}</span>
+            </h3>
+          </div>
+
+          <!-- Status Badge -->
+          <div>
+            {% if m.status == 'ACTIVE' %}
+              <span class="status-pill status-pill-active">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Active
+              </span>
+            {% elif m.status == 'UNDER_MAINTENANCE' %}
+              <span class="status-pill status-pill-pending">
+                <i class="bi bi-tools text-[10px]"></i> Workshop
+              </span>
+            {% elif m.status == 'IDLE' %}
+              <span class="status-pill status-pill-info">
+                <i class="bi bi-pause-circle text-[10px]"></i> Idle
+              </span>
+            {% else %}
+              <span class="status-pill status-pill-danger">
+                Decommissioned
+              </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Registration & Assigned Operator -->
+        <div class="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-[#0B0F17]/80 border border-[#28354A]/80 text-xs mb-4">
+          <div>
+            <span class="text-[10px] text-gray-500 uppercase font-semibold block">Reg / Chassis</span>
+            <span class="font-mono text-gray-300 font-medium truncate block">{{ m.registration_no|default:"--" }}</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-gray-500 uppercase font-semibold block">Operator</span>
+            <span class="text-gray-300 font-medium truncate block">{{ m.default_operator.full_name|default:"Unassigned" }}</span>
+          </div>
+        </div>
+
+        <!-- Current Meter Reading Widget -->
+        <div class="p-3 rounded-xl bg-gradient-to-br from-[#162030] to-[#0E1522] border border-[#28354A] mb-4">
+          <div class="flex items-center justify-between text-xs mb-1">
+            <span class="text-gray-400 flex items-center gap-1.5">
+              <i class="bi bi-speedometer2 text-cyan-400"></i>
+              <span>Current Meter</span>
+            </span>
+            <span class="text-[11px] text-gray-500 uppercase font-mono">{{ m.get_meter_unit_display }}</span>
+          </div>
+          <div class="text-xl font-extrabold text-emerald-400 font-mono tabular-nums">
+            {{ m.current_meter_reading }}
+            <span class="text-xs font-normal text-emerald-500/80">{{ m.get_meter_unit_display }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Action Buttons -->
+      <div class="flex items-center justify-between pt-3 border-t border-[#28354A] text-xs">
+        <div class="flex items-center gap-1.5">
+          <a href="{% url 'machines:machine_service_history' m.id %}" class="p-2 rounded-lg bg-[#182234] hover:bg-gray-800 text-amber-400 hover:text-amber-300 border border-[#28354A] transition-colors no-underline" title="Service History">
+            <i class="bi bi-tools"></i>
+          </a>
+          <a href="{% url 'machines:edit' m.id %}" class="p-2 rounded-lg bg-[#182234] hover:bg-gray-800 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline" title="Edit Machine">
+            <i class="bi bi-pencil-square"></i>
+          </a>
+          {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
+            <a href="{% url 'machines:delete' m.id %}" class="p-2 rounded-lg bg-[#182234] hover:bg-gray-800 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors no-underline" title="Delete Machine" onclick="return confirm('Soft delete machine {{ m.name }}?');">
+              <i class="bi bi-trash"></i>
+            </a>
+          {% endif %}
+        </div>
+
+        {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'MANAGER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
+          <a href="{% url 'machines:booking_create' %}?machine={{ m.id }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/30 font-semibold text-xs no-underline transition-colors">
+            <i class="bi bi-calendar-plus"></i>
+            <span>Book / Job</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-span-full py-12 text-center text-gray-500 glass-panel">
+      <i class="bi bi-truck text-4xl block mb-2 text-gray-600"></i>
+      No agricultural machinery found matching your criteria.
+    </div>
+  {% endfor %}
+</div>
+
+<!-- ========================================================================= -->
+<!-- 2. TABLE VIEW (TOGGLEABLE)                                               -->
+<!-- ========================================================================= -->
+<div id="fleetTableView" class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden hidden mb-6">
   <div class="overflow-x-auto">
     <table class="w-full text-left text-xs border-collapse">
       <thead>
@@ -104,18 +224,18 @@
             </td>
             <td class="py-3.5 px-4 font-mono text-gray-400">{{ m.registration_no|default:"--" }}</td>
             <td class="py-3.5 px-4 text-gray-300">{{ m.default_operator.full_name|default:"Unassigned" }}</td>
-            <td class="py-3.5 px-4 text-right font-mono font-bold text-emerald-400">
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-emerald-400 tabular-nums">
               {{ m.current_meter_reading }} {{ m.get_meter_unit_display }}
             </td>
             <td class="py-3.5 px-4 text-center">
               {% if m.status == 'ACTIVE' %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
+                <span class="status-pill status-pill-active">Active</span>
               {% elif m.status == 'UNDER_MAINTENANCE' %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Workshop</span>
+                <span class="status-pill status-pill-pending">Workshop</span>
               {% elif m.status == 'IDLE' %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Idle</span>
+                <span class="status-pill status-pill-info">Idle</span>
               {% else %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-400 border border-gray-700">Decommissioned</span>
+                <span class="status-pill status-pill-danger">Decommissioned</span>
               {% endif %}
             </td>
             <td class="py-3.5 px-4 text-right">
@@ -137,7 +257,7 @@
         {% empty %}
           <tr>
             <td colspan="8" class="py-12 text-center text-gray-500">
-              <i class="bi bi-truck text-3xl d-block mb-2 text-gray-600"></i>
+              <i class="bi bi-truck text-3xl block mb-2 text-gray-600"></i>
               No agricultural machines found. Click "Add Machine" to register your equipment.
             </td>
           </tr>
@@ -146,4 +266,43 @@
     </table>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const gridBtn = document.getElementById('viewGridBtn');
+  const tableBtn = document.getElementById('viewTableBtn');
+  const gridView = document.getElementById('fleetGridView');
+  const tableView = document.getElementById('fleetTableView');
+
+  function setView(mode) {
+    if (mode === 'table') {
+      gridView.classList.add('hidden');
+      tableView.classList.remove('hidden');
+
+      tableBtn.classList.add('bg-emerald-600', 'text-white', 'shadow-sm');
+      tableBtn.classList.remove('text-gray-400');
+
+      gridBtn.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm');
+      gridBtn.classList.add('text-gray-400');
+      localStorage.setItem('agribos_fleet_view', 'table');
+    } else {
+      tableView.classList.add('hidden');
+      gridView.classList.remove('hidden');
+
+      gridBtn.classList.add('bg-emerald-600', 'text-white', 'shadow-sm');
+      gridBtn.classList.remove('text-gray-400');
+
+      tableBtn.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm');
+      tableBtn.classList.add('text-gray-400');
+      localStorage.setItem('agribos_fleet_view', 'grid');
+    }
+  }
+
+  const saved = localStorage.getItem('agribos_fleet_view') || 'grid';
+  setView(saved);
+
+  gridBtn.addEventListener('click', () => setView('grid'));
+  tableBtn.addEventListener('click', () => setView('table'));
+});
+</script>
 {% endblock %}

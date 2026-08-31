@@ -14,8 +14,9 @@
     <!-- 1. Dashboard -->
     <a
       href="{% url 'dashboard:index' %}"
-      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none focus:text-emerald-400 {% if request.resolver_match.app_name == 'dashboard' or request.path == '/' %}text-emerald-400 font-semibold{% else %}text-gray-400 hover:text-gray-200{% endif %}"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none {% if request.resolver_match.app_name == 'dashboard' or request.path == '/' %}text-emerald-400 font-semibold{% else %}text-gray-400 hover:text-gray-200{% endif %}"
       {% if request.resolver_match.app_name == 'dashboard' or request.path == '/' %}aria-current="page"{% endif %}
+      title="Executive Dashboard"
     >
       <div class="relative flex items-center justify-center">
         <i class="bi bi-grid-1x2-fill text-lg"></i>
@@ -26,62 +27,56 @@
       <span class="text-[10px] mt-0.5 tracking-tight truncate">Home</span>
     </a>
 
-    <!-- 2. Machines -->
+    <!-- 2. + Fuel -->
     <a
-      href="{% url 'machines:list' %}"
-      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none focus:text-emerald-400 {% if request.resolver_match.app_name == 'machines' %}text-emerald-400 font-semibold{% else %}text-gray-400 hover:text-gray-200{% endif %}"
-      {% if request.resolver_match.app_name == 'machines' %}aria-current="page"{% endif %}
+      href="{% url 'fuel:create' %}"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none {% if request.resolver_match.app_name == 'fuel' and request.resolver_match.url_name == 'create' %}text-amber-400 font-semibold{% else %}text-gray-400 hover:text-amber-300{% endif %}"
+      title="Log Machinery Refueling"
     >
       <div class="relative flex items-center justify-center">
-        <i class="bi bi-truck-front-fill text-lg"></i>
-        {% if request.resolver_match.app_name == 'machines' %}
-          <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-        {% endif %}
+        <i class="bi bi-fuel-pump-fill text-lg text-amber-400"></i>
       </div>
-      <span class="text-[10px] mt-0.5 tracking-tight truncate">Fleet</span>
+      <span class="text-[10px] mt-0.5 tracking-tight truncate">+ Fuel</span>
     </a>
 
-    <!-- 3. Quick Add (Center Action Button) -->
+    <!-- 3. + Quick Expense (Center Action Button) -->
     <div class="flex items-center justify-center">
       <button
         type="button"
-        @click="quickAddOpen = true"
+        @click="quickExpenseOpen = true"
         class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-lg shadow-emerald-950/60 flex items-center justify-center transition-transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#111827]"
-        aria-label="Open Quick Add Action Sheet"
+        aria-label="Open Quick Expense Modal"
+        title="Quick Record Expense"
       >
-        <i class="bi bi-plus-lg text-xl font-bold"></i>
+        <i class="bi bi-receipt text-xl font-bold"></i>
       </button>
     </div>
 
-    <!-- 4. Fuel -->
+    <!-- 4. + Work Log -->
     <a
-      href="{% url 'fuel:list' %}"
-      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none focus:text-emerald-400 {% if request.resolver_match.app_name == 'fuel' %}text-emerald-400 font-semibold{% else %}text-gray-400 hover:text-gray-200{% endif %}"
-      {% if request.resolver_match.app_name == 'fuel' %}aria-current="page"{% endif %}
+      href="{% url 'machines:work_create' %}"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'work_create' %}text-cyan-400 font-semibold{% else %}text-gray-400 hover:text-cyan-300{% endif %}"
+      title="Record Machine Work Hours / Acres"
     >
       <div class="relative flex items-center justify-center">
-        <i class="bi bi-fuel-pump-fill text-lg"></i>
-        {% if request.resolver_match.app_name == 'fuel' %}
-          <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-        {% endif %}
+        <i class="bi bi-clock-history text-lg text-cyan-400"></i>
       </div>
-      <span class="text-[10px] mt-0.5 tracking-tight truncate">Fuel</span>
+      <span class="text-[10px] mt-0.5 tracking-tight truncate">+ Work</span>
     </a>
 
-    <!-- 5. Profile & More -->
-    <a
-      href="{% url 'accounts:profile' %}"
-      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none focus:text-emerald-400 {% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name == 'profile' %}text-emerald-400 font-semibold{% else %}text-gray-400 hover:text-gray-200{% endif %}"
-      {% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name == 'profile' %}aria-current="page"{% endif %}
+    <!-- 5. Menu Drawer -->
+    <button
+      type="button"
+      @click="sidebarOpen = !sidebarOpen"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center text-gray-400 hover:text-white transition-colors bg-transparent border-0 focus:outline-none"
+      aria-label="Toggle Full Menu"
+      title="Open All Modules"
     >
       <div class="relative flex items-center justify-center">
-        <i class="bi bi-person-circle text-lg"></i>
-        {% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name == 'profile' %}
-          <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-        {% endif %}
+        <i class="bi bi-list text-xl"></i>
       </div>
-      <span class="text-[10px] mt-0.5 tracking-tight truncate">Profile</span>
-    </a>
+      <span class="text-[10px] mt-0.5 tracking-tight truncate">Menu</span>
+    </button>
 
   </div>
 </nav>

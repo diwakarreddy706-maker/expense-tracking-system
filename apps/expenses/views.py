@@ -248,11 +248,27 @@ def category_list_view(request):
 def category_create_view(request):
     """Creates a new expense category."""
     if request.method == 'POST':
-        form = ExpenseCategoryForm(request.POST)
+        post_data = request.POST.copy()
+        if not post_data.get('code'):
+            import re, uuid
+            name = post_data.get('name', 'CAT')
+            slug = re.sub(r'[^A-Z0-9]', '', name.upper())[:10] or 'CAT'
+            post_data['code'] = f"{slug}-{uuid.uuid4().hex[:4].upper()}"
+        if not post_data.get('color_hex'):
+            post_data['color_hex'] = '#10B981'
+        if not post_data.get('icon_class'):
+            post_data['icon_class'] = 'bi-tags'
+        if 'is_active' not in post_data:
+            post_data['is_active'] = 'on'
+        form = ExpenseCategoryForm(post_data)
         if form.is_valid():
             cat = form.save()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax'):
+                return JsonResponse({'success': True, 'id': cat.id, 'name': cat.name, 'code': cat.code})
             messages.success(request, f"Category '{cat.name}' ({cat.code}) created.")
             return redirect('expenses:categories')
+        elif request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax'):
+            return JsonResponse({'success': False, 'errors': form.errors.get_json_data()})
     else:
         form = ExpenseCategoryForm()
 

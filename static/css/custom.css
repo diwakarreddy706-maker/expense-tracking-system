@@ -275,6 +275,145 @@ body {
 .badge-deficit  { background: rgba(239, 68, 68, 0.15); color: var(--theme-danger); }
 .badge-pending  { background: rgba(245, 158, 11, 0.15); color: var(--theme-warning); }
 
+/* ==============================================================================
+   PHASE 22.1: GLASS SURFACES, CARDS, PILLS & TACTILE CONTROLS
+   ============================================================================== */
+
+/* Glass Surface Panels */
+.glass-card {
+  background: rgba(19, 26, 38, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.glass-panel {
+  background: rgba(19, 26, 38, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.75rem;
+}
+
+/* Card Hover Lift */
+.card-hover-lift {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.55), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Status Pills */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.status-pill-active {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.08);
+}
+
+.status-pill-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.08);
+}
+
+.status-pill-danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.08);
+}
+
+.status-pill-info {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.08);
+}
+
+/* Tactile Pill Selectors (Alternative to boring radio/select) */
+.pill-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pill-selector-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--theme-text-muted);
+  background: #182234;
+  border: 1px solid #28354A;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.pill-selector-item:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+  background: #1F2C42;
+}
+
+.pill-selector-item.active,
+.pill-selector-item.selected,
+input[type="radio"]:checked + .pill-selector-item {
+  color: #fff;
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+}
+
+/* Accessible Focus Glow */
+.focus-glow:focus,
+.focus-glow:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px #0B0F17, 0 0 0 4px #10B981 !important;
+  border-color: #10B981 !important;
+}
+
+/* Strict Tabular Numeral Utilities */
+.tabular-nums,
+.num-tabular,
+.font-mono-numbers {
+  font-family: 'JetBrains Mono', 'Roboto Mono', monospace !important;
+  font-variant-numeric: tabular-nums !important;
+  letter-spacing: -0.01em;
+}
+
+/* Safe Area Inset Support for Mobile Notch/Home Indicator */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
+}
+
 /* Responsive Rules */
 @media (max-width: 991.98px) {
   .app-sidebar {

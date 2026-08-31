@@ -18,12 +18,41 @@
     </div>
   </div>
 
-  <!-- Right Side: Quick Action, Status Badge & Profile Dropdown -->
+  <!-- Center / Context: Liquid Balance Summary (When available in context) -->
+  {% if kpis.available_balance is not None %}
+    <div class="hidden xl:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[#131A26] border border-[#28354A] text-xs">
+      <span class="text-gray-400 font-medium">Liquid:</span>
+      <span class="text-emerald-400 font-mono font-bold">₹{{ kpis.available_balance|floatformat:2 }}</span>
+      {% if kpis.cash_balance is not None %}
+        <span class="text-gray-600">|</span>
+        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">Cash:</span> ₹{{ kpis.cash_balance|floatformat:0 }}</span>
+      {% endif %}
+      {% if kpis.bank_balance is not None %}
+        <span class="text-gray-600">|</span>
+        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">Bank:</span> ₹{{ kpis.bank_balance|floatformat:0 }}</span>
+      {% endif %}
+      {% if kpis.upi_balance is not None %}
+        <span class="text-gray-600">|</span>
+        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">UPI:</span> ₹{{ kpis.upi_balance|floatformat:0 }}</span>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <!-- Right Side: Search, Quick Action, Status Badge & Profile Dropdown -->
   <div class="flex items-center gap-3">
+    <!-- Global Quick Search Trigger (Ctrl+K) -->
+    <div class="hidden md:flex items-center">
+      <a href="{% url 'expenses:list' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-400 hover:text-white text-xs transition-colors no-underline" title="Search Transactions, Expenses, Equipment">
+        <i class="bi bi-search text-xs"></i>
+        <span class="hidden lg:inline">Search...</span>
+        <kbd class="hidden lg:inline-block px-1 py-0.2 text-[9px] font-mono bg-[#0B0F17] text-gray-400 rounded border border-[#28354A]">Ctrl K</kbd>
+      </a>
+    </div>
+
     <!-- Live Financial System Badge -->
-    <div class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
-      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-      <span>Double-Entry Safe</span>
+    <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-mono">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span class="hidden md:inline">Double-Entry Safe</span>
     </div>
 
     <!-- Quick Add Expense Trigger (Owner / Accountant / Manager) -->
