@@ -180,3 +180,11 @@ LOGGING = {
         },
     },
 }
+
+# Cloud & Distributed MySQL Compatibility (TiDB Cloud, AWS Aurora, MySQL 8):
+# Split ADD COLUMN and ADD CONSTRAINT FOREIGN KEY into separate sequential DDL statements
+try:
+    from django.db.backends.mysql.schema import DatabaseSchemaEditor
+    setattr(DatabaseSchemaEditor, 'sql_create_column_inline_fk', None)
+except ImportError:
+    pass
