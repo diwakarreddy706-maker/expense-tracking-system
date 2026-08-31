@@ -11,11 +11,10 @@ bind = os.getenv("GUNICORN_BIND", f"0.0.0.0:{port}")
 backlog = 2048
 
 # Worker processes
-# Standard formula: 2-4 x $(NUM_CORES)
-cpu_count = multiprocessing.cpu_count()
-workers = int(os.getenv("GUNICORN_WORKERS", str(cpu_count * 2 + 1)))
+# Default to 2 workers and 4 threads for memory-safe cloud containers (<= 512MB RAM)
+workers = int(os.getenv("GUNICORN_WORKERS", "2"))
 worker_class = "gthread"
-threads = int(os.getenv("GUNICORN_THREADS", "2"))
+threads = int(os.getenv("GUNICORN_THREADS", "4"))
 worker_connections = 1000
 
 # Worker lifecycle & memory leak prevention
