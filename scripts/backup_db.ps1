@@ -10,6 +10,7 @@ param (
     [int]$RetentionDays = 30,
     [string]$DbName = $env:DB_NAME,
     [string]$DbUser = $env:DB_USER,
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '')]
     [string]$DbPassword = $env:DB_PASSWORD,
     [string]$DbHost = $(if ($env:DB_HOST) { $env:DB_HOST } else { "127.0.0.1" }),
     [string]$DbPort = $(if ($env:DB_PORT) { $env:DB_PORT } else { "3306" })

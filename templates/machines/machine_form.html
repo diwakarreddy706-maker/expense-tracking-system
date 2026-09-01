@@ -210,8 +210,12 @@ document.addEventListener('DOMContentLoaded', function() {
           nameInput.value = '';
           codeInput.value = '';
           const modalEl = document.getElementById('newMachineTypeModal');
-          const modalInst = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-          modalInst.hide();
+          if (window.agriCloseModal) {
+            window.agriCloseModal(modalEl);
+          } else if (window.bootstrap && window.bootstrap.Modal) {
+            const modalInst = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modalInst.hide();
+          }
         } else {
           alertBox.textContent = data.error || 'Failed to create equipment type.';
           alertBox.classList.remove('hidden');

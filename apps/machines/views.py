@@ -82,7 +82,17 @@ def machine_create_view(request):
     """Creates a new machine record."""
     ensure_default_machine_types()
     if request.method == 'POST':
-        form = MachineForm(request.POST)
+        post_data = request.POST.copy()
+        if not post_data.get('machine_code'):
+            import uuid
+            post_data['machine_code'] = f"MCH-{uuid.uuid4().hex[:6].upper()}"
+        if not post_data.get('status'):
+            post_data['status'] = Machine.STATUS_ACTIVE
+        if not post_data.get('meter_unit'):
+            post_data['meter_unit'] = Machine.METER_HOURS
+        if not post_data.get('current_meter_reading'):
+            post_data['current_meter_reading'] = '0.00'
+        form = MachineForm(post_data)
         if form.is_valid():
             machine = form.save()
             log_audit_event(
@@ -93,8 +103,17 @@ def machine_create_view(request):
                 changes={'machine_code': machine.machine_code, 'name': machine.name, 'meter_unit': machine.meter_unit},
                 request=request
             )
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax'):
+                return JsonResponse({
+                    'success': True,
+                    'id': machine.id,
+                    'name': f"{machine.name} ({machine.machine_code})",
+                    'code': machine.machine_code
+                })
             messages.success(request, f"Machine '{machine.name}' ({machine.machine_code}) added.")
             return redirect('machines:list')
+        elif request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax'):
+            return JsonResponse({'success': False, 'errors': form.errors.get_json_data()})
     else:
         form = MachineForm()
 
@@ -527,20 +546,21 @@ def work_entry_create_view(request):
                 billing_type=cd['billing_type'],
                 start_time=cd.get('start_time'),
                 end_time=cd.get('end_time'),
-                break_hours=cd.get('break_hours', Decimal('0.00')),
-                hourly_rate=cd.get('hourly_rate', Decimal('0.00')),
-                quantity=cd.get('quantity', Decimal('0.00')),
-                unit_rate=cd.get('unit_rate', Decimal('0.00')),
+                break_hours=cd.get('break_hours') or Decimal('0.00'),
+                hourly_rate=cd.get('hourly_rate') or Decimal('0.00'),
+                quantity=cd.get('quantity') or Decimal('0.00'),
+                unit_rate=cd.get('unit_rate') or Decimal('0.00'),
                 start_meter=cd.get('start_meter'),
                 end_meter=cd.get('end_meter'),
                 manual_bill_no=cd.get('manual_bill_no'),
-                advance_amount=cd.get('advance_amount', Decimal('0.00')),
-                udhar_amount=cd.get('udhar_amount', Decimal('0.00')),
-                payment_mode=cd.get('payment_mode', 'UDHAR'),
+                advance_amount=cd.get('advance_amount') or Decimal('0.00'),
+                udhar_amount=cd.get('udhar_amount') or Decimal('0.00'),
+                payment_mode=cd.get('payment_mode') or 'UDHAR',
                 payment_account=cd.get('payment_account'),
-                fuel_liters=cd.get('fuel_liters', Decimal('0.00')),
-                fuel_rate=cd.get('fuel_rate', Decimal('95.00')),
+                fuel_liters=cd.get('fuel_liters') or Decimal('0.00'),
+                fuel_rate=cd.get('fuel_rate') or Decimal('95.00'),
                 notes=cd.get('notes'),
+                auto_create_receivable=True,
                 created_by=request.user,
                 request=request
             )
@@ -555,6 +575,7 @@ def work_entry_create_view(request):
     return render(request, 'machines/work_entry_form.html', {
         'form': form,
         'linked_booking': linked_booking,
+        'machine_types': MachineType.objects.all(),
         'title': f"Record Work Entry {'(Booking: ' + linked_booking.booking_code + ')' if linked_booking else ''}",
     })
 
@@ -595,6 +616,7 @@ def work_entry_edit_view(request, entry_id):
     return render(request, 'machines/work_entry_form.html', {
         'form': form,
         'entry': entry,
+        'machine_types': MachineType.objects.all(),
         'title': f"Edit Work Entry: {entry.work_code}",
     })
 

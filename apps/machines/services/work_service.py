@@ -147,15 +147,20 @@ class WorkService:
         fuel_liters=Decimal('0.00'),
         fuel_rate=Decimal('95.00'),
         notes=None,
+        auto_create_receivable=False,
         created_by: User,
         request=None
     ) -> MachineWorkEntry:
         """
         Creates and authoritatively validates a MachineWorkEntry.
-        Strictly isolated from financial ledger transactions.
+        Strictly isolated from financial ledger transactions unless auto_create_receivable is enabled.
         """
         work_code = cls.generate_work_code(work_date)
         meter_diff = cls.calculate_meter_difference(start_meter, end_meter)
+        advance_amount = Decimal(str(advance_amount or '0.00'))
+        udhar_amount = Decimal(str(udhar_amount or '0.00'))
+        fuel_liters = Decimal(str(fuel_liters or '0.00'))
+        fuel_rate = Decimal(str(fuel_rate or '95.00'))
 
         if billing_type == MachineWorkEntry.BILLING_TIME_HOURLY:
             calc = cls.calculate_harvester_billing(
@@ -216,7 +221,7 @@ class WorkService:
         entry.save()
 
         # Step 4: Farmer Credit Ledger (Udhar) Integration
-        if total_amount > Decimal('0.00'):
+        if auto_create_receivable and total_amount > Decimal('0.00'):
             try:
                 rcv = CustomerReceivableService.create_receivable(
                     user=created_by,
@@ -413,6 +418,10 @@ class WorkService:
         """Soft deletes a MachineWorkEntry with audit logging."""
         entry.is_deleted = True
         entry.save(update_fields=['is_deleted', 'updated_at'])
+
+        if entry.receivable and not entry.receivable.is_deleted:
+            entry.receivable.is_deleted = True
+            entry.receivable.save(update_fields=['is_deleted', 'updated_at'])
 
         log_audit_event(
             user=user,

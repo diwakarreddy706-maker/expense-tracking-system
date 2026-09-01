@@ -105,9 +105,8 @@ class MaintenanceService:
             service_interval_meter = Decimal(str(service_interval_meter))
 
         if service_basis in [MachineMaintenanceSchedule.BASIS_DATE, MachineMaintenanceSchedule.BASIS_BOTH]:
-            if not service_interval_days or int(service_interval_days) <= 0:
+            if not service_interval_days or service_interval_days <= 0:
                 raise ValidationError("Date-based schedule requires a positive service_interval_days.")
-            service_interval_days = int(service_interval_days)
 
         # Calculate initial next service metrics
         next_m = None
@@ -133,7 +132,7 @@ class MaintenanceService:
             next_service_date=next_d,
             next_service_meter=next_m,
             warning_meter_before=Decimal(str(warning_meter_before or '25.00')),
-            warning_days_before=int(warning_days_before or 7),
+            warning_days_before=warning_days_before if warning_days_before is not None else 7,
             notes=notes,
             created_by=created_by,
             is_active=True
@@ -186,16 +185,16 @@ class MaintenanceService:
             schedule.service_interval_meter = None
 
         if service_basis in [MachineMaintenanceSchedule.BASIS_DATE, MachineMaintenanceSchedule.BASIS_BOTH]:
-            if not service_interval_days or int(service_interval_days) <= 0:
+            if not service_interval_days or service_interval_days <= 0:
                 raise ValidationError("Days interval must be greater than zero.")
-            schedule.service_interval_days = int(service_interval_days)
+            schedule.service_interval_days = service_interval_days
         else:
             schedule.service_interval_days = None
 
         schedule.last_service_date = last_service_date
         schedule.last_service_meter = last_service_meter
         schedule.warning_meter_before = Decimal(str(warning_meter_before or '25.00'))
-        schedule.warning_days_before = int(warning_days_before or 7)
+        schedule.warning_days_before = warning_days_before if warning_days_before is not None else 7
 
         # Recalculate next targets
         if schedule.service_interval_meter:

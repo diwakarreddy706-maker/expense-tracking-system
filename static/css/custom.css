@@ -426,3 +426,24 @@ input[type="radio"]:checked + .pill-selector-item {
     margin-left: 0;
   }
 }
+
+/* Modal Stacking & Interaction Fix: Ensure modals always sit above the backdrop */
+.modal {
+  z-index: 1060 !important;
+}
+.modal.show {
+  display: block !important;
+}
+.modal-backdrop {
+  z-index: 1050 !important;
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(4px) !important;
+}
+.modal-dialog {
+  z-index: 1065 !important;
+}
+.modal-content {
+  position: relative !important;
+  z-index: 1070 !important;
+  pointer-events: auto !important;
+}

@@ -127,6 +127,95 @@
     }
   </script>
 
+  <!-- Universal Modal Controller: Bulletproof Open, Close, Backdrop & Escape Handlers -->
+  <script>
+    (function() {
+      window.agriCloseModal = function(modal) {
+        if (!modal) return;
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        modal.removeAttribute('aria-modal');
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+        if (window.bootstrap && window.bootstrap.Modal) {
+          try {
+            const inst = bootstrap.Modal.getInstance(modal);
+            if (inst) inst.hide();
+          } catch (e) {}
+        }
+      };
+
+      window.agriOpenModal = function(modal) {
+        if (!modal) return;
+        modal.classList.add('show');
+        modal.style.display = 'block';
+        modal.setAttribute('aria-hidden', 'false');
+        modal.setAttribute('aria-modal', 'true');
+        document.body.classList.add('modal-open');
+        if (!document.querySelector('.modal-backdrop')) {
+          const bd = document.createElement('div');
+          bd.className = 'modal-backdrop fade show';
+          bd.addEventListener('click', () => window.agriCloseModal(modal));
+          document.body.appendChild(bd);
+        }
+        if (window.bootstrap && window.bootstrap.Modal) {
+          try {
+            const inst = bootstrap.Modal.getOrCreateInstance(modal);
+            inst.show();
+          } catch (e) {}
+        }
+      };
+
+      // Global capture phase click listener for all modal triggers & dismissals
+      document.addEventListener('click', function(e) {
+        // 1. Close/Dismiss clicked (X button, Cancel button, or data-bs-dismiss)
+        const dismissBtn = e.target.closest('[data-bs-dismiss="modal"], .btn-close, [data-dismiss="modal"]');
+        if (dismissBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          const targetModal = dismissBtn.closest('.modal') || document.querySelector('.modal.show, .modal[style*="display: block"]');
+          if (targetModal) {
+            window.agriCloseModal(targetModal);
+          }
+          return;
+        }
+
+        // 2. Backdrop clicked (outside dialog content)
+        if (e.target.classList && (e.target.classList.contains('modal') || (e.target.classList.contains('modal-dialog') && !e.target.closest('.modal-content')))) {
+          const targetModal = e.target.closest('.modal');
+          if (targetModal) {
+            window.agriCloseModal(targetModal);
+          }
+          return;
+        }
+
+        // 3. Open button clicked (data-bs-toggle="modal")
+        const toggleBtn = e.target.closest('[data-bs-toggle="modal"], [data-toggle="modal"]');
+        if (toggleBtn) {
+          const targetId = toggleBtn.getAttribute('data-bs-target') || toggleBtn.getAttribute('data-target') || toggleBtn.getAttribute('href');
+          if (targetId && targetId.startsWith('#')) {
+            const targetModal = document.querySelector(targetId);
+            if (targetModal) {
+              e.preventDefault();
+              window.agriOpenModal(targetModal);
+            }
+          }
+        }
+      }, true);
+
+      // Global Escape key handler
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+          const openModals = document.querySelectorAll('.modal.show, .modal[style*="display: block"]');
+          openModals.forEach(m => window.agriCloseModal(m));
+        }
+      });
+    })();
+  </script>
+
   {% block extra_js %}{% endblock %}
 </body>
 </html>
