@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Q, Sum, Count
+from django.db.models import Q, Sum, Count, F
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from decimal import Decimal
@@ -1352,7 +1352,9 @@ def farmer_details_ajax_view(request, customer_id):
     """Returns customer details (name, phone, village/location, current udhar balance) for instant form autofill."""
     customer = get_object_or_404(Customer, id=customer_id, is_deleted=False)
     # Calculate outstanding balance from unpaid receivables
-    unpaid = customer.receivables.filter(is_deleted=False).aggregate(s=Sum('balance_amount'))['s'] or Decimal('0.00')
+    unpaid = customer.receivables.filter(is_deleted=False).exclude(status='PAID').aggregate(
+        s=Sum(F('total_amount') - F('received_amount'))
+    )['s'] or Decimal('0.00')
     return JsonResponse({
         'name': customer.name,
         'phone': customer.phone or '',
