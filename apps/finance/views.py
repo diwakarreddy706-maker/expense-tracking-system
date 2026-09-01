@@ -165,6 +165,8 @@ def customer_create_view(request):
             post_data['customer_code'] = f"CUST-{uuid.uuid4().hex[:6].upper()}"
         if not post_data.get('status'):
             post_data['status'] = Customer.STATUS_ACTIVE
+        if post_data.get('village') and not post_data.get('location_address'):
+            post_data['location_address'] = post_data.get('village')
         form = CustomerForm(post_data)
         if form.is_valid():
             customer = form.save()
@@ -177,7 +179,14 @@ def customer_create_view(request):
                 request=request
             )
             if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax'):
-                return JsonResponse({'success': True, 'id': customer.id, 'name': customer.name, 'code': customer.customer_code})
+                return JsonResponse({
+                    'success': True,
+                    'id': customer.id,
+                    'name': customer.name,
+                    'phone': customer.phone or '',
+                    'village': customer.location_address or '',
+                    'code': customer.customer_code
+                })
             messages.success(request, f"Customer '{customer.name}' ({customer.customer_code}) created.")
             return redirect('finance:customers')
         elif request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax'):

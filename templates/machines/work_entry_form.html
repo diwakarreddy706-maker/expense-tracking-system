@@ -432,6 +432,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const tractorPanel = document.getElementById('tractorBillingPanel');
   const billingBadge = document.getElementById('billingWorkflowBadge');
   const machineSelect = document.getElementById('machineSelect');
+  const customerSelect = document.getElementById('customerSelect') || document.getElementById('id_customer');
 
   // Harvester inputs
   const startTime = document.getElementById('startTime');
@@ -658,29 +659,35 @@ document.addEventListener('DOMContentLoaded', function() {
   const customerPhoneInput = document.getElementById('newCustomerPhone');
   const customerVillageInput = document.getElementById('newCustomerVillage');
   const customerAlert = document.getElementById('newCustomerAlert');
-  const mainCustomerSelect = document.getElementById('id_customer');
+  const mainCustomerSelect = document.getElementById('customerSelect') || document.getElementById('id_customer');
 
   if (saveCustomerBtn && mainCustomerSelect) {
     saveCustomerBtn.addEventListener('click', () => {
-      const name = customerNameInput.value.trim();
-      const phone = customerPhoneInput.value.trim();
+      const name = customerNameInput ? customerNameInput.value.trim() : '';
+      const phone = customerPhoneInput ? customerPhoneInput.value.trim() : '';
       const village = customerVillageInput ? customerVillageInput.value.trim() : '';
 
       if (!name) {
-        customerAlert.textContent = 'Please enter a farmer name.';
-        customerAlert.classList.remove('hidden');
-        customerNameInput.focus();
+        if (customerAlert) {
+          customerAlert.textContent = 'Please enter a farmer name.';
+          customerAlert.classList.remove('hidden');
+        }
+        if (customerNameInput) customerNameInput.focus();
         return;
       }
 
       saveCustomerBtn.disabled = true;
       saveCustomerBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
-      customerAlert.classList.add('hidden');
+      if (customerAlert) customerAlert.classList.add('hidden');
 
       const formData = new FormData();
       formData.append('name', name);
-      formData.append('phone', phone);
-      if (village) formData.append('village', village);
+      if (phone) formData.append('phone', phone);
+      if (village) {
+        formData.append('village', village);
+        formData.append('location_address', village);
+      }
+      formData.append('status', 'ACTIVE');
       formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
       formData.append('is_ajax', '1');
 
@@ -697,11 +704,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.success) {
           const opt = new Option(data.name, data.id, true, true);
           mainCustomerSelect.add(opt);
+          mainCustomerSelect.value = data.id;
           mainCustomerSelect.dispatchEvent(new Event('change'));
 
-          customerNameInput.value = '';
-          customerPhoneInput.value = '';
+          // Immediate update of the Farmer Metadata Panel
+          const fn = document.getElementById('dispFarmerName');
+          const fp = document.getElementById('dispFarmerPhone');
+          const fv = document.getElementById('dispFarmerVillage');
+          const fu = document.getElementById('dispFarmerUdhar');
+          if (fn) fn.innerText = data.name || name;
+          if (fp) fp.innerText = data.phone || phone || '--';
+          if (fv) fv.innerText = data.village || village || '--';
+          if (fu) fu.innerText = '₹0.00';
+
+          if (customerNameInput) customerNameInput.value = '';
+          if (customerPhoneInput) customerPhoneInput.value = '';
           if (customerVillageInput) customerVillageInput.value = '';
+
           const modalEl = document.getElementById('newCustomerModal');
           if (window.agriCloseModal) {
             window.agriCloseModal(modalEl);
@@ -714,15 +733,19 @@ document.addEventListener('DOMContentLoaded', function() {
           if (data.errors) {
             errMsg = Object.values(data.errors).map(e => e[0].message).join(' ');
           }
-          customerAlert.textContent = errMsg;
-          customerAlert.classList.remove('hidden');
+          if (customerAlert) {
+            customerAlert.textContent = errMsg;
+            customerAlert.classList.remove('hidden');
+          }
         }
       })
       .catch(() => {
         saveCustomerBtn.disabled = false;
         saveCustomerBtn.innerHTML = '<i class="bi bi-plus-lg"></i> Save Farmer';
-        customerAlert.textContent = 'Network error while creating farmer.';
-        customerAlert.classList.remove('hidden');
+        if (customerAlert) {
+          customerAlert.textContent = 'Network error while creating farmer.';
+          customerAlert.classList.remove('hidden');
+        }
       });
     });
   }
