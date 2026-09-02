@@ -104,10 +104,10 @@
 
   <!-- Search Filter Bar -->
   <div class="relative print:hidden">
-    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 z-10">
       <i class="bi bi-search"></i>
     </div>
-    <input type="text" id="farmerSearchInput" placeholder="Search by Farmer Name, Phone Number (e.g. 9880123456), Bill No, or Village..." class="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-[#131A26] border border-gray-200 dark:border-[#28354A] text-gray-900 dark:text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 placeholder-gray-400 transition-colors shadow-sm">
+    <input type="text" id="farmerSearchInput" placeholder="Search by Farmer Name, Phone Number (e.g. 9880123456), Bill No, or Village..." class="w-full pl-11 pr-4 py-3 rounded-xl bg-white dark:bg-[#131A26] border border-gray-200 dark:border-[#28354A] text-gray-900 dark:text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 placeholder-gray-400 transition-colors shadow-sm">
   </div>
 
   <!-- Selectable Farmer Cards Carousel / Horizontal Grid -->
@@ -121,7 +121,7 @@
               <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-emerald-800/80 text-white border border-emerald-400/40">
                 {{ fd.customer_code }}
               </span>
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black bg-white text-rose-600 border border-white shadow-sm">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black shadow-sm" style="background-color: #FFFFFF !important; color: #BE123C !important;">
                 UDHAR: ₹{{ fd.outstanding_udhar|floatformat:0|intcomma }}
               </span>
             </div>
