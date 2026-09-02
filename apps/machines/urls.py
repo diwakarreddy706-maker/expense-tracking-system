@@ -30,6 +30,7 @@ urlpatterns = [
     path('work/<int:entry_id>/edit/', views.work_entry_edit_view, name='work_edit'),
     path('work/<int:entry_id>/delete/', views.work_entry_delete_view, name='work_delete'),
     path('work/<int:entry_id>/invoice/', views.work_entry_invoice_view, name='work_invoice'),
+    path('work/<int:entry_id>/pdf/', views.work_entry_pdf_view, name='work_pdf'),
 
     # Step 1 & 5: Rented Combine Harvester Owners & Settlements
     path('rented-owners/', views.rented_owners_list_view, name='rented_owners'),
