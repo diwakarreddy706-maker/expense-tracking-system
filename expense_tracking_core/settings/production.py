@@ -112,6 +112,14 @@ if database_url:
                 'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
             }
         }
+elif not os.getenv('DB_NAME') or (os.getenv('RENDER') and os.getenv('DB_HOST', '127.0.0.1') in ('127.0.0.1', 'localhost')):
+    # Safe cloud fallback (Render) when remote MySQL/Postgres host is not configured
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 else:
     DATABASES = {
         'default': {
