@@ -41,6 +41,12 @@ urlpatterns = [
     path('compliance/add/', views.harvester_compliance_create_view, name='compliance_create'),
     path('compliance/<int:compliance_id>/whatsapp/', views.harvester_compliance_whatsapp_view, name='compliance_whatsapp'),
 
+    # Farmer Credit Ledger (Udhar Katha)
+    path('farmers/ledger/', views.farmer_credit_ledger_view, name='farmer_ledger'),
+    path('farmers/ledger/<int:customer_id>/', views.farmer_credit_ledger_view, name='farmer_ledger_detail'),
+    path('farmers/ledger/<int:customer_id>/collect/', views.farmer_collect_payment_view, name='farmer_collect_payment'),
+    path('farmers/add-ajax/', views.farmer_create_ajax_view, name='farmer_create_ajax'),
+
     # AJAX Form Lookups
     path('ajax/farmer/<int:customer_id>/', views.farmer_details_ajax_view, name='farmer_details_ajax'),
     path('ajax/machine/<int:machine_id>/', views.machine_details_ajax_view, name='machine_details_ajax'),

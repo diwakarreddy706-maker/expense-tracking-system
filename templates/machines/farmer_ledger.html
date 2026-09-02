@@ -1,0 +1,482 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | AgriBOS ERP{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Top Breadcrumb & Page Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div class="text-[11px] font-mono font-bold tracking-wider text-gray-400 uppercase flex items-center gap-1.5 mb-1">
+        <span>SRI BASAVESHWARA &amp; CO</span>
+        <span>/</span>
+        <span>MACHINE ERP</span>
+        <span>/</span>
+        <span class="text-emerald-400">FARMERS CREDIT LEDGER</span>
+      </div>
+      <div class="flex flex-wrap items-center gap-2.5">
+        <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight m-0 uppercase flex items-center gap-2">
+          <span>Farmer Ledger Book &amp; History</span>
+        </h1>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+          ರೈತರ ಖಾತೆ ಪುಸ್ತಕ
+        </span>
+      </div>
+      <p class="text-xs text-gray-400 mt-1 mb-0">Track harvesting work logs, advance payments, and collect outstanding Udhar balances with automated digital receipts.</p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center gap-2.5 flex-wrap print:hidden">
+      <button type="button" onclick="window.print()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 font-semibold text-xs border border-[#28354A] shadow-sm transition-all cursor-pointer">
+        <i class="bi bi-printer"></i>
+        <span>Print Passbook</span>
+      </button>
+      <button type="button" data-bs-toggle="modal" data-bs-target="#registerFarmerModal" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm transition-all border-0 cursor-pointer">
+        <i class="bi bi-plus-lg"></i>
+        <span>+ Register Farmer</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Top 4 Summary Cards (Fleet-wide KPIs) -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- 1. Registered Farmers -->
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-sm relative overflow-hidden">
+      <div class="flex items-start justify-between">
+        <div>
+          <span class="text-[11px] font-bold font-mono uppercase tracking-wider text-gray-400 block">REGISTERED FARMERS</span>
+          <div class="text-2xl font-black text-white mt-1.5 font-mono">{{ total_farmers_count }} Accounts</div>
+          <span class="text-xs text-emerald-400 mt-1 inline-flex items-center gap-1 font-medium">
+            <i class="bi bi-person-check-fill text-xs"></i> Active Field Accounts
+          </span>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
+          <i class="bi bi-book text-lg"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Total Work Billed -->
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-sm relative overflow-hidden">
+      <div class="flex items-start justify-between">
+        <div>
+          <span class="text-[11px] font-bold font-mono uppercase tracking-wider text-gray-400 block">TOTAL WORK BILLED</span>
+          <div class="text-2xl font-black text-white mt-1.5 font-mono">₹{{ total_work_billed|floatformat:0 }}</div>
+          <span class="text-xs text-gray-400 mt-1 block font-medium">Gross harvesting revenue</span>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 flex-shrink-0">
+          <i class="bi bi-graph-up-arrow text-base"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Total Collected -->
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-5 shadow-sm relative overflow-hidden">
+      <div class="flex items-start justify-between">
+        <div>
+          <span class="text-[11px] font-bold font-mono uppercase tracking-wider text-gray-400 block">TOTAL COLLECTED</span>
+          <div class="text-2xl font-black text-emerald-400 mt-1.5 font-mono">₹{{ total_collected|floatformat:0 }}</div>
+          <span class="text-xs text-emerald-300 mt-1 block font-medium">Advances + Cash/UPI receipts</span>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
+          <i class="bi bi-check2-circle text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Total Outstanding Udhar -->
+    <div class="bg-[#131A26] border border-rose-500/30 rounded-2xl p-5 shadow-sm relative overflow-hidden bg-rose-500/[0.03]">
+      <div class="flex items-start justify-between">
+        <div>
+          <span class="text-[11px] font-bold font-mono uppercase tracking-wider text-rose-400 block">TOTAL OUTSTANDING UDHAR</span>
+          <div class="text-2xl font-black text-rose-400 mt-1.5 font-mono">₹{{ total_outstanding_udhar|floatformat:0 }}</div>
+          <span class="text-xs text-rose-300 mt-1 inline-flex items-center gap-1 font-medium">
+            <i class="bi bi-clock-history text-xs"></i> Pending Field Collection
+          </span>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 flex-shrink-0">
+          <i class="bi bi-currency-rupee text-xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Filter Bar -->
+  <div class="relative print:hidden">
+    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+      <i class="bi bi-search"></i>
+    </div>
+    <input type="text" id="farmerSearchInput" placeholder="Search by Farmer Name, Phone Number (e.g. 9880123456), Bill No, or Village..." class="w-full pl-10 pr-4 py-3 rounded-xl bg-[#131A26] border border-[#28354A] text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 placeholder-gray-500 transition-colors">
+  </div>
+
+  <!-- Selectable Farmer Cards Carousel / Horizontal Grid -->
+  <div class="space-y-2 print:hidden">
+    <div id="farmersGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
+      {% for fd in farmers_data %}
+        <a href="{% url 'machines:farmer_ledger_detail' fd.id %}" class="farmer-card block p-4 rounded-xl border transition-all no-underline {% if selected_customer.id == fd.id %}bg-emerald-950/30 border-emerald-500 shadow-md ring-1 ring-emerald-500{% else %}bg-[#131A26] border-[#28354A] hover:border-gray-500 hover:bg-[#182234]{% endif %}" data-search="{{ fd.name|lower }} {{ fd.phone|lower }} {{ fd.village|lower }} {{ fd.customer_code|lower }}">
+          <div class="flex items-center justify-between mb-2">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase {% if selected_customer.id == fd.id %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/40{% else %}bg-gray-800 text-gray-400 border border-gray-700{% endif %}">
+              {{ fd.customer_code }}
+            </span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-black {% if fd.outstanding_udhar > 0 %}bg-rose-500/20 text-rose-300 border border-rose-500/40{% else %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/40{% endif %}">
+              UDHAR: ₹{{ fd.outstanding_udhar|floatformat:0 }}
+            </span>
+          </div>
+          <div class="text-sm font-bold {% if selected_customer.id == fd.id %}text-white{% else %}text-gray-200{% endif %} truncate">
+            {{ fd.name }}
+          </div>
+          <div class="text-xs text-gray-400 mt-1 flex items-center gap-1.5 truncate">
+            <i class="bi bi-telephone text-[10px]"></i>
+            <span class="font-mono">{{ fd.phone }}</span>
+            <span>•</span>
+            <i class="bi bi-geo-alt text-[10px]"></i>
+            <span class="truncate">{{ fd.village }}</span>
+          </div>
+        </a>
+      {% empty %}
+        <div class="col-span-full p-6 text-center text-gray-400 text-xs bg-[#131A26] rounded-xl border border-[#28354A]">
+          No farmers registered yet. Click "+ Register Farmer" to add one.
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if selected_customer %}
+  <!-- Active Farmer Detailed Profile Card (Dark Sleek Banner) -->
+  <div class="bg-gradient-to-r from-[#111A29] to-[#162234] border border-[#28354A] rounded-2xl p-6 shadow-md">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#28354A]">
+      <!-- Left: Farmer Identity -->
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-emerald-950/40 flex-shrink-0">
+          {{ selected_customer.name|slice:":1"|upper }}
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight m-0">{{ selected_customer.name }}</h2>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 uppercase">
+              {{ selected_customer.customer_code }}
+            </span>
+          </div>
+          <div class="text-xs text-gray-400 mt-1 flex flex-wrap items-center gap-2">
+            {% if selected_customer.notes %}
+              <span class="font-medium text-gray-300">S/O: {{ selected_customer.notes }}</span>
+              <span>•</span>
+            {% endif %}
+            <span class="inline-flex items-center gap-1 font-mono">
+              <i class="bi bi-telephone text-emerald-400"></i> {{ selected_customer.phone|default:"--" }}
+            </span>
+            <span>•</span>
+            <span class="inline-flex items-center gap-1">
+              <i class="bi bi-geo-alt text-emerald-400"></i> {{ selected_customer.location_address|default:"Field Area" }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Katha Status & Actions -->
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="text-right mr-1">
+          <span class="text-[9px] font-mono uppercase tracking-wider text-gray-400 block">KATHA STATUS</span>
+          <span class="inline-block px-3 py-1 rounded-full text-[11px] font-mono font-black tracking-wide mt-0.5 {% if farmer_balance_due > 0 %}bg-amber-500/20 text-amber-300 border border-amber-500/40{% else %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/40{% endif %}">
+            {% if farmer_balance_due > 0 %}PENDING UDHAR{% else %}SETTLED / NIL{% endif %}
+          </span>
+        </div>
+
+        {% if farmer_balance_due > 0 %}
+        <button type="button" data-bs-toggle="modal" data-bs-target="#collectPaymentModal" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-extrabold text-xs shadow-sm transition-all border-0 cursor-pointer">
+          <i class="bi bi-cash-stack text-sm"></i>
+          <span>Collect Payment</span>
+        </button>
+        {% endif %}
+
+        <a href="{{ whatsapp_statement_url }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-extrabold text-xs shadow-sm transition-all no-underline">
+          <i class="bi bi-whatsapp text-sm"></i>
+          <span>WhatsApp Statement</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Farmer 4-Metric Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6">
+      <!-- 1. Total Work Done -->
+      <div class="bg-[#0B0F17]/60 border border-[#28354A] rounded-xl p-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-gray-400 block">TOTAL WORK DONE</span>
+        <div class="text-xl font-black text-white font-mono mt-1">{{ farmer_sessions_count }} Sessions</div>
+        <span class="text-[11px] text-gray-400 mt-0.5 block">Machine execution history</span>
+      </div>
+
+      <!-- 2. Total Billed -->
+      <div class="bg-[#0B0F17]/60 border border-[#28354A] rounded-xl p-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-gray-400 block">TOTAL BILLED</span>
+        <div class="text-xl font-black text-white font-mono mt-1">₹{{ farmer_total_billed|floatformat:0 }}</div>
+        <span class="text-[11px] text-gray-400 mt-0.5 block">Gross invoice total</span>
+      </div>
+
+      <!-- 3. Advance + Paid -->
+      <div class="bg-[#0B0F17]/60 border border-[#28354A] rounded-xl p-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-emerald-400 block">ADVANCE + PAID</span>
+        <div class="text-xl font-black text-emerald-400 font-mono mt-1">₹{{ farmer_adv_paid|add:farmer_rec_paid|floatformat:0 }}</div>
+        <span class="text-[11px] text-gray-400 mt-0.5 block font-mono">Adv: ₹{{ farmer_adv_paid|floatformat:0 }} • Rec: ₹{{ farmer_rec_paid|floatformat:0 }}</span>
+      </div>
+
+      <!-- 4. Balance Due (Udhar) -->
+      <div class="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-rose-400 block">BALANCE DUE (UDHAR)</span>
+        <div class="text-xl font-black text-rose-400 font-mono mt-1">₹{{ farmer_balance_due|floatformat:0 }}</div>
+        <span class="text-[11px] text-rose-300 mt-0.5 block">Outstanding balance</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Work Session Logs & Invoice History -->
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-4 border-b border-[#28354A]">
+      <div>
+        <h3 class="text-base font-bold text-white tracking-tight m-0 flex items-center gap-2">
+          <i class="bi bi-cash-coin text-emerald-400"></i>
+          <span>WORK SESSION LOGS &amp; INVOICE HISTORY</span>
+        </h3>
+        <p class="text-xs text-gray-400 mt-0.5 mb-0">Detailed logs of machine hours, rates, advance collections, and pending balances.</p>
+      </div>
+      <a href="{% url 'machines:work_create' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs no-underline">
+        <i class="bi bi-plus-circle"></i>
+        <span>New Harvesting Bill</span>
+      </a>
+    </div>
+
+    <!-- Table of Work Sessions -->
+    {% if farmer_sessions %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-gray-300">
+          <thead class="bg-[#182234] text-[11px] font-mono uppercase text-gray-400 border-b border-[#28354A]">
+            <tr>
+              <th class="py-3 px-3.5 font-semibold">Bill / Voucher</th>
+              <th class="py-3 px-3 font-semibold">Date</th>
+              <th class="py-3 px-3 font-semibold">Machine &amp; Operator</th>
+              <th class="py-3 px-3 font-semibold text-center">Timings &amp; Hours</th>
+              <th class="py-3 px-3 font-semibold text-right">Gross Bill</th>
+              <th class="py-3 px-3 font-semibold text-right">Advance Paid</th>
+              <th class="py-3 px-3 font-semibold text-right text-rose-400">Added to Udhar</th>
+              <th class="py-3 px-3.5 font-semibold text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#28354A]/50">
+            {% for s in farmer_sessions %}
+              <tr class="hover:bg-gray-800/40 transition-colors">
+                <td class="py-3 px-3.5 font-mono font-bold text-white">
+                  {{ s.manual_bill_no|default:s.work_code }}
+                </td>
+                <td class="py-3 px-3 font-mono text-gray-300 whitespace-nowrap">
+                  {{ s.work_date|date:"d-m-Y" }}
+                </td>
+                <td class="py-3 px-3">
+                  <span class="font-semibold text-white block">{{ s.machine.name }}</span>
+                  <span class="text-[11px] text-gray-400 font-mono">{{ s.operator.full_name|default:"Crew" }}</span>
+                </td>
+                <td class="py-3 px-3 text-center font-mono">
+                  <span class="text-gray-200 block">{{ s.start_time|default:"--" }} - {{ s.end_time|default:"--" }}</span>
+                  <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 mt-0.5">
+                    {{ s.net_working_hours }} hrs
+                  </span>
+                </td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-white whitespace-nowrap">
+                  ₹{{ s.total_amount|floatformat:2 }}
+                </td>
+                <td class="py-3 px-3 text-right font-mono text-emerald-400 whitespace-nowrap">
+                  ₹{{ s.advance_amount|floatformat:2 }}
+                </td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-400 whitespace-nowrap">
+                  ₹{{ s.udhar_amount|floatformat:2 }}
+                </td>
+                <td class="py-3 px-3.5 text-right whitespace-nowrap">
+                  <a href="{% url 'machines:work_invoice' s.id %}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-gray-800 hover:bg-gray-700 text-emerald-400 font-medium text-xs border border-gray-700 no-underline">
+                    <i class="bi bi-receipt"></i>
+                    <span>Invoice</span>
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="p-12 text-center text-gray-400 text-xs">
+        <i class="bi bi-inbox text-3xl text-gray-500 block mb-2"></i>
+        No machine work sessions logged for {{ selected_customer.name }} yet.
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Recent Payments & Settlements -->
+  {% if farmer_payments %}
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm">
+    <div class="mb-4 pb-3 border-b border-[#28354A]">
+      <h3 class="text-base font-bold text-white tracking-tight m-0 flex items-center gap-2">
+        <i class="bi bi-cash-stack text-emerald-400"></i>
+        <span>DIRECT PAYMENT RECEIPTS &amp; SETTLEMENTS</span>
+      </h3>
+      <p class="text-xs text-gray-400 mt-0.5 mb-0">Record of direct debt repayments, bank transfers, and cash collections.</p>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs text-gray-300">
+        <thead class="bg-[#182234] text-[11px] font-mono uppercase text-gray-400 border-b border-[#28354A]">
+          <tr>
+            <th class="py-2.5 px-3 font-semibold">Receipt Code</th>
+            <th class="py-2.5 px-3 font-semibold">Date</th>
+            <th class="py-2.5 px-3 font-semibold">Amount (₹)</th>
+            <th class="py-2.5 px-3 font-semibold">Method</th>
+            <th class="py-2.5 px-3 font-semibold">Credited Account</th>
+            <th class="py-2.5 px-3 font-semibold">Reference</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#28354A]/50 font-mono">
+          {% for p in farmer_payments %}
+            <tr class="hover:bg-gray-800/40">
+              <td class="py-2.5 px-3 text-white font-bold">{{ p.payment_code }}</td>
+              <td class="py-2.5 px-3 text-gray-400">{{ p.payment_date|date:"d-m-Y" }}</td>
+              <td class="py-2.5 px-3 text-emerald-400 font-black">₹{{ p.amount|floatformat:2 }}</td>
+              <td class="py-2.5 px-3">{{ p.get_payment_method_display }}</td>
+              <td class="py-2.5 px-3 text-gray-200">{{ p.account.account_name }}</td>
+              <td class="py-2.5 px-3 text-gray-400">{{ p.reference_no|default:"--" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% endif %}
+</div>
+
+<!-- ============================================================================
+     MODAL: COLLECT PAYMENT / SETTLE UDHAR
+     ============================================================================ -->
+{% if selected_customer %}
+<div class="modal fade" id="collectPaymentModal" tabindex="-1" aria-labelledby="collectPaymentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-[#131A26] border border-[#28354A] text-white rounded-2xl shadow-2xl">
+      <form method="post" action="{% url 'machines:farmer_collect_payment' selected_customer.id %}">
+        {% csrf_token %}
+        <div class="modal-header border-b border-[#28354A] px-6 py-4">
+          <div>
+            <h5 class="modal-title text-base font-bold text-white m-0" id="collectPaymentModalLabel">Collect Udhar Payment</h5>
+            <p class="text-xs text-gray-400 m-0 mt-0.5">Settle outstanding Katha for {{ selected_customer.name }}</p>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body px-6 py-5 space-y-4">
+          <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between text-xs">
+            <span class="text-rose-300 font-semibold">Total Outstanding Udhar:</span>
+            <span class="text-rose-400 font-mono font-black text-sm">₹{{ farmer_balance_due|floatformat:2 }}</span>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Collection Amount (₹) <span class="text-rose-400">*</span></label>
+            <input type="number" name="amount" step="0.01" value="{{ farmer_balance_due }}" max="{{ farmer_balance_due }}" required class="w-full px-3.5 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] text-white text-sm font-mono font-bold focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Payment Mode <span class="text-rose-400">*</span></label>
+              <select name="payment_method" required class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] text-white text-xs focus:outline-none focus:border-emerald-500">
+                <option value="CASH">Cash in Hand</option>
+                <option value="UPI">UPI / PhonePe / GPay</option>
+                <option value="BANK_TRANSFER">Bank Transfer / NEFT</option>
+                <option value="CHEQUE">Cheque</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Deposit Account <span class="text-rose-400">*</span></label>
+              <select name="account" required class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] text-white text-xs focus:outline-none focus:border-emerald-500">
+                {% for acc in accounts %}
+                  <option value="{{ acc.id }}">{{ acc.account_name }} ({{ acc.get_account_type_display }})</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Reference / Receipt / UTR No.</label>
+            <input type="text" name="reference_no" placeholder="Optional transaction ID or manual receipt #" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] text-white text-xs focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Notes / Settlement Remarks</label>
+            <textarea name="notes" rows="2" placeholder="e.g. Cleared paddy harvest balance via cash" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] text-white text-xs focus:outline-none focus:border-emerald-500"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer border-t border-[#28354A] px-6 py-4 flex items-center justify-end gap-3">
+          <button type="button" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold border border-[#28354A]" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm border-0">Record Collection &amp; Settle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ============================================================================
+     MODAL: REGISTER NEW FARMER
+     ============================================================================ -->
+<div class="modal fade" id="registerFarmerModal" tabindex="-1" aria-labelledby="registerFarmerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-[#131A26] border border-[#28354A] text-white rounded-2xl shadow-2xl">
+      <form method="post" action="{% url 'machines:farmer_create_ajax' %}">
+        {% csrf_token %}
+        <div class="modal-header border-b border-[#28354A] px-6 py-4">
+          <h5 class="modal-title text-base font-bold text-white m-0" id="registerFarmerModalLabel">+ Register New Farmer</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body px-6 py-5 space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Farmer Full Name <span class="text-rose-400">*</span></label>
+            <input type="text" name="name" required placeholder="e.g. Siddaramaiah Gowda" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] text-white text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Mobile Number</label>
+              <input type="tel" name="phone" placeholder="e.g. 9880199000" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] text-white text-xs focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Village / Field Location</label>
+              <input type="text" name="village" placeholder="e.g. Gangavati" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] text-white text-xs focus:outline-none focus:border-emerald-500">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Father's Name / Notes</label>
+            <input type="text" name="notes" placeholder="e.g. Sharanappa" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] text-white text-xs focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+        <div class="modal-footer border-t border-[#28354A] px-6 py-4 flex items-center justify-end gap-3">
+          <button type="button" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold border border-[#28354A]" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm border-0">Save Farmer to DB</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Search Filter Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('farmerSearchInput');
+  const cards = document.querySelectorAll('.farmer-card');
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      const q = this.value.toLowerCase().trim();
+      cards.forEach(card => {
+        const text = card.getAttribute('data-search') || '';
+        if (!q || text.includes(q)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    });
+  }
+});
+</script>
+{% endblock %}

@@ -123,6 +123,11 @@
       <span>{% trans "Work Logs & Billing" %}</span>
     </a>
 
+    <a href="{% url 'machines:farmer_ledger' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and 'farmer_ledger' in request.resolver_match.url_name %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-book-half w-5 text-center text-base text-cyan-400"></i>
+      <span>{% trans "Farmer Credit Ledger (Udhar)" %}</span>
+    </a>
+
     <a href="{% url 'machines:maintenance_dashboard' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and 'maintenance' in request.resolver_match.url_name %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-tools w-5 text-center text-base text-amber-400"></i>
       <span>{% trans "Workshop Maintenance" %}</span>

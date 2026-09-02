@@ -25,7 +25,8 @@ from .forms import (
 from .services.work_service import WorkService
 from .services.booking_service import BookingService
 from .services.maintenance_service import MaintenanceService
-from apps.finance.models import Customer, Supplier, Account
+from apps.finance.models import Customer, Supplier, Account, Receivable, CustomerPayment
+from apps.finance.services.settlement_service import CustomerReceivableService
 from apps.expenses.models import Expense, ExpenseCategory
 from apps.employees.models import Employee
 
@@ -1389,4 +1390,239 @@ def machine_details_ajax_view(request, machine_id):
         'owner_name': machine.rented_owner.name if machine.rented_owner else None,
         'owner_rate': str(machine.rented_owner.standard_hourly_rate) if machine.rented_owner else str(machine.hourly_rate),
     })
+
+
+# ==============================================================================
+# FARMER CREDIT LEDGER & PASSBOOK (UDHAR KATHA)
+# ==============================================================================
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def farmer_credit_ledger_view(request, customer_id=None):
+    """
+    Farmer Credit Ledger & Passbook History.
+    Displays global KPIs, quick farmer selection carousel with live Udhar badges,
+    selected farmer profile, 4-metric grid, session logs, and payment receipts.
+    """
+    import urllib.parse
+
+    # 1. Global Fleet Summary KPIs
+    active_customers = Customer.objects.filter(is_deleted=False).order_by('name')
+    total_farmers_count = active_customers.count()
+
+    total_work_billed = MachineWorkEntry.objects.filter(is_deleted=False).aggregate(
+        s=Sum('total_amount')
+    )['s'] or Decimal('0.00')
+
+    total_advances = MachineWorkEntry.objects.filter(is_deleted=False).aggregate(
+        s=Sum('advance_amount')
+    )['s'] or Decimal('0.00')
+
+    total_receipts = CustomerPayment.objects.filter(is_deleted=False).aggregate(
+        s=Sum('amount')
+    )['s'] or Decimal('0.00')
+
+    total_collected = total_advances + total_receipts
+
+    total_outstanding_udhar = Receivable.objects.filter(
+        is_deleted=False
+    ).exclude(status='PAID').aggregate(
+        s=Sum(F('total_amount') - F('received_amount'))
+    )['s'] or Decimal('0.00')
+
+    # 2. Build Farmer Cards with Individual Outstanding Udhar
+    farmers_data = []
+    for c in active_customers:
+        udhar = c.receivables.filter(is_deleted=False).exclude(status='PAID').aggregate(
+            s=Sum(F('total_amount') - F('received_amount'))
+        )['s'] or Decimal('0.00')
+        farmers_data.append({
+            'customer': c,
+            'id': c.id,
+            'name': c.name,
+            'phone': c.phone or '--',
+            'village': c.location_address or 'Field Location',
+            'customer_code': c.customer_code,
+            'outstanding_udhar': udhar,
+        })
+
+    # 3. Determine Selected Farmer
+    selected_farmer_data = None
+    selected_customer = None
+
+    if customer_id:
+        selected_customer = get_object_or_404(Customer, id=customer_id, is_deleted=False)
+        for fd in farmers_data:
+            if fd['id'] == selected_customer.id:
+                selected_farmer_data = fd
+                break
+    elif farmers_data:
+        # Prioritize farmer with Udhar > 0, else first
+        with_udhar = [f for f in farmers_data if f['outstanding_udhar'] > 0]
+        if with_udhar:
+            selected_farmer_data = with_udhar[0]
+        else:
+            selected_farmer_data = farmers_data[0]
+        selected_customer = selected_farmer_data['customer']
+
+    # 4. Selected Farmer Profile & Deep Metrics
+    farmer_sessions = []
+    farmer_payments = []
+    farmer_sessions_count = 0
+    farmer_total_billed = Decimal('0.00')
+    farmer_adv_paid = Decimal('0.00')
+    farmer_rec_paid = Decimal('0.00')
+    farmer_balance_due = Decimal('0.00')
+    whatsapp_statement_url = ''
+
+    if selected_customer:
+        farmer_sessions = MachineWorkEntry.objects.filter(
+            customer=selected_customer,
+            is_deleted=False
+        ).select_related('machine', 'operator').order_by('-work_date', '-id')
+
+        farmer_payments = CustomerPayment.objects.filter(
+            receivable__customer=selected_customer,
+            is_deleted=False
+        ).select_related('account', 'created_by').order_by('-payment_date', '-id')
+
+        farmer_sessions_count = farmer_sessions.count()
+
+        farmer_total_billed = farmer_sessions.aggregate(s=Sum('total_amount'))['s'] or Decimal('0.00')
+        farmer_adv_paid = farmer_sessions.aggregate(s=Sum('advance_amount'))['s'] or Decimal('0.00')
+        farmer_rec_paid = farmer_payments.aggregate(s=Sum('amount'))['s'] or Decimal('0.00')
+
+        if selected_farmer_data:
+            farmer_balance_due = selected_farmer_data['outstanding_udhar']
+        else:
+            farmer_balance_due = selected_customer.receivables.filter(
+                is_deleted=False
+            ).exclude(status='PAID').aggregate(
+                s=Sum(F('total_amount') - F('received_amount'))
+            )['s'] or Decimal('0.00')
+
+        # Generate WhatsApp Statement
+        phone = re.sub(r'\D', '', selected_customer.phone or '')
+        if phone and not phone.startswith('91') and len(phone) == 10:
+            phone = '91' + phone
+
+        wa_msg = (
+            f"🌾 *SRI BASAVESHWARA & CO.*\n"
+            f"*Farmer Katha Statement / ರೈತರ ಖಾತೆ ವಿವರ*\n"
+            f"--------------------------------\n"
+            f"• Farmer: {selected_customer.name}\n"
+            f"• Mobile: {selected_customer.phone or '--'}\n"
+            f"• Village: {selected_customer.location_address or 'Field Location'}\n"
+            f"--------------------------------\n"
+            f"• Total Work Done: {farmer_sessions_count} Sessions\n"
+            f"• Total Billed: ₹{farmer_total_billed:,.2f}\n"
+            f"• Advances Paid: ₹{farmer_adv_paid:,.2f}\n"
+            f"• Cash/UPI Paid: ₹{farmer_rec_paid:,.2f}\n"
+            f"• Total Settled: ₹{(farmer_adv_paid + farmer_rec_paid):,.2f}\n"
+            f"--------------------------------\n"
+            f"👉 *CURRENT BALANCE DUE (UDHAR): ₹{farmer_balance_due:,.2f}*\n"
+            f"--------------------------------\n"
+            f"Thank you for your trust in Sri Basaveshwara & Co."
+        )
+        encoded_msg = urllib.parse.quote(wa_msg)
+        whatsapp_statement_url = f"https://api.whatsapp.com/send?phone={phone}&text={encoded_msg}" if phone else f"https://api.whatsapp.com/send?text={encoded_msg}"
+
+    accounts = Account.objects.filter(is_active=True, is_deleted=False).order_by('account_name')
+
+    return render(request, 'machines/farmer_ledger.html', {
+        'total_farmers_count': total_farmers_count,
+        'total_work_billed': total_work_billed,
+        'total_collected': total_collected,
+        'total_outstanding_udhar': total_outstanding_udhar,
+        'farmers_data': farmers_data,
+        'selected_customer': selected_customer,
+        'selected_farmer_data': selected_farmer_data,
+        'farmer_sessions': farmer_sessions,
+        'farmer_payments': farmer_payments,
+        'farmer_sessions_count': farmer_sessions_count,
+        'farmer_total_billed': farmer_total_billed,
+        'farmer_adv_paid': farmer_adv_paid,
+        'farmer_rec_paid': farmer_rec_paid,
+        'farmer_balance_due': farmer_balance_due,
+        'whatsapp_statement_url': whatsapp_statement_url,
+        'accounts': accounts,
+        'title': 'Farmers Credit Ledger & Katha Book',
+    })
+
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def farmer_collect_payment_view(request, customer_id):
+    """Records a payment against a farmer's outstanding Udhar and settles receivables FIFO."""
+    customer = get_object_or_404(Customer, id=customer_id, is_deleted=False)
+    if request.method == 'POST':
+        try:
+            amount = Decimal(request.POST.get('amount', '0'))
+            account_id = request.POST.get('account')
+            payment_method = request.POST.get('payment_method', 'CASH')
+            payment_date = request.POST.get('payment_date') or timezone.now().date()
+            reference_no = request.POST.get('reference_no', '')
+            notes = request.POST.get('notes', '')
+
+            if amount <= 0:
+                messages.error(request, "Payment amount must be greater than zero.")
+                return redirect('machines:farmer_ledger_detail', customer_id=customer.id)
+
+            account = get_object_or_404(Account, id=account_id, is_deleted=False)
+            unpaid_rcvs = customer.receivables.filter(is_deleted=False).exclude(status='PAID').order_by('bill_date', 'id')
+
+            if not unpaid_rcvs.exists():
+                messages.info(request, f"{customer.name} has no outstanding Udhar obligations to settle.")
+                return redirect('machines:farmer_ledger_detail', customer_id=customer.id)
+
+            remaining_to_apply = amount
+            for rcv in unpaid_rcvs:
+                if remaining_to_apply <= 0:
+                    break
+                due = rcv.outstanding_amount
+                apply_amount = min(due, remaining_to_apply)
+                CustomerReceivableService.record_payment(
+                    user=request.user,
+                    receivable_id=rcv.id,
+                    amount=apply_amount,
+                    account=account,
+                    payment_method=payment_method,
+                    payment_date=payment_date,
+                    reference_no=reference_no,
+                    notes=f"Collected via Farmer Udhar Ledger: {notes}",
+                    request=request
+                )
+                remaining_to_apply -= apply_amount
+
+            messages.success(request, f"Successfully collected ₹{amount:,.2f} from {customer.name} credited to {account.account_name}.")
+        except Exception as e:
+            messages.error(request, f"Error processing payment: {str(e)}")
+    return redirect('machines:farmer_ledger_detail', customer_id=customer.id)
+
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def farmer_create_ajax_view(request):
+    """Registers a new farmer directly from the ledger modal."""
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        village = request.POST.get('village', '').strip()
+        notes = request.POST.get('notes', '').strip()
+
+        if not name:
+            messages.error(request, "Farmer Name is required.")
+            return redirect('machines:farmer_ledger')
+
+        count = Customer.objects.count() + 1
+        code = f"FAR-{timezone.now().year}-{count:03d}"
+        cust = Customer.objects.create(
+            customer_code=code,
+            name=name,
+            phone=phone or None,
+            location_address=village or None,
+            notes=notes or None,
+            status='ACTIVE'
+        )
+        messages.success(request, f"Farmer '{cust.name}' ({cust.customer_code}) registered successfully.")
+        return redirect('machines:farmer_ledger_detail', customer_id=cust.id)
+    return redirect('machines:farmer_ledger')
+
 
