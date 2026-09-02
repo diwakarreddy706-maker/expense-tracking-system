@@ -747,5 +747,59 @@ html:not(.dark) .theme-icon-moon {
   display: none !important;
 }
 
+/* ==============================================================================
+   GRID & INVOICE VOUCHER ENHANCEMENTS
+   ============================================================================== */
+.grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+/* Specific styling for Printable Invoice Voucher */
+.invoice-voucher {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #E2E8F0 !important;
+}
+
+.invoice-voucher .voucher-header {
+  background: linear-gradient(135deg, #064E3B 0%, #065F46 60%, #0F766E 100%) !important;
+  color: #FFFFFF !important;
+}
+
+.invoice-voucher .voucher-header h1,
+.invoice-voucher .voucher-header h2,
+.invoice-voucher .voucher-header h3,
+.invoice-voucher .voucher-header p,
+.invoice-voucher .voucher-header span,
+.invoice-voucher .voucher-header div {
+  color: #FFFFFF !important;
+}
+
+.invoice-voucher .voucher-header .header-subtext {
+  color: #A7F3D0 !important;
+}
+
+.invoice-voucher .voucher-badge {
+  background-color: #FFFFFF !important;
+  color: #064E3B !important;
+}
+
+.invoice-voucher table th {
+  background-color: #F8FAFC !important;
+  color: #475569 !important;
+  border-color: #E2E8F0 !important;
+}
+
+.invoice-voucher table td {
+  border-color: #E2E8F0 !important;
+}
+
+
 
 

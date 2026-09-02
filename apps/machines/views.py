@@ -1316,6 +1316,15 @@ def work_entry_invoice_view(request, entry_id):
     if phone and not phone.startswith('91') and len(phone) == 10:
         phone = '91' + phone
 
+    # Calculate Farmer cumulative outstanding Udhar balance across all bills
+    from django.db.models import Sum, F
+    farmer_outstanding_udhar = entry.customer.receivables.filter(
+        is_deleted=False
+    ).exclude(status='PAID').aggregate(
+        s=Sum(F('total_amount') - F('received_amount'))
+    )['s'] or Decimal('0.00')
+
+    pm_label = entry.get_payment_mode_display() if hasattr(entry, 'get_payment_mode_display') else entry.payment_mode
     wa_msg = (
         f"🌾 *SRI BASAVESHWARA & CO.*\n"
         f"*Harvesting Bill & Farmer Receipt*\n"
@@ -1323,13 +1332,16 @@ def work_entry_invoice_view(request, entry_id):
         f"• Bill No: {entry.manual_bill_no or entry.work_code}\n"
         f"• Date: {entry.work_date.strftime('%d-%m-%Y')}\n"
         f"• Farmer: {entry.customer.name} ({entry.customer.location_address or 'Field'})\n"
-        f"• Machine: {entry.machine.name}\n"
-        f"• Timings: {entry.start_time or ''} - {entry.end_time or ''} ({entry.net_working_hours} hrs)\n"
+        f"• Mobile: {entry.customer.phone or '--'}\n"
+        f"• Machine: {entry.machine.name} ({entry.machine.registration_no or entry.machine.machine_code})\n"
+        f"• Operator: {entry.operator.full_name if entry.operator else 'Basaveshwara Crew'}\n"
+        f"• Timings: {entry.start_time or ''} - {entry.end_time or ''} (Net: {entry.net_working_hours} hrs)\n"
         f"• Cutting Rate: ₹{entry.hourly_rate:,.2f}/hr\n"
         f"--------------------------------\n"
         f"• Gross Total: ₹{entry.total_amount:,.2f}\n"
-        f"• Advance Paid: ₹{entry.advance_amount:,.2f}\n"
-        f"• Balance in Udhar: ₹{entry.udhar_amount:,.2f}\n"
+        f"• Advance Paid: ₹{entry.advance_amount:,.2f} ({pm_label})\n"
+        f"• Balance This Bill: ₹{entry.udhar_amount:,.2f}\n"
+        f"• Total Outstanding Udhar: ₹{farmer_outstanding_udhar:,.2f}\n"
         f"--------------------------------\n"
         f"Thank you for choosing Sri Basaveshwara & Co."
     )
@@ -1338,6 +1350,7 @@ def work_entry_invoice_view(request, entry_id):
 
     return render(request, 'machines/work_entry_invoice.html', {
         'entry': entry,
+        'farmer_outstanding_udhar': farmer_outstanding_udhar,
         'whatsapp_url': whatsapp_url,
         'title': f"Bill & Receipt: {entry.manual_bill_no or entry.work_code}",
     })

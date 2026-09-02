@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ title }} | AgriBOS ERP{% endblock %}
 
@@ -8,18 +9,18 @@
   <div>
     <div class="flex items-center gap-2">
       <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Harvesting Bill &amp; Farmer Receipt</h2>
-      <span class="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+      <span class="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
         {{ entry.manual_bill_no|default:entry.work_code }}
       </span>
     </div>
     <p class="text-xs text-gray-400 mt-1 mb-0">Official harvesting voucher, session timings, advance collection, and farmer Udhar Katha record.</p>
   </div>
   <div class="flex flex-wrap items-center gap-2.5">
-    <a href="{% url 'machines:work_list' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] no-underline">
+    <a href="{% url 'machines:work_list' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] no-underline transition-all">
       <i class="bi bi-arrow-left"></i>
       <span>All Bills</span>
     </a>
-    <a href="{% url 'machines:work_create' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs border-0 no-underline">
+    <a href="{% url 'machines:work_create' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs border-0 no-underline transition-all shadow-sm">
       <i class="bi bi-plus-lg"></i>
       <span>+ New Bill</span>
     </a>
@@ -35,46 +36,55 @@
 </div>
 
 <!-- Printable Voucher Card -->
-<div class="max-w-3xl mx-auto bg-white text-gray-900 rounded-2xl shadow-xl overflow-hidden border border-gray-200 print:shadow-none print:border-0 print:m-0 print:w-full">
+<div class="invoice-voucher max-w-3xl mx-auto bg-white text-gray-900 rounded-2xl shadow-xl overflow-hidden border border-gray-300 print:shadow-none print:border-0 print:m-0 print:w-full">
   <!-- Invoice Header -->
-  <div class="bg-gradient-to-r from-emerald-800 to-teal-900 text-white px-8 py-6">
-    <div class="flex items-center justify-between">
+  <div class="voucher-header px-8 py-6 text-white">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h1 class="text-xl font-extrabold tracking-tight m-0 uppercase">SRI BASAVESHWARA &amp; CO.</h1>
-        <p class="text-xs text-emerald-200 mt-0.5 mb-0">Agricultural Harvesting &amp; Heavy Equipment Fleet Hub</p>
-        <p class="text-[11px] text-emerald-300 mt-1 mb-0">Gangavati • Raichur • Honnali • Karnataka | Phone: +91 9880199000</p>
+        <h1 class="text-xl sm:text-2xl font-black tracking-tight m-0 uppercase text-white">SRI BASAVESHWARA &amp; CO.</h1>
+        <p class="text-xs header-subtext font-medium mt-1 mb-0">Agricultural Harvesting &amp; Heavy Equipment Fleet Hub</p>
+        <p class="text-[11px] header-subtext mt-0.5 mb-0">Gangavati • Raichur • Honnali • Karnataka | Phone: +91 9880199000</p>
       </div>
-      <div class="text-right">
-        <span class="inline-block px-3 py-1 rounded bg-white text-emerald-900 font-black text-xs font-mono">
+      <div class="text-left sm:text-right">
+        <span class="voucher-badge inline-block px-3 py-1 rounded font-black text-xs font-mono uppercase tracking-wide">
           HARVESTING VOUCHER
         </span>
-        <div class="text-xs text-emerald-200 font-mono mt-1">Bill No: {{ entry.manual_bill_no|default:entry.work_code }}</div>
-        <div class="text-xs text-emerald-200 font-mono">Date: {{ entry.work_date|date:"d-m-Y" }}</div>
+        <div class="text-xs header-subtext font-mono mt-1.5">Bill No: <strong>{{ entry.manual_bill_no|default:entry.work_code }}</strong></div>
+        <div class="text-xs header-subtext font-mono">Date: {{ entry.work_date|date:"d-m-Y" }}</div>
       </div>
     </div>
   </div>
 
-  <div class="p-8 space-y-6">
+  <div class="p-6 sm:p-8 space-y-6">
     <!-- Party Details Grid -->
-    <div class="grid grid-cols-2 gap-6 pb-6 border-b border-gray-200">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-6 border-b border-gray-200" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px;">
       <div>
         <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500 font-mono block">BILLED TO (FARMER)</span>
         <h3 class="text-base font-bold text-gray-900 mt-1 mb-0">{{ entry.customer.name }}</h3>
+        <p class="text-xs text-gray-600 mt-1.5 mb-0">
+          <i class="bi bi-geo-alt text-emerald-600 mr-1"></i> Village: <strong>{{ entry.customer.location_address|default:"Gangavati Field Area" }}</strong>
+        </p>
         <p class="text-xs text-gray-600 mt-1 mb-0">
-          <i class="bi bi-geo-alt"></i> Village: {{ entry.customer.village|default:"Field Location" }}
+          <i class="bi bi-telephone text-emerald-600 mr-1"></i> Mobile: <span class="font-mono font-medium">{{ entry.customer.phone|default:"--" }}</span>
         </p>
-        <p class="text-xs text-gray-600 mt-0.5 mb-0">
-          <i class="bi bi-telephone"></i> Mobile: {{ entry.customer.phone|default:"--" }}
-        </p>
+        {% if farmer_outstanding_udhar > 0 %}
+          <div class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-rose-50 border border-rose-200 text-rose-700 text-[11px] font-bold font-mono">
+            <i class="bi bi-exclamation-circle-fill"></i> Total Outstanding Udhar: ₹{{ farmer_outstanding_udhar|floatformat:2 }}
+          </div>
+        {% endif %}
       </div>
 
       <div class="text-right">
         <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500 font-mono block">EQUIPMENT &amp; OPERATOR</span>
         <h3 class="text-base font-bold text-gray-900 mt-1 mb-0">{{ entry.machine.name }}</h3>
-        <p class="text-xs text-gray-600 mt-1 mb-0 font-mono">Reg No: {{ entry.machine.registration_no|default:"Field Unit" }}</p>
-        <p class="text-xs text-gray-600 mt-0.5 mb-0">Operator: {{ entry.operator.full_name|default:"Basaveshwara Crew" }}</p>
+        <p class="text-xs text-gray-600 mt-1.5 mb-0 font-mono">
+          Reg No: <strong>{{ entry.machine.registration_no|default:entry.machine.machine_code|default:"KA-36 Field Unit" }}</strong>
+        </p>
+        <p class="text-xs text-gray-600 mt-1 mb-0">
+          Operator: <strong>{{ entry.operator.full_name|default:"Basaveshwara Crew" }}</strong>
+        </p>
         {% if entry.machine.ownership_type == 'RENTED' and entry.machine.rented_owner %}
-          <span class="inline-block mt-1 px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-[10px] font-semibold border border-gray-200">
+          <span class="inline-block mt-1.5 px-2.5 py-0.5 rounded bg-amber-50 text-amber-800 text-[10px] font-semibold border border-amber-200">
             Rented Owner: {{ entry.machine.rented_owner.name }}
           </span>
         {% endif %}
@@ -83,47 +93,72 @@
 
     <!-- Session Timings & Meter Breakdown -->
     <div>
-      <h4 class="text-xs font-bold uppercase tracking-wider text-gray-700 font-mono mb-3">HARVESTING SESSION TIMINGS</h4>
-      <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 grid grid-cols-4 gap-4 text-center">
-        <div>
+      <div class="flex items-center justify-between mb-2.5">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-700 font-mono m-0">HARVESTING SESSION TIMINGS</h4>
+        <span class="text-[11px] font-mono text-gray-500">Rate Model: {{ entry.get_billing_type_display|default:entry.billing_type }}</span>
+      </div>
+
+      <!-- 4-Column Horizontal Timings Row (Explicit styles prevent collapsing) -->
+      <div class="grid grid-cols-4 gap-3 text-center bg-gray-50 rounded-xl p-3.5 border border-gray-200" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;">
+        <div class="bg-white rounded-lg p-2.5 border border-gray-200 shadow-sm">
           <span class="text-[10px] text-gray-500 uppercase font-mono block">START TIME</span>
-          <div class="text-sm font-bold text-gray-800 font-mono mt-1">{{ entry.start_time|default:"08:00 AM" }}</div>
+          <div class="text-sm font-extrabold text-gray-800 font-mono mt-1">{{ entry.start_time|default:"08:00 AM" }}</div>
         </div>
-        <div>
+        <div class="bg-white rounded-lg p-2.5 border border-gray-200 shadow-sm">
           <span class="text-[10px] text-gray-500 uppercase font-mono block">END TIME</span>
-          <div class="text-sm font-bold text-gray-800 font-mono mt-1">{{ entry.end_time|default:"05:30 PM" }}</div>
+          <div class="text-sm font-extrabold text-gray-800 font-mono mt-1">{{ entry.end_time|default:"05:30 PM" }}</div>
         </div>
-        <div>
-          <span class="text-[10px] text-gray-500 uppercase font-mono block">BREAK HOURS</span>
-          <div class="text-sm font-bold text-gray-800 font-mono mt-1">{{ entry.break_hours|default:"0.00" }} hrs</div>
+        <div class="bg-white rounded-lg p-2.5 border border-gray-200 shadow-sm">
+          <span class="text-[10px] text-gray-500 uppercase font-mono block">BREAK DEDUCTED</span>
+          <div class="text-sm font-extrabold text-gray-800 font-mono mt-1">{{ entry.break_hours|default:"0.00" }} hrs</div>
         </div>
-        <div class="bg-emerald-50 rounded-lg p-1 border border-emerald-200">
+        <div class="bg-emerald-50 rounded-lg p-2.5 border border-emerald-300 shadow-sm">
           <span class="text-[10px] text-emerald-800 uppercase font-mono font-bold block">NET BILLED TIME</span>
           <div class="text-sm font-black text-emerald-700 font-mono mt-1">{{ entry.net_working_hours }} hrs</div>
         </div>
       </div>
+
+      <!-- Equipment Meter Row (if meter logged) -->
+      {% if entry.start_meter or entry.end_meter %}
+        <div class="mt-2.5 px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 flex flex-wrap items-center justify-between text-xs text-gray-600 font-mono">
+          <span>Meter Readings:</span>
+          <span>Start: <strong>{{ entry.start_meter|default:"0.00" }}</strong></span>
+          <span>End: <strong>{{ entry.end_meter|default:"0.00" }}</strong></span>
+          <span>Diff: <strong class="text-emerald-700">+{{ entry.meter_difference|default:entry.net_working_hours }} hrs</strong></span>
+        </div>
+      {% endif %}
     </div>
 
     <!-- Commercial Rate & Financial Breakdown -->
     <div>
-      <h4 class="text-xs font-bold uppercase tracking-wider text-gray-700 font-mono mb-3">BILLING &amp; PAYMENT BREAKDOWN</h4>
+      <h4 class="text-xs font-bold uppercase tracking-wider text-gray-700 font-mono mb-2.5">BILLING &amp; PAYMENT BREAKDOWN</h4>
       <table class="w-full text-left border border-gray-200 rounded-xl overflow-hidden">
         <thead class="bg-gray-100 text-[11px] font-mono uppercase text-gray-600 border-b border-gray-200">
           <tr>
             <th class="py-2.5 px-4 font-semibold">Description</th>
-            <th class="py-2.5 px-4 font-semibold text-center">Rate (₹/hr)</th>
-            <th class="py-2.5 px-4 font-semibold text-center">Quantity</th>
+            <th class="py-2.5 px-4 font-semibold text-center">Rate</th>
+            <th class="py-2.5 px-4 font-semibold text-center">Billed Units</th>
             <th class="py-2.5 px-4 font-semibold text-right">Amount (INR)</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 text-xs">
           <tr>
             <td class="py-3 px-4">
-              <span class="font-bold text-gray-800 block">Paddy / Crop Combine Harvesting Services</span>
-              <span class="text-[11px] text-gray-500">{{ entry.machine.name }} ({{ entry.work_date|date:"d-m-Y" }})</span>
+              <span class="font-bold text-gray-800 block">
+                {% if entry.billing_type == 'TIME_HOURLY' %}
+                  Paddy / Crop Combine Harvesting Services
+                {% else %}
+                  Agricultural Machinery Field Services
+                {% endif %}
+              </span>
+              <span class="text-[11px] text-gray-500">{{ entry.machine.name }} • {{ entry.work_date|date:"d-m-Y" }}</span>
             </td>
-            <td class="py-3 px-4 text-center font-mono text-gray-700">₹{{ entry.hourly_rate|floatformat:2 }}</td>
-            <td class="py-3 px-4 text-center font-mono text-gray-700">{{ entry.net_working_hours }} hrs</td>
+            <td class="py-3 px-4 text-center font-mono text-gray-700">
+              ₹{{ entry.hourly_rate|default:entry.unit_rate|floatformat:2 }} / {% if entry.billing_type == 'TIME_HOURLY' %}hr{% else %}unit{% endif %}
+            </td>
+            <td class="py-3 px-4 text-center font-mono text-gray-700 font-bold">
+              {{ entry.net_working_hours|default:entry.quantity }} {% if entry.billing_type == 'TIME_HOURLY' %}hrs{% else %}units{% endif %}
+            </td>
             <td class="py-3 px-4 text-right font-mono font-bold text-gray-900">₹{{ entry.total_amount|floatformat:2 }}</td>
           </tr>
         </tbody>
@@ -133,13 +168,23 @@
             <td class="py-2.5 px-4 text-right font-mono font-black text-gray-900 text-sm">₹{{ entry.total_amount|floatformat:2 }}</td>
           </tr>
           <tr class="text-emerald-700 bg-emerald-50/50">
-            <td colspan="3" class="py-2 px-4 text-right font-bold uppercase font-mono">ADVANCE / ON-SITE CASH COLLECTED:</td>
+            <td colspan="3" class="py-2 px-4 text-right font-bold uppercase font-mono">
+              ADVANCE / ON-SITE CASH COLLECTED ({{ entry.get_payment_mode_display|default:entry.payment_mode }}):
+            </td>
             <td class="py-2 px-4 text-right font-mono font-bold text-emerald-800">- ₹{{ entry.advance_amount|floatformat:2 }}</td>
           </tr>
           <tr class="text-rose-700 bg-rose-50/60 font-black">
             <td colspan="3" class="py-2.5 px-4 text-right uppercase font-mono text-sm">BALANCE ADDED TO FARMER UDHAR KATHA:</td>
             <td class="py-2.5 px-4 text-right font-mono text-base text-rose-800 font-extrabold">₹{{ entry.udhar_amount|floatformat:2 }}</td>
           </tr>
+          {% if farmer_outstanding_udhar > 0 %}
+          <tr class="bg-gray-100/80 font-bold text-gray-800 border-t border-gray-300">
+            <td colspan="3" class="py-2 px-4 text-right uppercase font-mono text-xs text-gray-600">
+              TOTAL ACCUMULATED FARMER UDHAR BALANCE:
+            </td>
+            <td class="py-2 px-4 text-right font-mono font-black text-rose-700 text-sm">₹{{ farmer_outstanding_udhar|floatformat:2 }}</td>
+          </tr>
+          {% endif %}
         </tfoot>
       </table>
     </div>
@@ -148,7 +193,7 @@
     {% if entry.harvester_settlement %}
       <div class="bg-amber-50 rounded-xl p-4 border border-amber-200 text-xs">
         <h5 class="font-bold text-amber-900 uppercase font-mono text-[11px] mb-2">RENTED HARVESTER OWNER SETTLEMENT NOTE</h5>
-        <div class="grid grid-cols-4 gap-2 text-center text-amber-900 font-mono">
+        <div class="grid grid-cols-4 gap-2 text-center text-amber-900 font-mono" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;">
           <div>
             <span class="text-[10px] text-amber-700 block">Gross Earned</span>
             <div class="font-bold">₹{{ entry.harvester_settlement.gross_earnings|floatformat:2 }}</div>
@@ -169,15 +214,23 @@
       </div>
     {% endif %}
 
+    <!-- Field Notes (If any) -->
+    {% if entry.notes %}
+      <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-600">
+        <span class="font-bold uppercase font-mono text-[10px] text-gray-500 block mb-1">FIELD NOTES / REMARKS</span>
+        {{ entry.notes }}
+      </div>
+    {% endif %}
+
     <!-- Footer Signatures -->
-    <div class="grid grid-cols-2 gap-8 pt-8 border-t border-gray-200 text-center text-xs text-gray-500 font-mono">
+    <div class="grid grid-cols-2 gap-8 pt-8 border-t border-gray-200 text-center text-xs text-gray-500 font-mono" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px;">
       <div>
-        <div class="h-12 border-b border-gray-300 w-48 mx-auto"></div>
-        <span class="block mt-1">Farmer / Customer Signature</span>
+        <div class="h-12 border-b border-gray-400 w-48 mx-auto"></div>
+        <span class="block mt-1 font-semibold text-gray-700">Farmer / Customer Signature</span>
       </div>
       <div>
-        <div class="h-12 border-b border-gray-300 w-48 mx-auto"></div>
-        <span class="block mt-1">For Sri Basaveshwara &amp; Co. (Authorized)</span>
+        <div class="h-12 border-b border-gray-400 w-48 mx-auto"></div>
+        <span class="block mt-1 font-semibold text-gray-700">For Sri Basaveshwara &amp; Co. (Authorized)</span>
       </div>
     </div>
   </div>
