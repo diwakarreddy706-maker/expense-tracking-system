@@ -533,47 +533,54 @@ html:not(.dark) body {
   color: #0F172A !important;
 }
 
-/* Structural Canvas Backgrounds */
-html:not(.dark) .bg-\[\#0B0F17\],
-html:not(.dark) .bg-\[\#0D1117\] {
+/* Glass Card & Glass Panels */
+html:not(.dark) .glass-card,
+html:not(.dark) .glass-panel {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+}
+
+html:not(.dark) .card-hover-lift:hover {
+  border-color: #CBD5E1 !important;
+  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.1), 0 0 1px 1px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* Structural Canvas & Panels (Wildcard matches with or without opacity) */
+html:not(.dark) [class*="bg-[#0B0F17]"],
+html:not(.dark) [class*="bg-[#0D1117]"],
+html:not(.dark) [class*="bg-[#0F172A]"] {
   background-color: #F8FAFC !important;
 }
 
-/* Elevated Surfaces, Cards & Sidebars */
-html:not(.dark) .bg-\[\#111827\],
-html:not(.dark) .bg-\[\#131A26\],
-html:not(.dark) .bg-\[\#161B22\],
-html:not(.dark) .bg-\[\#0F172A\],
+html:not(.dark) [class*="bg-[#111827]"],
+html:not(.dark) [class*="bg-[#131A26]"],
+html:not(.dark) [class*="bg-[#161B22]"],
 html:not(.dark) aside,
 html:not(.dark) .modal-content {
   background-color: #FFFFFF !important;
 }
 
-/* Secondary Panels & Table Headers */
-html:not(.dark) .bg-\[\#162030\],
-html:not(.dark) .bg-\[\#182234\],
-html:not(.dark) .bg-\[\#1F2A3F\],
+/* Secondary Panels & Inner Stat Cards */
+html:not(.dark) [class*="bg-[#162030]"],
+html:not(.dark) [class*="bg-[#182234]"],
+html:not(.dark) [class*="bg-[#1F2A3F]"],
 html:not(.dark) .bg-gray-900,
-html:not(.dark) .bg-gray-800\/60,
-html:not(.dark) .bg-gray-800\/70 {
+html:not(.dark) [class*="bg-gray-800"] {
   background-color: #F1F5F9 !important;
 }
 
-/* Glassmorphism Header & Mobile Bottom Nav */
-html:not(.dark) header {
-  background-color: rgba(255, 255, 255, 0.92) !important;
+/* Equation Strip inner stat cards inside .glass-card */
+html:not(.dark) .glass-card .p-3\.5 {
+  background-color: #F8FAFC !important;
   border-color: #E2E8F0 !important;
 }
 
-html:not(.dark) nav.fixed.bottom-0 {
-  background-color: rgba(255, 255, 255, 0.96) !important;
-  border-color: #E2E8F0 !important;
-}
-
-/* Structural Borders */
-html:not(.dark) .border-\[\#28354A\],
-html:not(.dark) .border-\[\#1E293B\],
-html:not(.dark) .border-\[\#30363D\],
+/* All custom hex borders */
+html:not(.dark) [class*="border-[#28354A]"],
+html:not(.dark) [class*="border-[#1E293B]"],
+html:not(.dark) [class*="border-[#30363D]"],
+html:not(.dark) [class*="border-[#374761]"],
 html:not(.dark) .border-gray-800,
 html:not(.dark) .border-gray-700 {
   border-color: #E2E8F0 !important;
@@ -610,6 +617,85 @@ html:not(.dark) .text-gray-500 {
   color: #94A3B8 !important;
 }
 
+/* Quick Action & Stat Badges in Light Mode (High Contrast) */
+html:not(.dark) .text-amber-300,
+html:not(.dark) .text-amber-400 {
+  color: #B45309 !important; /* Deep rich amber for sunlight readability */
+}
+
+html:not(.dark) .text-cyan-300,
+html:not(.dark) .text-cyan-400 {
+  color: #0E7490 !important; /* Deep ocean cyan */
+}
+
+html:not(.dark) .text-emerald-400 {
+  color: #047857 !important; /* Deep emerald */
+}
+
+html:not(.dark) .text-rose-400 {
+  color: #BE123C !important; /* Deep crimson */
+}
+
+html:not(.dark) .text-purple-400 {
+  color: #6D28D9 !important; /* Deep royal violet */
+}
+
+/* Keep Green CTA Buttons white text */
+html:not(.dark) .bg-emerald-600,
+html:not(.dark) .bg-emerald-500 {
+  color: #FFFFFF !important;
+}
+html:not(.dark) .bg-emerald-600 *,
+html:not(.dark) .bg-emerald-500 * {
+  color: #FFFFFF !important;
+}
+
+/* Status Badges in Light Mode */
+html:not(.dark) [class*="bg-emerald-500/10"],
+html:not(.dark) [class*="bg-emerald-500/20"] {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+}
+html:not(.dark) [class*="bg-amber-500/10"],
+html:not(.dark) [class*="bg-amber-500/20"] {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+}
+html:not(.dark) [class*="bg-rose-500/10"],
+html:not(.dark) [class*="bg-rose-500/20"] {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+}
+html:not(.dark) [class*="bg-cyan-500/10"],
+html:not(.dark) [class*="bg-cyan-500/20"] {
+  background-color: rgba(6, 182, 212, 0.12) !important;
+  border-color: rgba(6, 182, 212, 0.35) !important;
+}
+
+/* Glassmorphism Header & Mobile Bottom Nav */
+html:not(.dark) header {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: #E2E8F0 !important;
+}
+
+html:not(.dark) nav.fixed.bottom-0 {
+  background-color: rgba(255, 255, 255, 0.97) !important;
+  border-color: #E2E8F0 !important;
+}
+
+/* Sidebar Branding & Role Badge */
+html:not(.dark) aside .border-b {
+  border-color: #E2E8F0 !important;
+}
+html:not(.dark) aside [class*="bg-[#0F172A]"],
+html:not(.dark) aside [class*="bg-[#0B0F17]"] {
+  background-color: #FFFFFF !important;
+}
+html:not(.dark) aside [class*="bg-gray-800"] {
+  background-color: #F1F5F9 !important;
+  border-color: #E2E8F0 !important;
+}
+
 /* Form Inputs, Dropdown Selects & Textareas */
 html:not(.dark) input:not([type="submit"]):not([type="checkbox"]):not([type="radio"]),
 html:not(.dark) select,
@@ -631,10 +717,17 @@ html:not(.dark) textarea:focus {
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
 }
 
+/* Modals & Action Sheet */
+html:not(.dark) .modal-content,
+html:not(.dark) .action-sheet {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
 /* Subtle Hover States */
 html:not(.dark) .hover\:bg-gray-800:hover,
-html:not(.dark) .hover\:bg-gray-800\/60:hover,
-html:not(.dark) .hover\:bg-gray-800\/70:hover,
+html:not(.dark) [class*="hover:bg-gray-800"]:hover,
 html:not(.dark) .hover\:bg-white\/\[0\.03\]:hover {
   background-color: #F1F5F9 !important;
 }

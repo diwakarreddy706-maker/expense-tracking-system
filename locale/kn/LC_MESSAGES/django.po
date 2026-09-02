@@ -244,8 +244,11 @@ msgstr "ಹೊಸ ಖರ್ಚು"
 msgid "Log Fuel"
 msgstr "ಇಂಧನ ದಾಖಲಿಸಿ"
 
-msgid "Fleet & Equipment"
-msgstr "ಯಂತ್ರಗಳು ಮತ್ತು ಉಪಕರಣಗಳು"
+msgid "Machinery & Fleet"
+msgstr "ಯಂತ್ರೋಪಕರಣಗಳ ಸಮೂಹ"
+
+msgid "Machines Registry"
+msgstr "ಯಂತ್ರಗಳ ನೋಂದಣಿ"
 
 msgid "Rented Fleet Owners"
 msgstr "ಬಾಡಿಗೆ ವಾಹನ ಮಾಲೀಕರು"
@@ -262,8 +265,35 @@ msgstr "ಡಿಸ್ಪ್ಯಾಚ್ ಬೋರ್ಡ್"
 msgid "Work Logs & Billing"
 msgstr "ಕೆಲಸದ ದಾಖಲೆ ಮತ್ತು ಬಿಲ್ಲಿಂಗ್"
 
+msgid "Workshop Maintenance"
+msgstr "ಕಾರ್ಯಾಗಾರ ನಿರ್ವಹಣೆ"
+
 msgid "Staff & Wages"
 msgstr "ಸಿಬ್ಬಂದಿ ಮತ್ತು ವೇತನ"
 
+msgid "Finance & Ledgers"
+msgstr "ಹಣಕಾಸು ಮತ್ತು ಲೆಡ್ಜರ್"
+
 msgid "Business Accounts"
 msgstr "ವ್ಯಾಪಾರ ಖಾತೆಗಳು"
+
+msgid "Farmers / Customers"
+msgstr "ರೈತರು / ಗ್ರಾಹಕರು"
+
+msgid "Suppliers & Vendors"
+msgstr "ಸರಬರಾಜುದಾರರು ಮತ್ತು ಮಾರಾಟಗಾರರು"
+
+msgid "Reports & Analytics"
+msgstr "ವರದಿಗಳು ಮತ್ತು ವಿಶ್ಲೇಷಣೆ"
+
+msgid "Administration & Setup"
+msgstr "ಆಡಳಿತ ಮತ್ತು ಸಂರಚನೆ"
+
+msgid "Master Data Setup"
+msgstr "ಮಾಸ್ಟರ್ ಡೇಟಾ ಸೆಟಪ್"
+
+msgid "User Management"
+msgstr "ಬಳಕೆದಾರರ ನಿರ್ವಹಣೆ"
+
+msgid "Sign Out"
+msgstr "ಲಾಗ್‌ಔಟ್"

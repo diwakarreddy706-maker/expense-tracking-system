@@ -87,120 +87,120 @@
 
     <!-- Section: Machinery & Fleet -->
     {% if role == 'OWNER' or role == 'MANAGER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
-    <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">Machinery & Fleet</div>
+    <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">{% trans "Machinery & Fleet" %}</div>
 
     <!-- Machines Directory -->
     {% if role == 'OWNER' or role == 'MANAGER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <a href="{% url 'machines:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'list' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-truck w-5 text-center text-base text-blue-400"></i>
-      <span>Machines Registry</span>
+      <span>{% trans "Machines Registry" %}</span>
     </a>
 
     <a href="{% url 'machines:rented_owners' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'rented_owners' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-person-badge-fill w-5 text-center text-base text-cyan-400"></i>
-      <span>Rented Fleet Owners</span>
+      <span>{% trans "Rented Fleet Owners" %}</span>
     </a>
 
     <a href="{% url 'machines:compliance_list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'compliance_list' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-shield-check w-5 text-center text-base text-amber-400"></i>
-      <span>Vehicle Compliance</span>
+      <span>{% trans "Vehicle Compliance" %}</span>
     </a>
     {% endif %}
 
     <!-- Bookings & Dispatch -->
     <a href="{% url 'machines:booking_list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'booking_list' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-calendar-check w-5 text-center text-base text-emerald-400"></i>
-      <span>Bookings & Jobs</span>
+      <span>{% trans "Bookings & Jobs" %}</span>
     </a>
 
     <a href="{% url 'machines:dispatch_board' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'dispatch_board' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-kanban w-5 text-center text-base text-cyan-400"></i>
-      <span>Dispatch Board</span>
+      <span>{% trans "Dispatch Board" %}</span>
     </a>
 
     <a href="{% url 'machines:work_list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'work_list' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-clock-history w-5 text-center text-base text-teal-400"></i>
-      <span>Work Logs & Billing</span>
+      <span>{% trans "Work Logs & Billing" %}</span>
     </a>
 
     <a href="{% url 'machines:maintenance_dashboard' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'machines' and 'maintenance' in request.resolver_match.url_name %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-tools w-5 text-center text-base text-amber-400"></i>
-      <span>Workshop Maintenance</span>
+      <span>{% trans "Workshop Maintenance" %}</span>
     </a>
     {% endif %}
 
     <!-- Section: People & Payroll -->
     {% if role == 'OWNER' or role == 'MANAGER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
-    <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">Staff & Wages</div>
+    <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">{% trans "Staff & Wages" %}</div>
 
     <a href="{% url 'employees:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'employees' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-people-fill w-5 text-center text-base text-purple-400"></i>
-      <span>Staff & Wages</span>
+      <span>{% trans "Staff & Wages" %}</span>
     </a>
     {% endif %}
 
     <!-- Section: Financial Management -->
     {% if role == 'OWNER' or role == 'ACCOUNTANT' or role == 'MANAGER' or request.user.is_superuser %}
-    <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">Finance & Ledgers</div>
+    <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">{% trans "Finance & Ledgers" %}</div>
 
     {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <a href="{% url 'finance:accounts' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'finance' and request.resolver_match.url_name == 'accounts' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-bank2 w-5 text-center text-base text-blue-400"></i>
-      <span>Business Accounts</span>
+      <span>{% trans "Business Accounts" %}</span>
     </a>
     {% endif %}
 
     <a href="{% url 'finance:customers' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'finance' and request.resolver_match.url_name == 'customers' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-person-lines-fill w-5 text-center text-base text-emerald-400"></i>
-      <span>Farmers / Customers</span>
+      <span>{% trans "Farmers / Customers" %}</span>
     </a>
 
     <a href="{% url 'finance:suppliers' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'finance' and request.resolver_match.url_name == 'suppliers' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-shop-window w-5 text-center text-base text-amber-400"></i>
-      <span>Suppliers & Vendors</span>
+      <span>{% trans "Suppliers & Vendors" %}</span>
     </a>
 
     <a href="{% url 'budgets:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'budgets' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-bullseye w-5 text-center text-base text-indigo-400"></i>
-      <span>Budgets</span>
+      <span>{% trans "Budgets" %}</span>
     </a>
 
     {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <a href="{% url 'finance:receivables' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'finance' and request.resolver_match.url_name == 'receivables' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-arrow-down-left-square-fill w-5 text-center text-base text-emerald-400"></i>
-      <span>Receivables</span>
+      <span>{% trans "Receivables" %}</span>
     </a>
 
     <a href="{% url 'finance:payables' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'finance' and request.resolver_match.url_name == 'payables' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-arrow-up-right-square-fill w-5 text-center text-base text-rose-400"></i>
-      <span>Payables</span>
+      <span>{% trans "Payables" %}</span>
     </a>
 
     <a href="{% url 'finance:daily_closing' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'finance' and request.resolver_match.url_name == 'daily_closing' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-lock-fill w-5 text-center text-base text-amber-400"></i>
-      <span>Daily Closing</span>
+      <span>{% trans "Daily Closing" %}</span>
     </a>
     {% endif %}
 
     <a href="{% url 'reports:index' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'reports' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-file-earmark-bar-graph-fill w-5 text-center text-base text-sky-400"></i>
-      <span>Reports & Analytics</span>
+      <span>{% trans "Reports & Analytics" %}</span>
     </a>
     {% endif %}
 
     <!-- Section: Administration & Master Setup -->
     {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
-    <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400 border-t border-[#1E293B] mt-3">Administration & Setup</div>
+    <div class="px-3 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400 border-t border-[#1E293B] mt-3">{% trans "Administration & Setup" %}</div>
 
     <a href="{% url 'finance:setup_hub' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'finance' and request.resolver_match.url_name == 'setup_hub' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-database-gear w-5 text-center text-base text-indigo-400"></i>
-      <span>Master Data Setup</span>
+      <span>{% trans "Master Data Setup" %}</span>
     </a>
 
     {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <a href="{% url 'accounts:user_list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name == 'user_list' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-person-gear w-5 text-center text-base text-amber-400"></i>
-      <span>User Management</span>
+      <span>{% trans "User Management" %}</span>
     </a>
     {% endif %}
     {% endif %}
