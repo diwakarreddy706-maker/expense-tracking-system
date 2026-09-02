@@ -146,19 +146,26 @@
             <div class="bg-[#131A26] p-3 rounded-xl border border-[#28354A] text-center">
               <span class="text-[10px] text-gray-400 font-mono uppercase block">ELAPSED TIME</span>
               <div class="font-bold text-white font-mono text-sm mt-1" id="dispElapsedTime">0.00 hrs</div>
+              <span class="text-[10px] text-gray-500 font-mono block mt-0.5" id="dispBreakDeducted">Break: 0.00h</span>
             </div>
-            <div class="bg-[#131A26] p-3 rounded-xl border border-[#28354A] text-center">
-              <span class="text-[10px] text-cyan-400 font-mono uppercase block">NET WORKING TIME</span>
-              <div class="font-bold text-cyan-400 font-mono text-sm mt-1" id="dispNetHours">0.00 hrs</div>
+            <div class="bg-[#131A26] p-3 rounded-xl border border-cyan-500/40 text-center">
+              <span class="text-[10px] text-cyan-400 font-mono uppercase font-bold block">NET WORKING TIME</span>
+              <div class="font-bold text-cyan-400 font-mono text-base mt-1" id="dispNetHours">0.00 hrs</div>
+              <span class="text-[10px] text-gray-400 font-mono block mt-0.5" id="dispFormulaHint">(Elapsed − Break)</span>
             </div>
             <div class="bg-[#131A26] p-3 rounded-xl border border-[#28354A] text-center">
               <span class="text-[10px] text-gray-400 font-mono uppercase block">HOURLY RATE</span>
               <div class="font-bold text-gray-300 font-mono text-sm mt-1" id="dispHourlyRate">₹0.00</div>
+              <span class="text-[10px] text-gray-500 block mt-0.5">Per Net Hour</span>
             </div>
             <div class="bg-[#131A26] p-3 rounded-xl border border-emerald-500/40 text-center">
               <span class="text-[10px] text-emerald-400 font-mono uppercase font-bold block">TOTAL BILL AMOUNT</span>
               <div class="font-bold text-emerald-400 font-mono text-base mt-1" id="dispTotalHarvester">₹0.00</div>
+              <span class="text-[10px] text-emerald-400/80 font-mono block mt-0.5" id="dispMathHarvester">0.00h × ₹0</span>
             </div>
+          </div>
+          <div id="breakWarningAlert" class="hidden p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium mt-2">
+            <i class="bi bi-exclamation-triangle-fill mr-1.5"></i> Break hours cannot equal or exceed total elapsed time.
           </div>
         </div>
 
@@ -225,6 +232,15 @@
               <span class="text-[10px] text-rose-400 font-mono uppercase font-bold block">BALANCE ADDED TO UDHAR</span>
               <div class="font-bold text-rose-400 font-mono text-base mt-1" id="dispSummaryUdhar">₹0.00</div>
             </div>
+          </div>
+
+          <!-- Dynamic Udhar Settlement Status Banner -->
+          <div id="dispUdharStatusBanner" class="p-3 rounded-xl border text-xs font-medium flex items-center justify-between transition-all bg-amber-500/10 border-amber-500/30 text-amber-300">
+            <div class="flex items-center gap-2">
+              <i class="bi bi-info-circle-fill text-amber-400" id="dispUdharStatusIcon"></i>
+              <span id="dispUdharStatusText">100% of bill will be added to farmer's Udhar ledger as unpaid credit.</span>
+            </div>
+            <span class="font-mono font-bold text-[11px] px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40" id="dispUdharStatusPill">FULL UDHAR</span>
           </div>
 
           <!-- Rented Harvester Diesel Deduction Panel -->
@@ -486,15 +502,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function parseTimeToMinutes(timeStr) {
     if (!timeStr) return null;
-    const parts = timeStr.split(':');
+    timeStr = timeStr.trim();
+    // Support 12-hour format with AM/PM (e.g. 08:00 AM, 5:30 PM, 05:30PM)
+    const isPM = /pm$/i.test(timeStr);
+    const isAM = /am$/i.test(timeStr);
+    const cleanStr = timeStr.replace(/(am|pm)$/i, '').trim();
+    const parts = cleanStr.split(':');
     if (parts.length < 2) return null;
-    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    let hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+    if (isNaN(hours) || isNaN(minutes)) return null;
+    if (isPM && hours < 12) hours += 12;
+    if (isAM && hours === 12) hours = 0;
+    return hours * 60 + minutes;
   }
 
   let currentMachineData = null;
+  let currentTotalBill = 0.0;
 
   function updatePaymentSummary(totalBill) {
+    currentTotalBill = totalBill;
     const advInput = document.getElementById('advanceAmount');
+    const paymentAccountSelect = document.getElementById('paymentAccountSelect');
     const adv = parseFloat(advInput ? advInput.value : 0) || 0.0;
     const udhar = Math.max(0.0, totalBill - adv);
 
@@ -505,6 +534,49 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dispTotal) dispTotal.innerText = '₹' + totalBill.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     if (dispAdv) dispAdv.innerText = '₹' + adv.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     if (dispUdh) dispUdh.innerText = '₹' + udhar.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    // Dynamic Live Udhar Settlement Status Banner
+    const statusBanner = document.getElementById('dispUdharStatusBanner');
+    const statusText = document.getElementById('dispUdharStatusText');
+    const statusIcon = document.getElementById('dispUdharStatusIcon');
+    const statusPill = document.getElementById('dispUdharStatusPill');
+
+    if (statusBanner && statusText && statusPill && statusIcon) {
+      if (totalBill <= 0) {
+        statusBanner.className = 'p-3 rounded-xl border text-xs font-medium flex items-center justify-between transition-all bg-gray-800/40 border-gray-700 text-gray-400';
+        statusIcon.className = 'bi bi-info-circle-fill text-gray-400';
+        statusText.innerText = 'Enter work timings or quantity to calculate billing and Udhar settlement.';
+        statusPill.className = 'font-mono font-bold text-[11px] px-2.5 py-0.5 rounded-full bg-gray-700 text-gray-300 border border-gray-600';
+        statusPill.innerText = 'NO BILL';
+      } else if (adv <= 0) {
+        statusBanner.className = 'p-3 rounded-xl border text-xs font-medium flex items-center justify-between transition-all bg-amber-500/10 border-amber-500/30 text-amber-300';
+        statusIcon.className = 'bi bi-clock-history text-amber-400';
+        statusText.innerText = '100% of bill (₹' + totalBill.toLocaleString('en-IN', { minimumFractionDigits: 2 }) + ') will be added to farmer\'s Udhar ledger as unpaid credit.';
+        statusPill.className = 'font-mono font-bold text-[11px] px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40';
+        statusPill.innerText = 'FULL UDHAR';
+      } else if (adv > 0 && adv < totalBill) {
+        statusBanner.className = 'p-3 rounded-xl border text-xs font-medium flex items-center justify-between transition-all bg-cyan-500/10 border-cyan-500/30 text-cyan-300';
+        statusIcon.className = 'bi bi-pie-chart-fill text-cyan-400';
+        statusText.innerText = 'Advance of ₹' + adv.toLocaleString('en-IN', { minimumFractionDigits: 2 }) + ' collected on-site • Remaining balance of ₹' + udhar.toLocaleString('en-IN', { minimumFractionDigits: 2 }) + ' added to Udhar ledger.';
+        statusPill.className = 'font-mono font-bold text-[11px] px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
+        statusPill.innerText = 'PARTIAL UDHAR';
+      } else if (adv >= totalBill) {
+        statusBanner.className = 'p-3 rounded-xl border text-xs font-medium flex items-center justify-between transition-all bg-emerald-500/10 border-emerald-500/30 text-emerald-300';
+        statusIcon.className = 'bi bi-check-circle-fill text-emerald-400';
+        statusText.innerText = 'Bill fully settled on-site (₹0.00 balance). No Udhar created.';
+        statusPill.className = 'font-mono font-bold text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+        statusPill.innerText = 'PAID IN FULL';
+      }
+    }
+
+    // Highlight deposit account field when advance is collected
+    if (paymentAccountSelect) {
+      if (adv > 0) {
+        paymentAccountSelect.classList.add('border-emerald-500/50');
+      } else {
+        paymentAccountSelect.classList.remove('border-emerald-500/50');
+      }
+    }
 
     // Calculate rented harvester owner payout
     if (currentMachineData && currentMachineData.is_rented) {
@@ -569,7 +641,40 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   const advInput = document.getElementById('advanceAmount');
-  if (advInput) advInput.addEventListener('input', () => recalculateAll());
+  const paymentModeSelect = document.getElementById('paymentModeSelect');
+
+  if (advInput) {
+    advInput.addEventListener('input', function() {
+      const adv = parseFloat(advInput.value) || 0.0;
+      if (paymentModeSelect) {
+        if (adv === 0) {
+          paymentModeSelect.value = 'UDHAR';
+        } else if (adv > 0 && adv < currentTotalBill) {
+          paymentModeSelect.value = 'SPLIT';
+        } else if (adv >= currentTotalBill && currentTotalBill > 0) {
+          if (paymentModeSelect.value === 'UDHAR' || paymentModeSelect.value === 'SPLIT') {
+            paymentModeSelect.value = 'CASH';
+          }
+        }
+      }
+      recalculateAll();
+    });
+  }
+
+  if (paymentModeSelect) {
+    paymentModeSelect.addEventListener('change', function() {
+      const mode = paymentModeSelect.value;
+      if (mode === 'UDHAR') {
+        if (advInput) advInput.value = '0.00';
+      } else if (mode === 'CASH' || mode === 'UPI') {
+        if (advInput && currentTotalBill > 0) {
+          advInput.value = currentTotalBill.toFixed(2);
+        }
+      }
+      recalculateAll();
+    });
+  }
+
   const fLitInput = document.getElementById('fuelLiters');
   if (fLitInput) fLitInput.addEventListener('input', () => recalculateAll());
   const fRateInput = document.getElementById('fuelRate');
@@ -586,20 +691,46 @@ document.addEventListener('DOMContentLoaded', function() {
       dispHourlyRate.innerText = '₹' + rate.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    if (sMin !== null && eMin !== null && eMin > sMin) {
-      const elapsedMinutes = eMin - sMin;
+    const breakDeductEl = document.getElementById('dispBreakDeducted');
+    const mathHarvEl = document.getElementById('dispMathHarvester');
+    const breakAlert = document.getElementById('breakWarningAlert');
+
+    if (breakDeductEl) {
+      breakDeductEl.innerText = 'Break: ' + bHours.toFixed(2) + 'h';
+    }
+
+    if (sMin !== null && eMin !== null) {
+      // Calculate elapsed minutes (support overnight shift e.g. 22:00 to 02:00)
+      let elapsedMinutes = 0;
+      if (eMin >= sMin) {
+        elapsedMinutes = eMin - sMin;
+      } else {
+        elapsedMinutes = (eMin + 24 * 60) - sMin;
+      }
       const elapsedHours = elapsedMinutes / 60.0;
+
+      // Break hours validation & calculation
+      if (bHours >= elapsedHours && elapsedHours > 0) {
+        if (breakAlert) breakAlert.classList.remove('hidden');
+      } else {
+        if (breakAlert) breakAlert.classList.add('hidden');
+      }
+
       const netHours = Math.max(0.0, elapsedHours - bHours);
       const totalAmount = netHours * rate;
 
       if (dispElapsedTime) dispElapsedTime.innerText = elapsedHours.toFixed(2) + ' hrs';
       if (dispNetHours) dispNetHours.innerText = netHours.toFixed(2) + ' hrs';
       if (dispTotalHarvester) dispTotalHarvester.innerText = '₹' + totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      if (mathHarvEl) mathHarvEl.innerText = netHours.toFixed(2) + 'h × ₹' + rate.toFixed(0);
+
       updatePaymentSummary(totalAmount);
     } else {
       if (dispElapsedTime) dispElapsedTime.innerText = '0.00 hrs';
       if (dispNetHours) dispNetHours.innerText = '0.00 hrs';
       if (dispTotalHarvester) dispTotalHarvester.innerText = '₹0.00';
+      if (mathHarvEl) mathHarvEl.innerText = '0.00h × ₹0';
+      if (breakAlert) breakAlert.classList.add('hidden');
       updatePaymentSummary(0.0);
     }
   }
