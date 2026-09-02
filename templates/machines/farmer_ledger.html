@@ -399,24 +399,26 @@
 
           <div>
             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Collection Amount (₹) <span class="text-rose-500">*</span></label>
-            <input type="number" name="amount" step="0.01" value="{{ farmer_balance_due }}" max="{{ farmer_balance_due }}" required class="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-[#0B0F17] border border-gray-300 dark:border-[#28354A] text-gray-900 dark:text-white text-sm font-mono font-bold focus:outline-none focus:border-emerald-500">
+            <input type="number" name="amount" id="collectAmountInput" step="0.01" min="0.01" value="{{ farmer_balance_due|floatformat:2 }}" required class="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-[#0B0F17] border border-gray-300 dark:border-[#28354A] text-gray-900 dark:text-white text-sm font-mono font-bold focus:outline-none focus:border-emerald-500">
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Payment Mode <span class="text-rose-500">*</span></label>
-              <select name="payment_method" required class="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#0B0F17] border border-gray-300 dark:border-[#28354A] text-gray-900 dark:text-white text-xs focus:outline-none focus:border-emerald-500">
-                <option value="CASH">Cash in Hand</option>
+              <select name="payment_method" id="collectPaymentMethod" class="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#0B0F17] border border-gray-300 dark:border-[#28354A] text-gray-900 dark:text-white text-xs focus:outline-none focus:border-emerald-500">
+                <option value="CASH" selected>Cash in Hand</option>
                 <option value="UPI">UPI / PhonePe / GPay</option>
                 <option value="BANK_TRANSFER">Bank Transfer / NEFT</option>
                 <option value="CHEQUE">Cheque</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Deposit Account <span class="text-rose-500">*</span></label>
-              <select name="account" required class="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#0B0F17] border border-gray-300 dark:border-[#28354A] text-gray-900 dark:text-white text-xs focus:outline-none focus:border-emerald-500">
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Deposit Account</label>
+              <select name="account" id="collectDepositAccount" class="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#0B0F17] border border-gray-300 dark:border-[#28354A] text-gray-900 dark:text-white text-xs focus:outline-none focus:border-emerald-500">
                 {% for acc in accounts %}
-                  <option value="{{ acc.id }}">{{ acc.account_name }} ({{ acc.get_account_type_display }})</option>
+                  <option value="{{ acc.id }}" data-type="{{ acc.account_type }}" {% if forloop.first %}selected{% endif %}>{{ acc.account_name }} ({{ acc.get_account_type_display }})</option>
+                {% empty %}
+                  <option value="" selected>Cash in Hand (Default)</option>
                 {% endfor %}
               </select>
             </div>
@@ -500,6 +502,26 @@ document.addEventListener('DOMContentLoaded', function() {
           card.classList.add('hidden');
         }
       });
+    });
+  }
+
+  // Auto-sync Payment Mode with Deposit Account
+  const payMethodSelect = document.getElementById('collectPaymentMethod');
+  const depositAccSelect = document.getElementById('collectDepositAccount');
+  if (payMethodSelect && depositAccSelect) {
+    payMethodSelect.addEventListener('change', function() {
+      const method = this.value;
+      let targetType = 'CASH';
+      if (method === 'UPI') targetType = 'UPI_WALLET';
+      else if (method === 'BANK_TRANSFER' || method === 'CHEQUE') targetType = 'BANK_CURRENT';
+
+      for (let i = 0; i < depositAccSelect.options.length; i++) {
+        const opt = depositAccSelect.options[i];
+        if (opt.getAttribute('data-type') === targetType) {
+          depositAccSelect.selectedIndex = i;
+          break;
+        }
+      }
     });
   }
 });
