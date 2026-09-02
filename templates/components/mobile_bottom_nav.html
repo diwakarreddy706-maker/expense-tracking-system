@@ -1,3 +1,4 @@
+{% load static i18n %}
 {% comment %}
   Mobile Bottom Navigation Bar
   Optimized for 320px–1023px viewports. Fixed to bottom with safe-area support.
@@ -24,7 +25,7 @@
           <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
         {% endif %}
       </div>
-      <span class="text-[10px] mt-0.5 tracking-tight truncate">Home</span>
+      <span class="text-[10px] mt-0.5 tracking-tight truncate">{% trans "Home" %}</span>
     </a>
 
     <!-- 2. + Fuel -->
@@ -36,7 +37,7 @@
       <div class="relative flex items-center justify-center">
         <i class="bi bi-fuel-pump-fill text-lg text-amber-400"></i>
       </div>
-      <span class="text-[10px] mt-0.5 tracking-tight truncate">+ Fuel</span>
+      <span class="text-[10px] mt-0.5 tracking-tight truncate">{% trans "+ Fuel" %}</span>
     </a>
 
     <!-- 3. Quick Action Hub (Center Action Button) -->
@@ -61,7 +62,7 @@
       <div class="relative flex items-center justify-center">
         <i class="bi bi-clock-history text-lg text-cyan-400"></i>
       </div>
-      <span class="text-[10px] mt-0.5 tracking-tight truncate">+ Work</span>
+      <span class="text-[10px] mt-0.5 tracking-tight truncate">{% trans "+ Work" %}</span>
     </a>
 
     <!-- 5. Menu Drawer -->
@@ -75,7 +76,7 @@
       <div class="relative flex items-center justify-center">
         <i class="bi bi-list text-xl"></i>
       </div>
-      <span class="text-[10px] mt-0.5 tracking-tight truncate">Menu</span>
+      <span class="text-[10px] mt-0.5 tracking-tight truncate">{% trans "Menu" %}</span>
     </button>
 
   </div>

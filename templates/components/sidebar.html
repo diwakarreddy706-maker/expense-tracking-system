@@ -1,4 +1,4 @@
-{% load static %}
+{% load static i18n %}
 <aside
   class="fixed inset-y-0 left-0 z-50 w-72 sm:w-64 bg-[#111827] border-r border-[#28354A] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto lg:z-auto shadow-2xl lg:shadow-none"
   :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
@@ -57,32 +57,32 @@
     {% with role=request.user.profile.role %}
 
     <!-- Section: Operations -->
-    <div class="px-3 pt-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">Core Operations</div>
+    <div class="px-3 pt-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">{% trans "Core Operations" %}</div>
 
     <!-- Dashboard: All Roles -->
     <a href="{% url 'dashboard:index' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'dashboard' and request.resolver_match.url_name == 'index' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-grid-1x2-fill w-5 text-center text-base {% if request.resolver_match.app_name == 'dashboard' and request.resolver_match.url_name == 'index' %}text-emerald-400{% else %}text-gray-400{% endif %}"></i>
-      <span>Dashboard</span>
+      <span>{% trans "Dashboard" %}</span>
     </a>
 
     <!-- Expenses Hub -->
     <a href="{% url 'expenses:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'expenses' and request.resolver_match.url_name != 'categories' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-receipt w-5 text-center text-base {% if request.resolver_match.app_name == 'expenses' and request.resolver_match.url_name != 'categories' %}text-emerald-400{% else %}text-gray-400{% endif %}"></i>
-      <span>Expenses Hub</span>
+      <span>{% trans "Expenses Hub" %}</span>
     </a>
 
     <!-- Expense Categories: Owner & Accountant -->
     {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <a href="{% url 'expenses:categories' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'expenses' and request.resolver_match.url_name == 'categories' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-tags-fill w-5 text-center text-base text-gray-400"></i>
-      <span>Expense Categories</span>
+      <span>{% trans "Expense Categories" %}</span>
     </a>
     {% endif %}
 
     <!-- Fuel & Lubricants: All Roles -->
     <a href="{% url 'fuel:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'fuel' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-fuel-pump-fill w-5 text-center text-base text-amber-400"></i>
-      <span>Fuel & Lubricants</span>
+      <span>{% trans "Fuel & Lubricants" %}</span>
     </a>
 
     <!-- Section: Machinery & Fleet -->

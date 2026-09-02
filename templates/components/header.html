@@ -1,4 +1,4 @@
-{% load static %}
+{% load static i18n %}
 <!-- Top Application Header Bar -->
 <header class="h-16 border-b border-[#28354A] bg-[#111827]/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 lg:px-8">
   <!-- Left Side: Mobile Menu Button & Breadcrumb Context -->
@@ -34,25 +34,65 @@
   <!-- Center / Context: Liquid Balance Summary (When available in context) -->
   {% if kpis.available_balance is not None %}
     <div class="hidden xl:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[#131A26] border border-[#28354A] text-xs">
-      <span class="text-gray-400 font-medium">Liquid:</span>
+      <span class="text-gray-400 font-medium">{% trans "Liquid" %}:</span>
       <span class="text-emerald-400 font-mono font-bold">₹{{ kpis.available_balance|floatformat:2 }}</span>
       {% if kpis.cash_balance is not None %}
         <span class="text-gray-600">|</span>
-        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">Cash:</span> ₹{{ kpis.cash_balance|floatformat:0 }}</span>
+        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">{% trans "Cash" %}:</span> ₹{{ kpis.cash_balance|floatformat:0 }}</span>
       {% endif %}
       {% if kpis.bank_balance is not None %}
         <span class="text-gray-600">|</span>
-        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">Bank:</span> ₹{{ kpis.bank_balance|floatformat:0 }}</span>
+        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">{% trans "Bank" %}:</span> ₹{{ kpis.bank_balance|floatformat:0 }}</span>
       {% endif %}
       {% if kpis.upi_balance is not None %}
         <span class="text-gray-600">|</span>
-        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">UPI:</span> ₹{{ kpis.upi_balance|floatformat:0 }}</span>
+        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">{% trans "UPI" %}:</span> ₹{{ kpis.upi_balance|floatformat:0 }}</span>
       {% endif %}
     </div>
   {% endif %}
 
-  <!-- Right Side: Search, Quick Action, Status Badge & Profile Dropdown -->
-  <div class="flex items-center gap-3">
+  <!-- Right Side: Controls, Search, Theme, Language & Profile -->
+  <div class="flex items-center gap-2 sm:gap-3">
+    <!-- Language Switcher (EN | ಕನ್ನಡ) -->
+    <form action="{% url 'set_language' %}" method="post" class="m-0 flex items-center">
+      {% csrf_token %}
+      <input name="next" type="hidden" value="{{ request.get_full_path }}">
+      {% get_current_language as CURRENT_LANGUAGE %}
+      {% if CURRENT_LANGUAGE == 'kn' %}
+        <input name="language" type="hidden" value="en">
+        <button
+          type="submit"
+          class="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-emerald-400 hover:text-white text-xs font-semibold transition-colors active:scale-95"
+          title="Switch to English"
+        >
+          <i class="bi bi-translate text-xs"></i>
+          <span>English</span>
+        </button>
+      {% else %}
+        <input name="language" type="hidden" value="kn">
+        <button
+          type="submit"
+          class="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-amber-400 hover:text-white text-xs font-semibold transition-colors active:scale-95"
+          title="ಕನ್ನಡಕ್ಕೆ ಬದಲಾಯಿಸಿ"
+        >
+          <i class="bi bi-translate text-xs"></i>
+          <span>ಕನ್ನಡ</span>
+        </button>
+      {% endif %}
+    </form>
+
+    <!-- Theme Toggle (Dark / Light) -->
+    <button
+      type="button"
+      onclick="window.toggleTheme()"
+      class="p-2 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-300 hover:text-amber-400 text-xs transition-colors focus:outline-none active:scale-95 flex items-center justify-center"
+      title="Toggle Light / Dark Mode"
+      aria-label="Toggle Theme"
+    >
+      <i class="bi bi-sun-fill text-amber-500 theme-icon-sun text-sm"></i>
+      <i class="bi bi-moon-stars-fill text-indigo-300 theme-icon-moon text-sm"></i>
+    </button>
+
     <!-- Mobile Quick Search Trigger (<md) -->
     <a href="{% url 'expenses:list' %}" class="flex md:hidden p-2 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-400 hover:text-white text-xs transition-colors no-underline active:scale-95" title="Search Transactions">
       <i class="bi bi-search text-xs"></i>

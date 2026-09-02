@@ -1,0 +1,269 @@
+# Kannada translations for Sri Basaveshwara & Co AgriBOS ERP.
+msgid ""
+msgstr ""
+"Project-Id-Version: AgriBOS ERP 2.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-02 11:00+0530\n"
+"PO-Revision-Date: 2026-09-02 11:00+0530\n"
+"Last-Translator: AgriBOS Team\n"
+"Language-Team: Kannada <kn@li.org>\n"
+"Language: kn\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+# Core Modules & Navigation
+msgid "Dashboard"
+msgstr "ಮುಖಪುಟ"
+
+msgid "Home"
+msgstr "ಮುಖಪುಟ"
+
+msgid "Core Operations"
+msgstr "ಮುಖ್ಯ ಕಾರ್ಯಾಚರಣೆಗಳು"
+
+msgid "Expenses"
+msgstr "ಖರ್ಚುಗಳು"
+
+msgid "Expenses Hub"
+msgstr "ಖರ್ಚುಗಳ ಕೇಂದ್ರ"
+
+msgid "Expense Categories"
+msgstr "ಖರ್ಚಿನ ವರ್ಗಗಳು"
+
+msgid "Fuel & Lubricants"
+msgstr "ಇಂಧನ ಮತ್ತು ಲೂಬ್ರಿಕೆಂಟ್ಸ್"
+
+msgid "Fuel Tracking"
+msgstr "ಇಂಧನ ಟ್ರ್ಯಾಕಿಂಗ್"
+
+msgid "Fuel Refill"
+msgstr "ಇಂಧನ ದಾಖಲೆ"
+
+msgid "+ Fuel"
+msgstr "+ ಇಂಧನ"
+
+msgid "Machinery Fleet"
+msgstr "ಯಂತ್ರೋಪಕರಣಗಳ ಸಮೂಹ"
+
+msgid "Fleet & Equipment"
+msgstr "ಯಂತ್ರಗಳು ಮತ್ತು ಉಪಕರಣಗಳು"
+
+msgid "Work Entries"
+msgstr "ಕೆಲಸದ ದಾಖಲೆಗಳು"
+
+msgid "Work Entry"
+msgstr "ಕೆಲಸದ ವಿವರ"
+
+msgid "+ Work"
+msgstr "+ ಕೆಲಸ"
+
+msgid "Maintenance"
+msgstr "ನಿರ್ವಹಣೆ / ದುರಸ್ತಿ"
+
+msgid "Machine Bookings"
+msgstr "ಯಂತ್ರದ ಬುಕಿಂಗ್‌ಗಳು"
+
+msgid "Book Machine"
+msgstr "ಯಂತ್ರ ಕಾಯ್ದಿರಿಸಿ"
+
+msgid "Employees"
+msgstr "ನೌಕರರು / ಸಿಬ್ಬಂದಿ"
+
+msgid "Workforce & Wages"
+msgstr "ಸಿಬ್ಬಂದಿ ಮತ್ತು ವೇತನ"
+
+msgid "Wage Payout"
+msgstr "ವೇತನ ವಿತರಣೆ"
+
+msgid "Financial Ledger"
+msgstr "ಆರ್ಥಿಕ ಲೆಡ್ಜರ್"
+
+msgid "Finance & Accounts"
+msgstr "ಹಣಕಾಸು ಮತ್ತು ಖಾತೆಗಳು"
+
+msgid "Liquid Balance"
+msgstr "ಲಭ್ಯವಿರುವ ಹಣ"
+
+msgid "Cash"
+msgstr "ನಗದು"
+
+msgid "Bank"
+msgstr "ಬ್ಯಾಂಕ್"
+
+msgid "UPI"
+msgstr "ಯುಪಿಐ"
+
+msgid "Receivables"
+msgstr "ಬರಬೇಕಾದ ಬಾಕಿ"
+
+msgid "Payables"
+msgstr "ಕೊಡಬೇಕಾದ ಬಾಕಿ"
+
+msgid "Customers"
+msgstr "ಗ್ರಾಹಕರು / ರೈತರು"
+
+msgid "Suppliers"
+msgstr "ಸರಬರಾಜುದಾರರು"
+
+msgid "Daily Closing"
+msgstr "ದೈನಂದಿನ ಲೆಕ್ಕ ಮುಕ್ತಾಯ"
+
+msgid "Budgets"
+msgstr "ಬಜೆಟ್"
+
+msgid "Reports"
+msgstr "ವರದಿಗಳು"
+
+msgid "Financial Reports"
+msgstr "ಆರ್ಥಿಕ ವರದಿಗಳು"
+
+msgid "Audit Log"
+msgstr "ಆಡಿಟ್ ಲಾಗ್"
+
+msgid "Menu"
+msgstr "ಮೆನು"
+
+msgid "Quick Operations"
+msgstr "ತ್ವರಿತ ಕಾರ್ಯಾಚರಣೆಗಳು"
+
+msgid "Quick Operations Hub"
+msgstr "ತ್ವರಿತ ಕಾರ್ಯಾಚರಣೆಗಳ ಕೇಂದ್ರ"
+
+msgid "Quick Expense"
+msgstr "ತ್ವರಿತ ಖರ್ಚು"
+
+msgid "Quick Expense Entry"
+msgstr "ತ್ವರಿತ ಖರ್ಚು ದಾಖಲಿಸಿ"
+
+msgid "Search"
+msgstr "ಹುಡುಕಿ"
+
+msgid "Search..."
+msgstr "ಹುಡುಕಿ..."
+
+msgid "Settings"
+msgstr "ಸೆಟ್ಟಿಂಗ್ಸ್"
+
+msgid "Profile"
+msgstr "ಪ್ರೊಫೈಲ್"
+
+msgid "Logout"
+msgstr "ಲಾಗ್‌ಔಟ್"
+
+# Form Actions & Buttons
+msgid "Save"
+msgstr "ಉಳಿಸಿ"
+
+msgid "Submit"
+msgstr "ಸಲ್ಲಿಸಿ"
+
+msgid "Cancel"
+msgstr "ರದ್ದುಮಾಡಿ"
+
+msgid "Close"
+msgstr "ಮುಚ್ಚಿ"
+
+msgid "Confirm"
+msgstr "ದೃಢೀಕರಿಸಿ"
+
+msgid "Edit"
+msgstr "ತಿದ್ದುಪಡಿ"
+
+msgid "Delete"
+msgstr "ಅಳಿಸಿ"
+
+msgid "Post Expense"
+msgstr "ಖರ್ಚು ದಾಖಲಿಸಿ"
+
+msgid "Record New Expense"
+msgstr "ಹೊಸ ಖರ್ಚು ದಾಖಲಿಸಿ"
+
+msgid "Amount"
+msgstr "ಮೊತ್ತ"
+
+msgid "Category"
+msgstr "ವರ್ಗ"
+
+msgid "Payment Account"
+msgstr "ಪಾವತಿ ಖಾತೆ"
+
+msgid "Payment Method"
+msgstr "ಪಾವತಿ ವಿಧಾನ"
+
+msgid "Associated Machine"
+msgstr "ಸಂಬಂಧಿತ ಯಂತ್ರ"
+
+msgid "Description / Notes"
+msgstr "ವಿವರ / ಟಿಪ್ಪಣಿ"
+
+msgid "Date"
+msgstr "ದಿನಾಂಕ"
+
+# Status Badges
+msgid "Active"
+msgstr "ಸಕ್ರಿಯ"
+
+msgid "Completed"
+msgstr "ಪೂರ್ಣಗೊಂಡಿದೆ"
+
+msgid "Pending"
+msgstr "ಬಾಕಿ ಉಳಿದಿದೆ"
+
+msgid "In Progress"
+msgstr "ಪ್ರಗತಿಯಲ್ಲಿದೆ"
+
+msgid "Balanced"
+msgstr "ಸರಿಹೊಂದಿದೆ"
+
+msgid "Surplus"
+msgstr "ಹೆಚ್ಚುವರಿ"
+
+msgid "Deficit"
+msgstr "ಕೊರತೆ"
+
+msgid "English"
+msgstr "English"
+
+msgid "Kannada"
+msgstr "ಕನ್ನಡ"
+
+msgid "Sign Out"
+msgstr "ಲಾಗ್‌ಔಟ್"
+
+msgid "Liquid"
+msgstr "ಲಭ್ಯವಿರುವ ಹಣ"
+
+msgid "Executive Dashboard"
+msgstr "ಕಾರ್ಯನಿರ್ವಾಹಕ ಮುಖಪುಟ"
+
+msgid "New Expense"
+msgstr "ಹೊಸ ಖರ್ಚು"
+
+msgid "Log Fuel"
+msgstr "ಇಂಧನ ದಾಖಲಿಸಿ"
+
+msgid "Fleet & Equipment"
+msgstr "ಯಂತ್ರಗಳು ಮತ್ತು ಉಪಕರಣಗಳು"
+
+msgid "Rented Fleet Owners"
+msgstr "ಬಾಡಿಗೆ ವಾಹನ ಮಾಲೀಕರು"
+
+msgid "Vehicle Compliance"
+msgstr "ವಾಹನ ದಾಖಲೆಗಳು"
+
+msgid "Bookings & Jobs"
+msgstr "ಬುಕಿಂಗ್ ಮತ್ತು ಕೆಲಸಗಳು"
+
+msgid "Dispatch Board"
+msgstr "ಡಿಸ್ಪ್ಯಾಚ್ ಬೋರ್ಡ್"
+
+msgid "Work Logs & Billing"
+msgstr "ಕೆಲಸದ ದಾಖಲೆ ಮತ್ತು ಬಿಲ್ಲಿಂಗ್"
+
+msgid "Staff & Wages"
+msgstr "ಸಿಬ್ಬಂದಿ ಮತ್ತು ವೇತನ"
+
+msgid "Business Accounts"
+msgstr "ವ್ಯಾಪಾರ ಖಾತೆಗಳು"

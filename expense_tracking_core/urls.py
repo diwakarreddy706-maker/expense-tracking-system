@@ -47,6 +47,7 @@ handler404 = 'expense_tracking_core.urls.custom_page_not_found_view'
 handler500 = 'expense_tracking_core.urls.custom_server_error_view'
 
 urlpatterns = [
+    path('i18n/', include('django.conf.urls.i18n')),
     path('admin/', admin.site.urls),
     path('health/', health_check, name='health_check'),
     path('', dashboard_index, name='root'),

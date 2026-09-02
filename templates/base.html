@@ -6,6 +6,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
   <title>{% block title %}{{ title|default:"AgriBOS ERP" }}{% endblock %}</title>
 
+  <!-- Instant Theme Initializer (Prevents Theme Flash) -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('agribos_theme');
+      if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+
+    window.toggleTheme = function() {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('agribos_theme', 'light');
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('agribos_theme', 'dark');
+      }
+      window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: isDark ? 'light' : 'dark' } }));
+    };
+  </script>
+
   <!-- PWA & Mobile Meta Tags -->
   <link rel="manifest" href="{% static 'manifest.webmanifest' %}?v=3">
   <meta name="theme-color" content="#10B981">

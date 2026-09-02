@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
-{% load humanize %}
+{% load humanize i18n %}
 
-{% block title %}Executive Dashboard | AgriBOS Machinery & Financial ERP{% endblock %}
+{% block title %}{% trans "Dashboard" %} | AgriBOS ERP{% endblock %}
 
 {% block content %}
 <!-- Executive Header & Quick Actions -->
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
   <div>
     <div class="flex items-center gap-3">
-      <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Executive Dashboard</h2>
+      <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">{% trans "Executive Dashboard" %}</h2>
       <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#182234] border border-[#28354A] text-cyan-400 font-mono text-xs font-semibold">
         <i class="bi bi-calendar3"></i> {{ kpis.today_formatted }}
       </span>
@@ -18,16 +18,16 @@
 
   <div class="flex flex-wrap items-center gap-2">
     <a href="{% url 'expenses:create' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
-      <i class="bi bi-receipt"></i><span>New Expense</span>
+      <i class="bi bi-receipt"></i><span>{% trans "New Expense" %}</span>
     </a>
     <a href="{% url 'fuel:create' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-amber-300 font-semibold text-xs border border-[#28354A] transition-all no-underline">
-      <i class="bi bi-fuel-pump"></i><span>Log Fuel</span>
+      <i class="bi bi-fuel-pump"></i><span>{% trans "Log Fuel" %}</span>
     </a>
     <a href="{% url 'finance:daily_closing' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-cyan-300 font-semibold text-xs border border-[#28354A] transition-all no-underline">
-      <i class="bi bi-lock"></i><span>Daily Closing</span>
+      <i class="bi bi-lock"></i><span>{% trans "Daily Closing" %}</span>
     </a>
     <a href="{% url 'reports:index' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-gray-300 hover:text-white font-semibold text-xs border border-[#28354A] transition-all no-underline">
-      <i class="bi bi-file-earmark-bar-graph"></i><span>Reports</span>
+      <i class="bi bi-file-earmark-bar-graph"></i><span>{% trans "Reports" %}</span>
     </a>
   </div>
 </div>
