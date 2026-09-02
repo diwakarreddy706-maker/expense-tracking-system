@@ -34,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Expose globally so Alpine.js and direct triggers can call it anytime
+window.loadQuickExpenseOptions = loadQuickExpenseOptions;
+
 /**
  * Loads dynamic active categories, accounts, and machines into Quick Expense Modal
  */
@@ -43,6 +46,9 @@ async function loadQuickExpenseOptions() {
   const mchSelect = document.getElementById('quickExpMch');
 
   if (!catSelect || !accSelect) return;
+
+  // Don't re-fetch if already populated
+  if (catSelect.options.length > 2 && accSelect.options.length > 2) return;
 
   try {
     const res = await fetch('/expenses/api/options/');
@@ -76,7 +82,10 @@ async function handleQuickExpenseSubmit(e) {
   const submitBtn = document.getElementById('quickExpenseSubmitBtn');
   const alertBox = document.getElementById('quickExpenseAlert');
 
-  if (alertBox) alertBox.classList.add('d-none');
+  if (alertBox) {
+    alertBox.classList.add('hidden');
+    alertBox.classList.add('d-none');
+  }
   if (submitBtn) {
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Posting...';
@@ -96,9 +105,20 @@ async function handleQuickExpenseSubmit(e) {
     const result = await res.json();
 
     if (result.success) {
-      // Close modal
-      const modalInstance = bootstrap.Modal.getInstance(document.getElementById('quickExpenseModal'));
-      if (modalInstance) modalInstance.hide();
+      // Close modal in Alpine.js state
+      const modalEl = document.getElementById('quickExpenseModal');
+      if (modalEl && window.Alpine) {
+        modalEl.dispatchEvent(new CustomEvent('close-quick-expense', { bubbles: true }));
+      }
+      const alpineRoot = document.querySelector('[x-data]');
+      if (alpineRoot && alpineRoot._x_dataStack && alpineRoot._x_dataStack[0]) {
+        alpineRoot._x_dataStack[0].quickExpenseOpen = false;
+      }
+      // Also close Bootstrap modal if present
+      if (window.bootstrap && bootstrap.Modal && modalEl) {
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
+      }
       form.reset();
 
       // Reload page to reflect authoritative balance and new expense entry
@@ -106,12 +126,14 @@ async function handleQuickExpenseSubmit(e) {
     } else {
       if (alertBox) {
         alertBox.textContent = result.error || 'Failed to post quick expense.';
+        alertBox.classList.remove('hidden');
         alertBox.classList.remove('d-none');
       }
     }
   } catch (err) {
     if (alertBox) {
       alertBox.textContent = 'A network error occurred while posting quick expense.';
+      alertBox.classList.remove('hidden');
       alertBox.classList.remove('d-none');
     }
   } finally {

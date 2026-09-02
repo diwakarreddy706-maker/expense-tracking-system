@@ -2,16 +2,25 @@
 <!-- Top Application Header Bar -->
 <header class="h-16 border-b border-[#28354A] bg-[#111827]/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 lg:px-8">
   <!-- Left Side: Mobile Menu Button & Breadcrumb Context -->
-  <div class="flex items-center gap-3">
+  <div class="flex items-center gap-2.5">
     <button
       type="button"
-      @click="sidebarOpen = !sidebarOpen"
-      class="lg:hidden p-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-gray-400 hover:text-white border border-[#28354A] focus:outline-none focus:ring-2 focus:ring-emerald-500"
+      @click.stop="sidebarOpen = !sidebarOpen"
+      class="lg:hidden p-2 rounded-xl bg-[#182234] hover:bg-gray-800 text-gray-400 hover:text-white border border-[#28354A] focus:outline-none focus:ring-2 focus:ring-emerald-500 active:scale-95 transition-transform"
       aria-label="Toggle Mobile Navigation"
     >
       <i class="bi bi-list text-lg"></i>
     </button>
 
+    <!-- Mobile Brand Display (<sm) -->
+    <a href="{% url 'dashboard:index' %}" class="flex sm:hidden items-center gap-2 no-underline text-white group">
+      <div class="w-7 h-7 rounded-full bg-slate-900 border border-emerald-500/40 shadow-sm flex items-center justify-center flex-shrink-0 overflow-hidden">
+        <img src="{% static 'icons/favicon-32x32.png' %}" alt="Logo" class="w-full h-full object-cover">
+      </div>
+      <span class="font-bold text-xs tracking-tight text-white group-hover:text-emerald-400 transition-colors truncate max-w-[130px]">Sri Basaveshwara</span>
+    </a>
+
+    <!-- Desktop/Tablet Brand Display (>=sm) -->
     <div class="hidden sm:flex items-center gap-2.5 text-xs">
       <div class="w-7 h-7 rounded-full bg-slate-900 border border-emerald-500/40 shadow-sm flex items-center justify-center flex-shrink-0 overflow-hidden">
         <img src="{% static 'icons/favicon-32x32.png' %}" alt="Logo" class="w-full h-full object-cover">
@@ -44,7 +53,12 @@
 
   <!-- Right Side: Search, Quick Action, Status Badge & Profile Dropdown -->
   <div class="flex items-center gap-3">
-    <!-- Global Quick Search Trigger (Ctrl+K) -->
+    <!-- Mobile Quick Search Trigger (<md) -->
+    <a href="{% url 'expenses:list' %}" class="flex md:hidden p-2 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-400 hover:text-white text-xs transition-colors no-underline active:scale-95" title="Search Transactions">
+      <i class="bi bi-search text-xs"></i>
+    </a>
+
+    <!-- Global Quick Search Trigger (Ctrl+K, >=md) -->
     <div class="hidden md:flex items-center">
       <a href="{% url 'expenses:list' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-400 hover:text-white text-xs transition-colors no-underline" title="Search Transactions, Expenses, Equipment">
         <i class="bi bi-search text-xs"></i>

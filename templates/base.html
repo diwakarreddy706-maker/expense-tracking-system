@@ -55,8 +55,8 @@
       x-transition:leave="ease-in duration-150"
       x-transition:leave-start="opacity-100"
       x-transition:leave-end="opacity-0"
-      @click="sidebarOpen = false"
-      class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden"
+      @click.stop="sidebarOpen = false"
+      class="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm lg:hidden"
       aria-hidden="true"
     ></div>
 
@@ -75,12 +75,12 @@
       {% include 'components/pwa_banner.html' %}
 
       <!-- Page Content Viewport -->
-      <main class="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-6 max-w-7xl w-full mx-auto">
+      <main class="flex-1 overflow-y-auto overscroll-contain px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-28 lg:pb-6 max-w-7xl w-full mx-auto" style="-webkit-overflow-scrolling: touch;">
         {% block content %}{% endblock %}
       </main>
 
-      <!-- Global Modern Footer -->
-      <footer class="border-t border-[#28354A] bg-[#111827]/40 px-4 sm:px-6 lg:px-8 py-3 text-xs text-gray-500 flex flex-col sm:flex-row justify-between items-center gap-2 mb-16 lg:mb-0 print:hidden">
+      <!-- Global Modern Footer (Desktop Only - Clean screen space on mobile) -->
+      <footer class="border-t border-[#28354A] bg-[#111827]/40 px-4 sm:px-6 lg:px-8 py-3 text-xs text-gray-500 hidden lg:flex justify-between items-center gap-2 print:hidden">
         <div class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
           <span>AgriBOS ERP &bull; Operational &amp; Financial Ledger</span>

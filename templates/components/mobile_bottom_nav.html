@@ -39,23 +39,23 @@
       <span class="text-[10px] mt-0.5 tracking-tight truncate">+ Fuel</span>
     </a>
 
-    <!-- 3. + Quick Expense (Center Action Button) -->
-    <div class="flex items-center justify-center">
+    <!-- 3. Quick Action Hub (Center Action Button) -->
+    <div class="flex items-center justify-center relative -top-2">
       <button
         type="button"
-        @click="quickExpenseOpen = true"
-        class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-lg shadow-emerald-950/60 flex items-center justify-center transition-transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#111827]"
-        aria-label="Open Quick Expense Modal"
-        title="Quick Record Expense"
+        @click="quickAddOpen = true"
+        class="w-[52px] h-[52px] rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 hover:from-emerald-500 hover:to-teal-300 text-white shadow-xl shadow-emerald-950/80 border-2 border-[#111827] flex items-center justify-center transition-all active:scale-90 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+        aria-label="Open Quick Operations Menu"
+        title="Quick Operations Hub"
       >
-        <i class="bi bi-receipt text-xl font-bold"></i>
+        <i class="bi bi-plus-lg text-2xl font-black"></i>
       </button>
     </div>
 
     <!-- 4. + Work Log -->
     <a
       href="{% url 'machines:work_create' %}"
-      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'work_create' %}text-cyan-400 font-semibold{% else %}text-gray-400 hover:text-cyan-300{% endif %}"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none active:scale-95 {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'work_create' %}text-cyan-400 font-semibold{% else %}text-gray-400 hover:text-cyan-300{% endif %}"
       title="Record Machine Work Hours / Acres"
     >
       <div class="relative flex items-center justify-center">
@@ -67,8 +67,8 @@
     <!-- 5. Menu Drawer -->
     <button
       type="button"
-      @click="sidebarOpen = !sidebarOpen"
-      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center text-gray-400 hover:text-white transition-colors bg-transparent border-0 focus:outline-none"
+      @click.stop="sidebarOpen = !sidebarOpen"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center text-gray-400 hover:text-white transition-colors bg-transparent border-0 focus:outline-none active:scale-95"
       aria-label="Toggle Full Menu"
       title="Open All Modules"
     >

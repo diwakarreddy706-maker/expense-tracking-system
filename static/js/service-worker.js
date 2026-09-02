@@ -7,7 +7,7 @@
  *   financial routes, APIs, forms, and dynamic accounting views to prevent stale data.
  */
 
-const CACHE_NAME = 'agribos-static-v3.0';
+const CACHE_NAME = 'agribos-static-v3.1';
 const STATIC_ASSETS = [
   '/static/css/tailwind.css',
   '/static/css/custom.css',

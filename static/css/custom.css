@@ -447,3 +447,76 @@ input[type="radio"]:checked + .pill-selector-item {
   z-index: 1070 !important;
   pointer-events: auto !important;
 }
+
+/* ==============================================================================
+   MOBILE ERGONOMICS, TOUCH OPTIMIZATIONS & iOS ZOOM PREVENTION
+   ============================================================================== */
+
+/* 1. Prevent iOS Safari Auto-Zoom by enforcing 16px minimum font size */
+@media (max-width: 767.98px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="search"],
+  input[type="date"],
+  input[type="datetime-local"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* 2. Fast-Click Touch Manipulation & Tap Highlights */
+*,
+*::before,
+*::after {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+.clickable {
+  touch-action: manipulation;
+}
+
+/* 3. Tactile Mobile Micro-Tap Feedback */
+.btn-tap,
+button:not(:disabled),
+a[role="button"] {
+  transition: transform 0.1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.1s ease;
+}
+
+.btn-tap:active,
+button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+/* 4. Smooth Momentum Scrolling for Horizontal Tables */
+.table-responsive-mobile,
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+}
+
+/* 5. Safe Area Insets for Modern Mobile Notches & Navigation Bars */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
