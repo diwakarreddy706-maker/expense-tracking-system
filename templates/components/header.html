@@ -94,17 +94,28 @@
     </button>
 
     <!-- Mobile Quick Search Trigger (<md) -->
-    <a href="{% url 'expenses:list' %}" class="flex md:hidden p-2 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-400 hover:text-white text-xs transition-colors no-underline active:scale-95" title="Search Transactions">
+    <button
+      type="button"
+      onclick="window.dispatchEvent(new CustomEvent('open-command-palette'))"
+      class="flex md:hidden p-2 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-400 hover:text-white text-xs transition-colors active:scale-95 cursor-pointer"
+      title="Open Command Palette"
+      aria-label="Search"
+    >
       <i class="bi bi-search text-xs"></i>
-    </a>
+    </button>
 
     <!-- Global Quick Search Trigger (Ctrl+K, >=md) -->
     <div class="hidden md:flex items-center">
-      <a href="{% url 'expenses:list' %}" class="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-400 hover:text-white text-xs transition-colors no-underline" title="Search Transactions, Expenses, Equipment">
+      <button
+        type="button"
+        onclick="window.dispatchEvent(new CustomEvent('open-command-palette'))"
+        class="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-400 hover:text-white text-xs transition-colors cursor-pointer"
+        title="Open Command Palette (Ctrl+K)"
+      >
         <i class="bi bi-search text-xs"></i>
         <span class="hidden lg:inline">Search...</span>
         <kbd class="hidden lg:inline-block px-1 py-0.2 text-[9px] font-mono bg-[#0B0F17] text-gray-400 rounded border border-[#28354A]">Ctrl K</kbd>
-      </a>
+      </button>
     </div>
 
     <!-- Live Financial System Badge -->

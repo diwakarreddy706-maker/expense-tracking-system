@@ -1,0 +1,171 @@
+{% load static i18n %}
+<!-- Global Command Palette (Spotlight Search: Ctrl+K / Cmd+K / /) -->
+<div
+  x-data="{
+    open: false,
+    query: '',
+    selectedIndex: 0,
+    commands: [
+      <!-- Quick Operational Actions -->
+      { title: 'Record Expense', subtitle: 'Post field, machine, or general enterprise expense', category: 'Actions', icon: 'bi-lightning-fill text-amber-400', action: 'expense' },
+      { title: 'Log Fuel Refill', subtitle: 'Record diesel tank dispensing or machine fueling', category: 'Actions', icon: 'bi-fuel-pump-fill text-amber-400', url: '{% url "fuel:create" %}' },
+      { title: 'New Harvesting Work Entry', subtitle: 'Record acres, hours, timings, and generate bill', category: 'Actions', icon: 'bi-clock-history text-cyan-400', url: '{% url "machines:work_create" %}' },
+      { title: 'Farmer Credit Ledger (Udhar Katha)', subtitle: 'Farmer balances, WhatsApp statement, and payment collection', category: 'Modules', icon: 'bi-person-lines-fill text-emerald-400', url: '{% url "machines:farmer_ledger" %}' },
+      { title: 'Daily Cash & Bank Closing', subtitle: 'End-of-day cash counting, UPI reconciliation, and lock verification', category: 'Finance', icon: 'bi-calendar-check-fill text-indigo-400', url: '{% url "finance:daily_closing" %}' },
+      
+      <!-- Core Modules -->
+      { title: 'Executive Dashboard', subtitle: 'Real-time KPIs, liquid balances, and profit metrics', category: 'Modules', icon: 'bi-grid-1x2-fill text-emerald-400', url: '{% url "dashboard:index" %}' },
+      { title: 'Machine Fleet & Harvesters', subtitle: 'Live status, operating hours, and maintenance logs', category: 'Modules', icon: 'bi-truck text-emerald-400', url: '{% url "machines:list" %}' },
+      { title: 'Fuel & Lubricants Tracking', subtitle: 'Diesel consumption, fuel slips, and pump history', category: 'Modules', icon: 'bi-fuel-pump text-amber-400', url: '{% url "fuel:list" %}' },
+      { title: 'Expenses Register', subtitle: 'Operational expenditures, categories, and payment tags', category: 'Modules', icon: 'bi-receipt text-rose-400', url: '{% url "expenses:list" %}' },
+      { title: 'Staff & Crew Directory', subtitle: 'Driver profiles, roles, and contacts', category: 'Modules', icon: 'bi-people text-purple-400', url: '{% url "employees:list" %}' },
+      { title: 'Staff Wages & Advances', subtitle: 'Attendance, advances, monthly wages, and settlement', category: 'Finance', icon: 'bi-cash-coin text-purple-400', url: '{% url "employees:wages" %}' },
+      { title: 'Accounts & Liquid Wallets', subtitle: 'Cash registers, current accounts, and UPI balances', category: 'Finance', icon: 'bi-wallet2 text-emerald-400', url: '{% url "finance:accounts" %}' },
+      { title: 'Receivables & Farmer Debtors', subtitle: 'Outstanding receivables and customer accounts', category: 'Finance', icon: 'bi-arrow-down-left text-amber-400', url: '{% url "finance:receivables" %}' },
+      { title: 'Payables & Spare Part Creditors', subtitle: 'Supplier balances and pending vendor bills', category: 'Finance', icon: 'bi-arrow-up-right text-rose-400', url: '{% url "finance:payables" %}' },
+      { title: 'Financial Reports & Analytics', subtitle: 'P&L statements, machine ROI, and fuel consumption', category: 'Finance', icon: 'bi-bar-chart-fill text-cyan-400', url: '{% url "reports:index" %}' },
+      { title: 'Business Setup Hub', subtitle: 'Master accounts, machines, customers, and opening balances', category: 'Settings', icon: 'bi-sliders text-cyan-400', url: '{% url "finance:setup_hub" %}' },
+
+      <!-- System Preferences -->
+      { title: 'Toggle Theme (Dark / Light)', subtitle: 'Switch between dark and light visual themes', category: 'Preferences', icon: 'bi-sun-fill text-amber-400', action: 'theme' },
+      { title: 'Toggle Sunlight Mode', subtitle: 'High-contrast black & white outdoor field visibility', category: 'Preferences', icon: 'bi-brightness-high text-yellow-300', action: 'sunlight' }
+    ],
+    get filteredCommands() {
+      if (!this.query.trim()) return this.commands;
+      const q = this.query.toLowerCase();
+      return this.commands.filter(c => 
+        c.title.toLowerCase().includes(q) || 
+        c.subtitle.toLowerCase().includes(q) || 
+        c.category.toLowerCase().includes(q)
+      );
+    },
+    openPalette() {
+      this.open = true;
+      this.query = '';
+      this.selectedIndex = 0;
+      this.$nextTick(() => {
+        this.$refs.commandInput?.focus();
+      });
+    },
+    closePalette() {
+      this.open = false;
+    },
+    selectNext() {
+      if (this.selectedIndex < this.filteredCommands.length - 1) {
+        this.selectedIndex++;
+        this.scrollToSelected();
+      }
+    },
+    selectPrev() {
+      if (this.selectedIndex > 0) {
+        this.selectedIndex--;
+        this.scrollToSelected();
+      }
+    },
+    executeSelected() {
+      const item = this.filteredCommands[this.selectedIndex];
+      if (item) this.runCommand(item);
+    },
+    runCommand(item) {
+      window.triggerHaptic(15);
+      this.closePalette();
+      if (item.action === 'expense') {
+        window.agriOpenModal ? window.agriOpenModal(document.getElementById('quickExpenseModal')) : (this.$root.quickExpenseOpen = true);
+        if (window.loadQuickExpenseOptions) window.loadQuickExpenseOptions();
+      } else if (item.action === 'theme') {
+        if (window.toggleTheme) window.toggleTheme();
+      } else if (item.action === 'sunlight') {
+        document.documentElement.classList.toggle('sunlight-mode');
+      } else if (item.url) {
+        window.location.href = item.url;
+      }
+    },
+    scrollToSelected() {
+      this.$nextTick(() => {
+        const el = document.getElementById('command-item-' + this.selectedIndex);
+        if (el) el.scrollIntoView({ block: 'nearest' });
+      });
+    }
+  }"
+  x-init="
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        openPalette();
+      }
+      if (e.key === 'Escape' && open) {
+        closePalette();
+      }
+    });
+    window.addEventListener('open-command-palette', () => openPalette());
+  "
+  x-show="open"
+  x-cloak
+  class="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 command-palette-backdrop print:hidden"
+  @click.self="closePalette()"
+>
+  <div
+    class="relative w-full max-w-2xl command-palette-modal rounded-2xl overflow-hidden text-gray-100 shadow-2xl flex flex-col max-h-[80vh]"
+    x-transition:enter="transition ease-out duration-150"
+    x-transition:enter-start="opacity-0 scale-95"
+    x-transition:enter-end="opacity-100 scale-100"
+    x-transition:leave="transition ease-in duration-100"
+    x-transition:leave-start="opacity-100 scale-100"
+    x-transition:leave-end="opacity-0 scale-95"
+  >
+    <!-- Search Bar Input Header -->
+    <div class="p-4 border-b border-[#28354A] flex items-center gap-3 bg-[#131A26]">
+      <i class="bi bi-search text-emerald-400 text-lg"></i>
+      <input
+        x-ref="commandInput"
+        type="text"
+        x-model="query"
+        @keydown.arrow-down.prevent="selectNext()"
+        @keydown.arrow-up.prevent="selectPrev()"
+        @keydown.enter.prevent="executeSelected()"
+        placeholder="Type a command, module, or search (e.g. Fuel, Farmer, Expense, Ledger)..."
+        class="w-full bg-transparent border-0 text-white placeholder-gray-500 text-sm sm:text-base focus:outline-none font-medium"
+      >
+      <kbd class="hidden sm:inline-block px-2 py-1 text-[10px] font-mono bg-[#0B0F17] text-gray-400 rounded-lg border border-[#28354A]">ESC</kbd>
+    </div>
+
+    <!-- Commands Results List -->
+    <div class="overflow-y-auto p-2 space-y-1 flex-1">
+      <template x-for="(cmd, idx) in filteredCommands" :key="idx">
+        <div
+          :id="'command-item-' + idx"
+          @click="runCommand(cmd)"
+          @mouseenter="selectedIndex = idx"
+          class="command-item px-3.5 py-2.5 rounded-xl border border-transparent cursor-pointer flex items-center justify-between"
+          :class="{ 'selected bg-emerald-500/15 border-emerald-500/40': selectedIndex === idx }"
+        >
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-[#1F2937] border border-[#374151] flex items-center justify-center flex-shrink-0">
+              <i class="bi text-base" :class="cmd.icon"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs sm:text-sm font-bold text-white truncate" x-text="cmd.title"></div>
+              <div class="text-[11px] text-gray-400 truncate" x-text="cmd.subtitle"></div>
+            </div>
+          </div>
+          <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700 ml-2 flex-shrink-0" x-text="cmd.category"></span>
+        </div>
+      </template>
+
+      <!-- Empty Results State -->
+      <div x-show="filteredCommands.length === 0" class="py-12 text-center text-gray-500 text-xs">
+        <i class="bi bi-slash-circle text-2xl mb-2 d-block text-gray-600"></i>
+        No commands or modules match "<span class="text-gray-300" x-text="query"></span>".
+      </div>
+    </div>
+
+    <!-- Footer Quick Hints -->
+    <div class="px-4 py-2.5 border-t border-[#28354A] bg-[#0B0F17] text-[11px] text-gray-500 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span><kbd class="font-mono bg-gray-800 px-1.5 py-0.5 rounded border border-gray-700 text-gray-300">↑</kbd> <kbd class="font-mono bg-gray-800 px-1.5 py-0.5 rounded border border-gray-700 text-gray-300">↓</kbd> Navigate</span>
+        <span><kbd class="font-mono bg-gray-800 px-1.5 py-0.5 rounded border border-gray-700 text-gray-300">↵</kbd> Select</span>
+      </div>
+      <span class="text-emerald-400 font-mono font-semibold">AgriBOS Spotlight</span>
+    </div>
+  </div>
+</div>

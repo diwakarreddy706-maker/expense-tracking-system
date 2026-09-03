@@ -215,6 +215,11 @@
         </button>
         {% endif %}
 
+        <button type="button" onclick="window.shareContent({ title: 'Udhar Statement - {{ selected_customer.name|escapejs }}', text: 'Sri Basaveshwara & Co Farmer Statement for {{ selected_customer.name|escapejs }} ({{ selected_customer.customer_code }}): Outstanding Udhar: ₹{{ farmer_balance_due|floatformat:0 }}.', phone: '{{ selected_customer.phone|escapejs }}', url: window.location.href })" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-extrabold text-xs shadow-sm transition-all border-0 cursor-pointer">
+          <i class="bi bi-share-fill"></i>
+          <span>Share</span>
+        </button>
+
         <a href="{{ whatsapp_statement_url }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-extrabold text-xs shadow-sm transition-all no-underline">
           <i class="bi bi-whatsapp text-sm"></i>
           <span>WhatsApp Statement</span>

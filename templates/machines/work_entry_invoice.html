@@ -24,13 +24,17 @@
       <i class="bi bi-plus-lg"></i>
       <span>+ New Bill</span>
     </a>
+    <button type="button" onclick="window.shareContent({ title: 'Harvesting Bill {{ entry.manual_bill_no|default:entry.work_code }}', text: 'Sri Basaveshwara & Co Harvesting Bill for {{ entry.farmer_name|escapejs }} - Total: ₹{{ entry.total_amount|floatformat:0 }}', phone: '{{ entry.farmer_phone|escapejs }}', url: window.location.href })" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-sm transition-all border-0 cursor-pointer">
+      <i class="bi bi-share-fill"></i>
+      <span>Share</span>
+    </button>
     <a href="{{ whatsapp_url }}" target="_blank" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-bold text-xs shadow-sm transition-all no-underline">
       <i class="bi bi-whatsapp text-sm"></i>
-      <span>WhatsApp Farmer</span>
+      <span>WhatsApp</span>
     </a>
     <button type="button" onclick="window.print()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 font-semibold text-xs border border-gray-700 shadow-sm transition-all cursor-pointer">
       <i class="bi bi-printer-fill text-emerald-400"></i>
-      <span>Print Receipt</span>
+      <span>Print</span>
     </button>
     <a href="{% url 'machines:work_pdf' entry.id %}" download="Harvesting_Bill_{{ entry.manual_bill_no|default:entry.work_code }}.pdf" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-sm transition-all border-0 no-underline cursor-pointer">
       <i class="bi bi-file-earmark-pdf-fill"></i>

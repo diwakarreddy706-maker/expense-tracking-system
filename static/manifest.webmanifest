@@ -1,13 +1,13 @@
 {
   "name": "Sri Basaveshwara & Co — AgriBOS ERP",
-  "short_name": "Basaveshwara",
+  "short_name": "AgriBOS ERP",
   "description": "Sri Basaveshwara & Co Agricultural Machinery & Financial ERP",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0B0F17",
   "theme_color": "#10B981",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "icons": [
     {
       "src": "/static/icons/icon-192.png",
@@ -20,7 +20,43 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
     }
   ],
-  "categories": ["finance", "business", "productivity"]
+  "shortcuts": [
+    {
+      "name": "Record Expense",
+      "short_name": "+ Expense",
+      "description": "Record field or machinery expense",
+      "url": "/expenses/create/",
+      "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Log Fuel Refill",
+      "short_name": "+ Fuel",
+      "description": "Log diesel tank or machinery refueling",
+      "url": "/fuel/create/",
+      "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "New Work Log",
+      "short_name": "+ Work",
+      "description": "Record harvester or tractor operating work",
+      "url": "/machines/work/create/",
+      "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Farmer Ledger (Udhar)",
+      "short_name": "Ledger",
+      "description": "Farmer credit balances and statement generator",
+      "url": "/machines/farmer-ledger/",
+      "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["finance", "business", "productivity", "agriculture"],
+  "prefer_related_applications": false
 }

@@ -1,5 +1,6 @@
 /**
  * EXPENSE TRACKING & MANAGEMENT SYSTEM - CORE CLIENT SCRIPT
+ * Mobile & Browser Performance & Touch Interaction Enhancements
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (sidebarToggle && sidebar) {
     sidebarToggle.addEventListener('click', () => {
       sidebar.classList.toggle('open');
+      window.triggerHaptic(10);
     });
   }
 
@@ -20,6 +22,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
       toast.show();
     }
+  });
+
+  // Automatically enforce numeric keypad inputmode on all currency / quantity inputs
+  document.querySelectorAll('input[type="number"], input[name*="amount"], input[name*="rate"], input[name*="liters"], input[name*="acre"], input[name*="hour"]').forEach(el => {
+    if (!el.getAttribute('inputmode')) {
+      el.setAttribute('inputmode', 'decimal');
+    }
+  });
+
+  // Attach tactile haptic feedback to interactive primary action buttons
+  document.querySelectorAll('button[type="submit"], .btn-primary, [data-haptic]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      window.triggerHaptic(12);
+    });
   });
 
   // Quick Expense Modal Dynamic Options & AJAX Submitter
@@ -33,6 +49,61 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
+/**
+ * Lightweight Haptic Feedback Helper using Web Vibration API
+ */
+window.triggerHaptic = function(duration = 10) {
+  try {
+    if ('vibrate' in navigator) {
+      navigator.vibrate(duration);
+    }
+  } catch (e) {
+    // Silent fail on unsupported platforms
+  }
+};
+
+/**
+ * Universal Mobile Web Share API
+ * Shares invoices, receipts, and ledger statements directly via native OS share sheet
+ */
+window.shareContent = async function(options) {
+  window.triggerHaptic(15);
+  const shareData = {
+    title: options.title || 'Sri Basaveshwara & Co — Receipt',
+    text: options.text || '',
+    url: options.url || window.location.href,
+  };
+
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData);
+      return true;
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.warn('Native share notice:', err);
+      }
+    }
+  }
+
+  // Fallback: Copy URL to clipboard
+  if (navigator.clipboard) {
+    try {
+      await navigator.clipboard.writeText(shareData.url);
+      window.alert('Link copied to clipboard! You can paste and share it.');
+      return true;
+    } catch (e) {}
+  }
+
+  // Secondary fallback: Direct WhatsApp Web URL if mobile phone number provided
+  if (options.phone) {
+    const cleanPhone = options.phone.replace(/[^0-9]/g, '');
+    const encodedText = encodeURIComponent(`${shareData.text}\n\n${shareData.url}`);
+    window.open(`https://wa.me/91${cleanPhone}?text=${encodedText}`, '_blank');
+  } else {
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareData.text + ' ' + shareData.url)}`, '_blank');
+  }
+};
 
 // Expose globally so Alpine.js and direct triggers can call it anytime
 window.loadQuickExpenseOptions = loadQuickExpenseOptions;
@@ -105,6 +176,7 @@ async function handleQuickExpenseSubmit(e) {
     const result = await res.json();
 
     if (result.success) {
+      window.triggerHaptic(20);
       // Close modal in Alpine.js state
       const modalEl = document.getElementById('quickExpenseModal');
       if (modalEl && window.Alpine) {
