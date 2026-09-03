@@ -48,7 +48,81 @@ document.addEventListener('DOMContentLoaded', () => {
       quickForm.addEventListener('submit', handleQuickExpenseSubmit);
     }
   }
+
+  // Native Pull-To-Refresh on Mobile Viewports
+  initPullToRefresh();
 });
+
+/**
+ * Mobile Native Pull-to-Refresh Gesture Engine
+ */
+function initPullToRefresh() {
+  let startY = 0;
+  let currentY = 0;
+  let isPulling = false;
+  const pullThreshold = 75;
+
+  let indicator = document.getElementById('ptr-indicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = 'ptr-indicator';
+    indicator.innerHTML = '<i class="bi bi-arrow-clockwise text-xl" style="display:inline-block; transition: transform 0.1s linear;"></i>';
+    document.body.appendChild(indicator);
+  }
+
+  const icon = indicator.querySelector('i');
+
+  window.addEventListener('touchstart', (e) => {
+    const mainEl = document.querySelector('main');
+    const scrollTop = (mainEl ? mainEl.scrollTop : 0) || window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop <= 2 && e.touches.length === 1) {
+      startY = e.touches[0].pageY;
+      isPulling = true;
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchmove', (e) => {
+    if (!isPulling) return;
+    currentY = e.touches[0].pageY;
+    const diff = currentY - startY;
+
+    if (diff > 10) {
+      const translateY = Math.min(diff * 0.45, 80);
+      const rotateDeg = Math.min((diff / pullThreshold) * 360, 360);
+      
+      indicator.style.transform = `translateX(-50%) translateY(${translateY}px)`;
+      indicator.classList.add('ptr-visible');
+      if (icon) icon.style.transform = `rotate(${rotateDeg}deg)`;
+
+      if (diff >= pullThreshold && !indicator.dataset.triggered) {
+        indicator.dataset.triggered = 'true';
+        window.triggerHaptic(15);
+      }
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchend', () => {
+    if (!isPulling) return;
+    const diff = currentY - startY;
+    isPulling = false;
+    delete indicator.dataset.triggered;
+
+    if (diff >= pullThreshold) {
+      indicator.classList.add('ptr-refreshing');
+      if (icon) icon.classList.add('animate-spin');
+      window.triggerHaptic(20);
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+    } else {
+      indicator.classList.remove('ptr-visible');
+      indicator.style.transform = '';
+      if (icon) icon.style.transform = '';
+    }
+    startY = 0;
+    currentY = 0;
+  }, { passive: true });
+}
 
 /**
  * Lightweight Haptic Feedback Helper using Web Vibration API
