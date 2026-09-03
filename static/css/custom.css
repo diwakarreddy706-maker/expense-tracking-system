@@ -919,3 +919,40 @@ html.sunlight-mode {
   }
 }
 
+/* Light Theme Header & Mobile Bottom Nav Polish */
+html:not(.dark) header {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-bottom-color: #E2E8F0 !important;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+html:not(.dark) header button,
+html:not(.dark) header a[class*="rounded-xl"] {
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+  color: #1E293B !important;
+}
+
+html:not(.dark) header button:hover,
+html:not(.dark) header a[class*="rounded-xl"]:hover {
+  background-color: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+}
+
+html:not(.dark) nav.lg\:hidden {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-top-color: #E2E8F0 !important;
+  box-shadow: 0 -2px 10px 0 rgba(0, 0, 0, 0.04) !important;
+}
+
+html:not(.dark) nav.lg\:hidden a,
+html:not(.dark) nav.lg\:hidden button {
+  color: #64748B !important;
+}
+
+html:not(.dark) nav.lg\:hidden a.text-emerald-400,
+html:not(.dark) nav.lg\:hidden a.text-cyan-400,
+html:not(.dark) nav.lg\:hidden a.text-amber-400 {
+  color: #059669 !important;
+}
+

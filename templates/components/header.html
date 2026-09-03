@@ -62,21 +62,23 @@
         <input name="language" type="hidden" value="en">
         <button
           type="submit"
-          class="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-emerald-400 hover:text-white text-xs font-semibold transition-colors active:scale-95"
+          class="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-emerald-400 hover:text-white text-xs font-semibold transition-colors active:scale-95"
           title="Switch to English"
         >
           <i class="bi bi-translate text-xs"></i>
-          <span>English</span>
+          <span class="hidden sm:inline">English</span>
+          <span class="sm:hidden font-mono text-[11px] font-bold">EN</span>
         </button>
       {% else %}
         <input name="language" type="hidden" value="kn">
         <button
           type="submit"
-          class="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-amber-400 hover:text-white text-xs font-semibold transition-colors active:scale-95"
+          class="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-amber-400 hover:text-white text-xs font-semibold transition-colors active:scale-95"
           title="ಕನ್ನಡಕ್ಕೆ ಬದಲಾಯಿಸಿ"
         >
           <i class="bi bi-translate text-xs"></i>
-          <span>ಕನ್ನಡ</span>
+          <span class="hidden sm:inline">ಕನ್ನಡ</span>
+          <span class="sm:hidden font-mono text-[11px] font-bold">ಕ</span>
         </button>
       {% endif %}
     </form>
@@ -124,18 +126,18 @@
       <span class="hidden md:inline">Double-Entry Safe</span>
     </div>
 
-    <!-- Quick Add Expense Trigger (Owner / Accountant / Manager) -->
+    <!-- Quick Add Expense Trigger (Desktop/Tablet Only - Mobile uses Bottom FAB) -->
     {% if request.user.is_authenticated %}
       {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.profile.role == 'MANAGER' or request.user.is_superuser %}
         <button
           type="button"
           @click="quickExpenseOpen = true"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400"
           title="Record New Expense (Alt+N)"
           aria-label="Quick Add Expense"
         >
           <i class="bi bi-plus-lg text-xs"></i>
-          <span class="hidden sm:inline">Expense</span>
+          <span>Expense</span>
         </button>
       {% endif %}
 
