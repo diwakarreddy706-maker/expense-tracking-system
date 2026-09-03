@@ -45,6 +45,7 @@ urlpatterns = [
     # Farmer Credit Ledger (Udhar Katha)
     path('farmers/ledger/', views.farmer_credit_ledger_view, name='farmer_ledger'),
     path('farmers/ledger/<int:customer_id>/', views.farmer_credit_ledger_view, name='farmer_ledger_detail'),
+    path('farmers/ledger/<int:customer_id>/export-pdf/', views.farmer_ledger_pdf_view, name='farmer_ledger_pdf'),
     path('farmers/ledger/<int:customer_id>/collect/', views.farmer_collect_payment_view, name='farmer_collect_payment'),
     path('farmers/add-ajax/', views.farmer_create_ajax_view, name='farmer_create_ajax'),
 

@@ -10,7 +10,7 @@
   </div>
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
   <!-- Card 1: Expense Analysis -->
   <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:border-emerald-500/40 transition-colors group">
     <div>
@@ -20,10 +20,15 @@
       <h3 class="text-base font-bold text-white tracking-tight m-0 mb-2">Expense Analysis</h3>
       <p class="text-xs text-gray-400 leading-relaxed m-0 mb-4">Detailed categorization by machinery, supplier, payment method, and custom date windows.</p>
     </div>
-    <a href="{% url 'reports:expenses' %}" class="inline-flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all no-underline">
-      <span>Launch Report</span>
-      <i class="bi bi-arrow-right"></i>
-    </a>
+    <div class="flex items-center gap-2">
+      <a href="{% url 'reports:expenses' %}" class="inline-flex items-center justify-center gap-1.5 flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all no-underline">
+        <span>View</span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
+      <a href="{% url 'reports:expense_pdf' %}" target="_blank" class="p-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 border border-[#28354A] transition-all no-underline" title="Download Expense Analysis PDF">
+        <i class="bi bi-file-earmark-pdf-fill text-sm"></i>
+      </a>
+    </div>
   </div>
 
   <!-- Card 2: Operational & Fleet Costs -->
@@ -35,25 +40,35 @@
       <h3 class="text-base font-bold text-white tracking-tight m-0 mb-2">Fleet Machinery Costs</h3>
       <p class="text-xs text-gray-400 leading-relaxed m-0 mb-4">Operating cost comparison, fuel efficiency, repairs cost per hour, and kilometer metrics.</p>
     </div>
-    <a href="{% url 'reports:operational' %}" class="inline-flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all no-underline">
-      <span>Launch Report</span>
-      <i class="bi bi-arrow-right"></i>
-    </a>
+    <div class="flex items-center gap-2">
+      <a href="{% url 'reports:operational' %}" class="inline-flex items-center justify-center gap-1.5 flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all no-underline">
+        <span>View</span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
+      <a href="{% url 'reports:machinery_pnl_pdf' %}" target="_blank" class="p-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-amber-400 border border-[#28354A] transition-all no-underline" title="Download Machinery P&L PDF">
+        <i class="bi bi-file-earmark-pdf-fill text-sm"></i>
+      </a>
+    </div>
   </div>
 
-  <!-- Card 3: Budgets & Control Variance -->
+  <!-- Card 3: Receivables & Udhar Aging -->
   <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:border-emerald-500/40 transition-colors group">
     <div>
       <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 group-hover:scale-105 transition-transform">
-        <i class="bi bi-bullseye text-xl"></i>
+        <i class="bi bi-clock-history text-xl"></i>
       </div>
-      <h3 class="text-base font-bold text-white tracking-tight m-0 mb-2">Budget Variance</h3>
-      <p class="text-xs text-gray-400 leading-relaxed m-0 mb-4">Planned vs actual variance tracking, segment allocations, and over-budget control alerts.</p>
+      <h3 class="text-base font-bold text-white tracking-tight m-0 mb-2">Receivables Aging</h3>
+      <p class="text-xs text-gray-400 leading-relaxed m-0 mb-4">Farmer credit balances grouped by aging buckets (0–30d, 31–60d, 90d+) for office debt collection.</p>
     </div>
-    <a href="{% url 'budgets:list' %}" class="inline-flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all no-underline">
-      <span>Launch Report</span>
-      <i class="bi bi-arrow-right"></i>
-    </a>
+    <div class="flex items-center gap-2">
+      <a href="{% url 'finance:receivables' %}" class="inline-flex items-center justify-center gap-1.5 flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all no-underline">
+        <span>View</span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
+      <a href="{% url 'reports:receivables_aging_pdf' %}" target="_blank" class="p-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-cyan-400 border border-[#28354A] transition-all no-underline" title="Download Receivables Aging PDF">
+        <i class="bi bi-file-earmark-pdf-fill text-sm"></i>
+      </a>
+    </div>
   </div>
 
   <!-- Card 4: Financial Statements & Audit -->

@@ -124,3 +124,64 @@ def financial_export_view(request):
         return ReportService.export_expenses_to_csv(report_data['expenses'])
 
     return JsonResponse({'status': 'authorized', 'export_type': export_type})
+
+
+@role_required(['OWNER', 'ACCOUNTANT', 'MANAGER'])
+def machinery_pnl_pdf_view(request):
+    """
+    Renders the official Machinery Operational P&L Landscape A4 PDF document.
+    """
+    start_date = request.GET.get('start_date', '').strip() or None
+    end_date = request.GET.get('end_date', '').strip() or None
+    machine_id = request.GET.get('machine', '').strip() or None
+
+    from apps.reports.services.machinery_pnl_service import MachineryPnLPDFService
+    return MachineryPnLPDFService.generate_pdf(
+        user=request.user,
+        start_date=start_date,
+        end_date=end_date,
+        machine_id=machine_id
+    )
+
+
+@role_required(['OWNER', 'ACCOUNTANT', 'MANAGER'])
+def expense_analysis_pdf_view(request):
+    """
+    Renders the official Comprehensive Expense Analysis A4 PDF document.
+    """
+    start_date = request.GET.get('start_date', '').strip() or None
+    end_date = request.GET.get('end_date', '').strip() or None
+    category_id = request.GET.get('category', '').strip() or None
+    machine_id = request.GET.get('machine', '').strip() or None
+    payment_method = request.GET.get('payment_method', '').strip() or None
+
+    from apps.reports.services.expense_report_service import ExpenseReportPDFService
+    return ExpenseReportPDFService.generate_pdf(
+        user=request.user,
+        start_date=start_date,
+        end_date=end_date,
+        category_id=category_id,
+        machine_id=machine_id,
+        payment_method=payment_method
+    )
+
+
+@role_required(['OWNER', 'ACCOUNTANT', 'MANAGER'])
+def receivables_aging_pdf_view(request):
+    """
+    Renders the official Farmer Outstanding & Receivables Aging Landscape A4 PDF document.
+    """
+    as_of_str = request.GET.get('as_of', '').strip()
+    as_of_date = None
+    if as_of_str:
+        try:
+            as_of_date = timezone.datetime.strptime(as_of_str, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+
+    from apps.reports.services.receivables_report_service import ReceivablesAgingPDFService
+    return ReceivablesAgingPDFService.generate_pdf(
+        user=request.user,
+        as_of_date=as_of_date
+    )
+

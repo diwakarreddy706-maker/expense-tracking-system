@@ -1357,188 +1357,29 @@ def work_entry_invoice_view(request, entry_id):
     })
 
 
-@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT', 'HARVESTER_OPERATOR', 'TRACTOR_DRIVER'])
 def work_entry_pdf_view(request, entry_id):
-    """Generates and downloads an official high-resolution PDF of the harvesting voucher."""
-    import io
-    from django.http import HttpResponse
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib import colors
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
-
+    """
+    Generates official A4 Work Entry / Billing Invoice PDF using WorkInvoicePDFService.
+    """
     entry = get_object_or_404(MachineWorkEntry, id=entry_id, is_deleted=False)
+    from apps.reports.services.work_invoice_pdf_service import WorkInvoicePDFService
+    return WorkInvoicePDFService.generate_pdf(entry_id=entry.id, user=request.user)
 
-    farmer_outstanding_udhar = entry.customer.receivables.filter(
-        is_deleted=False
-    ).exclude(status='PAID').aggregate(
-        s=Sum(F('total_amount') - F('received_amount'))
-    )['s'] or Decimal('0.00')
 
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=A4,
-        leftMargin=36,
-        rightMargin=36,
-        topMargin=36,
-        bottomMargin=36
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def farmer_ledger_pdf_view(request, customer_id):
+    """
+    Generates official Farmer Account Statement / Passbook A4 PDF using FarmerStatementPDFService.
+    """
+    customer = get_object_or_404(Customer, id=customer_id, is_deleted=False)
+    from apps.reports.services.farmer_statement_pdf_service import FarmerStatementPDFService
+    return FarmerStatementPDFService.generate_pdf(
+        customer_id=customer.id,
+        user=request.user,
+        start_date=request.GET.get('start_date') or None,
+        end_date=request.GET.get('end_date') or None
     )
-
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle(
-        'VoucherTitle',
-        parent=styles['Heading1'],
-        fontName='Helvetica-Bold',
-        fontSize=18,
-        leading=22,
-        textColor=colors.HexColor('#065F46'),
-        alignment=TA_CENTER
-    )
-    sub_style = ParagraphStyle(
-        'VoucherSub',
-        parent=styles['Normal'],
-        fontName='Helvetica',
-        fontSize=9,
-        leading=12,
-        textColor=colors.HexColor('#4B5563'),
-        alignment=TA_CENTER
-    )
-    badge_style = ParagraphStyle(
-        'VoucherBadge',
-        parent=styles['Heading3'],
-        fontName='Helvetica-Bold',
-        fontSize=12,
-        leading=16,
-        textColor=colors.HexColor('#047857'),
-        alignment=TA_CENTER
-    )
-    cell_label = ParagraphStyle('CellLabel', fontName='Helvetica-Bold', fontSize=8, leading=10, textColor=colors.HexColor('#4B5563'))
-    cell_val = ParagraphStyle('CellVal', fontName='Helvetica-Bold', fontSize=9, leading=12, textColor=colors.HexColor('#111827'))
-    num_bold = ParagraphStyle('NumBold', fontName='Helvetica-Bold', fontSize=9, leading=12, alignment=TA_RIGHT, textColor=colors.HexColor('#111827'))
-    num_green = ParagraphStyle('NumGreen', fontName='Helvetica-Bold', fontSize=9, leading=12, alignment=TA_RIGHT, textColor=colors.HexColor('#047857'))
-    num_rose = ParagraphStyle('NumRose', fontName='Helvetica-Bold', fontSize=10, leading=13, alignment=TA_RIGHT, textColor=colors.HexColor('#BE123C'))
-
-    story = []
-    story.append(Paragraph("SRI BASAVESHWARA &amp; CO.", title_style))
-    story.append(Paragraph("Agricultural Harvesting &amp; Heavy Equipment Fleet Hub<br/>Gangavati • Raichur • Honnali • Karnataka | Phone: +91 9880199000", sub_style))
-    story.append(Spacer(1, 8))
-    story.append(HRFlowable(width="100%", thickness=2, color=colors.HexColor('#059669'), spaceBefore=4, spaceAfter=8))
-    story.append(Paragraph("HARVESTING WORK &amp; BILLING VOUCHER", badge_style))
-    story.append(Spacer(1, 10))
-
-    party_data = [
-        [
-            Paragraph("FARMER / BILL TO:", cell_label),
-            Paragraph(f"<b>{entry.customer.name}</b>", cell_val),
-            Paragraph("VOUCHER / BILL NO:", cell_label),
-            Paragraph(f"<b>{entry.manual_bill_no or entry.work_code}</b>", cell_val)
-        ],
-        [
-            Paragraph("VILLAGE / LOCATION:", cell_label),
-            Paragraph(entry.customer.location_address or "Field Area", cell_val),
-            Paragraph("DATE OF WORK:", cell_label),
-            Paragraph(entry.work_date.strftime('%d-%m-%Y'), cell_val)
-        ],
-        [
-            Paragraph("CONTACT MOBILE:", cell_label),
-            Paragraph(entry.customer.phone or "--", cell_val),
-            Paragraph("HARVESTER / MACHINE:", cell_label),
-            Paragraph(f"{entry.machine.name} ({entry.machine.registration_no or entry.machine.machine_code})", cell_val)
-        ],
-        [
-            Paragraph("FIELD OPERATOR:", cell_label),
-            Paragraph(entry.operator.full_name if entry.operator else "Basaveshwara Crew", cell_val),
-            Paragraph("METER READING:", cell_label),
-            Paragraph(f"Start: {entry.start_meter or '--'} | End: {entry.end_meter or '--'}", cell_val)
-        ],
-    ]
-    t_party = Table(party_data, colWidths=[120, 160, 110, 130])
-    t_party.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#F9FAFB')),
-        ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#E5E7EB')),
-        ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E5E7EB')),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-    ]))
-    story.append(t_party)
-    story.append(Spacer(1, 14))
-
-    table_headers = [
-        Paragraph("<b>Operation / Description</b>", ParagraphStyle('TH1', fontName='Helvetica-Bold', fontSize=8, textColor=colors.white)),
-        Paragraph("<b>Timings &amp; Break</b>", ParagraphStyle('TH2', fontName='Helvetica-Bold', fontSize=8, textColor=colors.white)),
-        Paragraph("<b>Net Hours / Qty</b>", ParagraphStyle('TH3', fontName='Helvetica-Bold', fontSize=8, textColor=colors.white)),
-        Paragraph("<b>Rate (₹)</b>", ParagraphStyle('TH4', fontName='Helvetica-Bold', fontSize=8, alignment=TA_RIGHT, textColor=colors.white)),
-        Paragraph("<b>Total (₹)</b>", ParagraphStyle('TH5', fontName='Helvetica-Bold', fontSize=8, alignment=TA_RIGHT, textColor=colors.white)),
-    ]
-
-    billing_desc = "Harvester Cutting & Threshing"
-    timings_str = f"{entry.start_time or '--'} - {entry.end_time or '--'} (Break: {entry.break_hours}h)"
-    hours_str = f"{entry.net_working_hours} hrs"
-    rate_str = f"₹{entry.hourly_rate:,.2f}/hr"
-
-    if entry.billing_type != MachineWorkEntry.BILLING_TIME_HOURLY:
-        billing_desc = f"Tractor Contract ({entry.get_billing_type_display()})"
-        timings_str = "Quantity / Piece Basis"
-        hours_str = f"{entry.quantity} {entry.get_billing_type_display()}"
-        rate_str = f"₹{entry.unit_rate:,.2f}"
-
-    work_row = [
-        Paragraph(f"<b>{billing_desc}</b><br/><font size=7 color='#6B7280'>{entry.notes or 'Clean paddy crop execution'}</font>", cell_val),
-        Paragraph(timings_str, cell_val),
-        Paragraph(hours_str, cell_val),
-        Paragraph(rate_str, num_bold),
-        Paragraph(f"₹{entry.total_amount:,.2f}", num_bold),
-    ]
-
-    breakdown_data = [
-        table_headers,
-        work_row,
-        ["", "", "", Paragraph("<b>Gross Total:</b>", cell_label), Paragraph(f"<b>₹{entry.total_amount:,.2f}</b>", num_bold)],
-        ["", "", "", Paragraph("<b>Advance Paid:</b>", cell_label), Paragraph(f"<b>- ₹{entry.advance_amount:,.2f}</b>", num_green)],
-        ["", "", "", Paragraph("<b>This Bill Udhar:</b>", cell_label), Paragraph(f"<b>₹{entry.udhar_amount:,.2f}</b>", num_rose)],
-        ["", "", "", Paragraph("<b>Total Katha Due:</b>", cell_label), Paragraph(f"<b>₹{farmer_outstanding_udhar:,.2f}</b>", num_rose)],
-    ]
-
-    t_breakdown = Table(breakdown_data, colWidths=[150, 130, 80, 80, 80])
-    t_breakdown.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#047857')),
-        ('BOX', (0, 0), (-1, 1), 1, colors.HexColor('#D1D5DB')),
-        ('INNERGRID', (0, 0), (-1, 1), 0.5, colors.HexColor('#E5E7EB')),
-        ('LINEBELOW', (0, 1), (-1, 1), 1.5, colors.HexColor('#047857')),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ('BACKGROUND', (3, 2), (-1, 2), colors.HexColor('#F3F4F6')),
-        ('BACKGROUND', (3, 3), (-1, 3), colors.HexColor('#ECFDF5')),
-        ('BACKGROUND', (3, 4), (-1, 4), colors.HexColor('#FFF1F2')),
-        ('BACKGROUND', (3, 5), (-1, 5), colors.HexColor('#FFE4E6')),
-    ]))
-    story.append(t_breakdown)
-    story.append(Spacer(1, 30))
-
-    sig_data = [
-        [
-            Paragraph("____________________________<br/><b>Farmer Signature / Thumb</b>", cell_label),
-            Paragraph("____________________________<br/><b>Operator Signature</b>", cell_label),
-            Paragraph("____________________________<br/><b>Authorized Signatory</b><br/>For Sri Basaveshwara &amp; Co.", cell_label),
-        ]
-    ]
-    t_sig = Table(sig_data, colWidths=[170, 170, 180])
-    t_sig.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('TOPPADDING', (0, 0), (-1, -1), 10),
-    ]))
-    story.append(t_sig)
-
-    doc.build(story)
-    pdf_value = buffer.getvalue()
-    buffer.close()
-
-    filename = f"Harvesting_Bill_{entry.manual_bill_no or entry.work_code}.pdf"
-    response = HttpResponse(pdf_value, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    return response
 
 
 # ==============================================================================

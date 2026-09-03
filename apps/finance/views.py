@@ -1085,3 +1085,14 @@ def opening_balance_reconciliation_view(request):
         'net_onboarding_capital': net_onboarding_capital,
     }
     return render(request, 'finance/opening_balance_reconciliation.html', context)
+
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT'])
+def customer_payment_receipt_pdf_view(request, payment_id):
+    """
+    Generates official Payment / Advance Receipt A4 PDF using PaymentReceiptPDFService.
+    """
+    payment = get_object_or_404(CustomerPayment, id=payment_id)
+    from apps.reports.services.payment_receipt_pdf_service import PaymentReceiptPDFService
+    return PaymentReceiptPDFService.generate_pdf(payment_id=payment.id, user=request.user)
+

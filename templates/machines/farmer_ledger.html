@@ -28,6 +28,12 @@
 
     <!-- Action Buttons -->
     <div class="flex items-center gap-2.5 flex-wrap print:hidden">
+      {% if selected_customer %}
+        <a href="{% url 'machines:farmer_ledger_pdf' customer_id=selected_customer.id %}" target="_blank" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-sm transition-all no-underline">
+          <i class="bi bi-file-earmark-pdf-fill"></i>
+          <span>Download Official PDF</span>
+        </a>
+      {% endif %}
       <button type="button" onclick="window.print()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold text-xs border border-gray-200 dark:border-[#28354A] shadow-sm transition-all cursor-pointer">
         <i class="bi bi-printer"></i>
         <span>Print Passbook</span>
@@ -358,6 +364,7 @@
             <th class="py-2.5 px-3 font-semibold">Method</th>
             <th class="py-2.5 px-3 font-semibold">Credited Account</th>
             <th class="py-2.5 px-3 font-semibold">Reference</th>
+            <th class="py-2.5 px-3 font-semibold text-right print:hidden">Action</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 dark:divide-[#28354A]/50 font-mono">
@@ -369,6 +376,12 @@
               <td class="py-2.5 px-3">{{ p.get_payment_method_display }}</td>
               <td class="py-2.5 px-3 text-gray-800 dark:text-gray-200">{{ p.account.account_name }}</td>
               <td class="py-2.5 px-3 text-gray-500 dark:text-gray-400">{{ p.reference_no|default:"--" }}</td>
+              <td class="py-2.5 px-3 text-right print:hidden">
+                <a href="{% url 'finance:customer_payment_receipt_pdf' p.id %}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] border border-emerald-300 dark:border-emerald-500/30 no-underline transition-all">
+                  <i class="bi bi-file-earmark-pdf-fill"></i>
+                  <span>Receipt PDF</span>
+                </a>
+              </td>
             </tr>
           {% endfor %}
         </tbody>

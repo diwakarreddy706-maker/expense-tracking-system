@@ -27,6 +27,7 @@ urlpatterns = [
     path('receivables/add/', views.receivable_create_view, name='receivable_create'),
     path('receivables/<int:receivable_id>/', views.receivable_detail_view, name='receivable_detail'),
     path('receivables/<int:receivable_id>/pay/', views.customer_payment_create_view, name='customer_payment_create'),
+    path('customer-payments/<int:payment_id>/receipt-pdf/', views.customer_payment_receipt_pdf_view, name='customer_payment_receipt_pdf'),
     path('customer-payments/<int:payment_id>/reverse/', views.customer_payment_reverse_view, name='customer_payment_reverse'),
 
     # Supplier Payables & Settlements
