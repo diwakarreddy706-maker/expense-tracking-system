@@ -67,7 +67,7 @@ class MasterDataImportService:
                 ['Main Cash Box', 'CASH', '', '', '', '25000.00'],
                 ['SBI Operating Account', 'BANK_CURRENT', 'State Bank of India', '38291048291', 'SBIN0001234', '150000.00'],
                 ['HDFC Business Savings', 'BANK_SAVINGS', 'HDFC Bank', '501002394819', 'HDFC0000456', '75000.00'],
-                ['Business PhonePe / UPI', 'UPI_WALLET', 'Yes Bank UPI', 'agribos@upi', '', '5000.00']
+                ['Business PhonePe / UPI', 'UPI_WALLET', 'Yes Bank UPI', 'basaveshwara@upi', '', '5000.00']
             ]
         }
     }

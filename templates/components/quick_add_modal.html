@@ -163,6 +163,19 @@
         </a>
         {% endif %}
 
+        <!-- 8. Install Sri Basaveshwara App to Phone -->
+        <button
+          type="button"
+          @click="quickAddOpen = false; window.triggerPwaInstall()"
+          class="pwa-install-trigger flex flex-col p-3 rounded-xl bg-[#0B0F17] hover:bg-gray-800/80 border border-emerald-500/40 hover:border-emerald-400 transition-all text-left group focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[76px] cursor-pointer"
+        >
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mb-1.5 group-hover:scale-105 transition-transform">
+            <i class="bi bi-phone-fill text-sm"></i>
+          </div>
+          <span class="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">{% trans "Install App" %}</span>
+          <span class="text-[10px] text-emerald-400 mt-0.5">Add to Home Screen (ಆ್ಯಪ್)</span>
+        </button>
+
       </div>
     </div>
   </div>

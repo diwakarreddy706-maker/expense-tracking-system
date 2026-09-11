@@ -1,11 +1,11 @@
-# Sri Basaveshwara & Co — AgriBOS ERP
+# Sri Basaveshwara & Co — Sri Basaveshwara & Co.
 
 A robust, enterprise-grade financial management, harvesting operations, and equipment fleet ERP platform built with Python, Django 5.x, MySQL 8.x, Tailwind CSS, Alpine.js, HTMX, and Bootstrap 5.3.
 
 ---
 
 ## 🌾 Overview
-**AgriBOS ERP** provides end-to-end operational cost tracking and accounting for agricultural businesses, combine harvester fleet hiring hubs, and rural machinery transport services.
+**Sri Basaveshwara Harvesting & Co.** provides end-to-end operational cost tracking and accounting for agricultural businesses, combine harvester fleet hiring hubs, and rural machinery transport services.
 
 ### Core Modules
 - **⚡ General & Quick Expenses:** Real-time expense logging with field-ready mobile quick entry (< 20s).

@@ -1051,4 +1051,154 @@ html:not(.dark) .mobile-tx-card {
   border-color: #E2E8F0 !important;
 }
 
+/* ==============================================================================
+   PHASE 25 — PWA & NETWORK RESILIENCE STYLES
+   ============================================================================== */
+
+/* 1. Global Network Status Indicator */
+#network-status-indicator {
+  position: fixed;
+  top: max(0.75rem, env(safe-area-inset-top, 0.75rem));
+  left: 50%;
+  transform: translateX(-50%) translateY(-150%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#network-status-indicator.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#network-status-indicator.is-offline {
+  background: #78350F;
+  background: linear-gradient(135deg, #B45309 0%, #78350F 100%);
+  color: #FEF3C7;
+  border: 1px solid #F59E0B;
+}
+
+#network-status-indicator.is-online {
+  background: #064E3B;
+  background: linear-gradient(135deg, #059669 0%, #064E3B 100%);
+  color: #D1FAE5;
+  border: 1px solid #10B981;
+}
+
+/* 2. PWA Install Prompt Bottom Banner */
+#pwa-install-banner {
+  position: fixed;
+  bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+  left: 0.75rem;
+  right: 0.75rem;
+  max-width: 440px;
+  margin: 0 auto;
+  z-index: 1040;
+  background: #131A26;
+  border: 1px solid #28354A;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(16, 185, 129, 0.2);
+  transform: translateY(120%);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+  pointer-events: none;
+}
+
+#pwa-install-banner.visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+html:not(.dark) #pwa-install-banner {
+  background: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* 3. iOS Safari Install Guide Modal */
+#ios-install-guide-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1060;
+  background: rgba(11, 15, 23, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+#ios-install-guide-modal.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#ios-install-guide-modal .guide-card {
+  background: #131A26;
+  border: 1px solid #28354A;
+  border-radius: 1.25rem;
+  width: 100%;
+  max-width: 420px;
+  padding: 1.25rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  transform: translateY(40px);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#ios-install-guide-modal.visible .guide-card {
+  transform: translateY(0);
+}
+
+html:not(.dark) #ios-install-guide-modal .guide-card {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+
+/* 4. Service Worker Update Notification Banner */
+#sw-update-banner {
+  position: fixed;
+  bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  left: 1rem;
+  right: 1rem;
+  max-width: 380px;
+  margin: 0 auto;
+  z-index: 1050;
+  background: #1A2333;
+  border: 1px solid #10B981;
+  border-radius: 0.875rem;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+  transform: translateY(120%);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  pointer-events: none;
+}
+
+#sw-update-banner.visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
 

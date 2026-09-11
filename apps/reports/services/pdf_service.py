@@ -76,7 +76,7 @@ class NumberedCanvas(canvas.Canvas):
         self.line(36, footer_y + 12, page_w - 36, footer_y + 12)
 
         # Left: Legal & System Notice
-        self.drawString(36, footer_y, "AgriBOS ERP • Official Financial Record • Confidential & Authoritative")
+        self.drawString(36, footer_y, "Sri Basaveshwara Harvesting & Co. • Official Financial Record • Confidential & Authoritative")
 
         # Right: Page X of Y
         page_str = f"Page {self._pageNumber} of {page_count}"

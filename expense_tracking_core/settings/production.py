@@ -99,7 +99,7 @@ if database_url:
                 'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
             }
         }
-    else:  # MySQL default for AgriBOS
+    else:  # MySQL default for Sri Basaveshwara
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.mysql',

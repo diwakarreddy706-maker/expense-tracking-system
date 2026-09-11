@@ -113,6 +113,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Native Pull-To-Refresh on Mobile Viewports
   initPullToRefresh();
+
+  // Phase 25: PWA & Network Resilience Engine Initializers
+  initNetworkStatusMonitor();
+  initPwaInstallPrompt();
+  initServiceWorkerUpdates();
 });
 
 /**
@@ -374,3 +379,302 @@ function formatINR(amount) {
     maximumFractionDigits: 2,
   });
 }
+
+/**
+ * ----------------------------------------------------------------------------
+ * PHASE 25: PWA & NETWORK RESILIENCE ENGINE
+ * ----------------------------------------------------------------------------
+ */
+
+let deferredInstallPrompt = null;
+
+function isAppStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+         window.matchMedia('(display-mode: fullscreen)').matches ||
+         navigator.standalone === true ||
+         document.referrer.includes('android-app://');
+}
+
+function isIosDevice() {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  return /iphone|ipad|ipod/.test(userAgent) && !window.MSStream;
+}
+
+/**
+ * Global Network Status Indicator & Form Protection
+ */
+function initNetworkStatusMonitor() {
+  let indicator = document.getElementById('network-status-indicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = 'network-status-indicator';
+    indicator.setAttribute('role', 'status');
+    indicator.setAttribute('aria-live', 'polite');
+    document.body.appendChild(indicator);
+  }
+
+  let dismissTimer = null;
+
+  function updateStatus(isOnline) {
+    if (dismissTimer) clearTimeout(dismissTimer);
+
+    if (!isOnline) {
+      indicator.className = 'visible is-offline';
+      indicator.innerHTML = '<i class="bi bi-wifi-off text-base"></i><span>⚡ Offline — financial actions unavailable</span>';
+      window.triggerHaptic(25);
+    } else {
+      indicator.className = 'visible is-online';
+      indicator.innerHTML = '<i class="bi bi-wifi text-base"></i><span>✓ Connection restored</span>';
+      window.triggerHaptic(15);
+      dismissTimer = setTimeout(() => {
+        indicator.classList.remove('visible');
+      }, 3500);
+    }
+  }
+
+  window.addEventListener('offline', () => updateStatus(false));
+  window.addEventListener('online', () => updateStatus(true));
+
+  // If already offline on initial page load
+  if (!navigator.onLine) {
+    updateStatus(false);
+  }
+}
+
+/**
+ * PWA Install Prompt (Android / Chromium & iOS Safari Guidance)
+ */
+function initPwaInstallPrompt() {
+  // If already installed as standalone PWA, do not show any install banners
+  if (isAppStandalone()) {
+    return;
+  }
+
+  // Check snooze timestamp (snooze for 7 days if dismissed)
+  const dismissedTimestamp = localStorage.getItem('agribos_pwa_dismissed');
+  const now = Date.now();
+  const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
+  const isSnoozed = dismissedTimestamp && (now - parseInt(dismissedTimestamp, 10)) < SNOOZE_MS;
+
+  // 1. Android / Chromium beforeinstallprompt handler
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+
+    // Enable any manual install triggers in menus
+    document.querySelectorAll('.pwa-install-trigger').forEach(el => {
+      el.style.display = '';
+      el.classList.remove('hidden', 'd-none');
+    });
+
+    if (!isSnoozed) {
+      showPwaInstallBanner();
+    }
+  });
+
+  // Track app installation
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    hidePwaInstallBanner();
+    document.querySelectorAll('.pwa-install-trigger').forEach(el => {
+      el.style.display = 'none';
+    });
+  });
+
+  // 2. iOS Safari Install Trigger Support
+  if (isIosDevice() && !isAppStandalone()) {
+    document.querySelectorAll('.pwa-install-trigger').forEach(el => {
+      el.style.display = '';
+      el.classList.remove('hidden', 'd-none');
+    });
+  }
+}
+
+function showPwaInstallBanner() {
+  if (isAppStandalone()) return;
+
+  let banner = document.getElementById('pwa-install-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'pwa-install-banner';
+    banner.setAttribute('role', 'dialog');
+    banner.setAttribute('aria-label', 'Install Sri Basaveshwara App');
+    banner.innerHTML = `
+      <div class="flex items-start gap-3 mb-3">
+        <img src="/static/icons/icon-192.png" alt="Sri Basaveshwara" class="w-12 h-12 rounded-xl object-contain shadow-md border border-[#28354A] flex-shrink-0">
+        <div class="flex-1 min-w-0">
+          <h4 class="text-sm font-bold text-white leading-tight mb-0.5">Install Sri Basaveshwara App</h4>
+          <p class="text-xs text-gray-400 leading-snug">Sri Basaveshwara Harvesting & Co. • Fast 1-tap field access & fullscreen mode</p>
+        </div>
+        <button id="pwaBannerCloseBtn" aria-label="Dismiss" class="text-gray-400 hover:text-gray-200 p-1 text-lg leading-none">&times;</button>
+      </div>
+      <div class="flex items-center gap-2 pt-1">
+        <button id="pwaBannerInstallBtn" class="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors shadow-md text-center">
+          <i class="bi bi-download me-1.5"></i> Install
+        </button>
+        <button id="pwaBannerDismissBtn" class="py-2.5 px-3 rounded-xl bg-[#1A2333] hover:bg-[#222E42] text-gray-300 font-medium text-xs transition-colors border border-[#28354A]">
+          Not now
+        </button>
+      </div>
+    `;
+    document.body.appendChild(banner);
+
+    // Event handlers
+    document.getElementById('pwaBannerInstallBtn').addEventListener('click', () => {
+      window.triggerPwaInstall();
+    });
+
+    const dismissHandler = () => {
+      hidePwaInstallBanner();
+      localStorage.setItem('agribos_pwa_dismissed', Date.now().toString());
+    };
+
+    document.getElementById('pwaBannerDismissBtn').addEventListener('click', dismissHandler);
+    document.getElementById('pwaBannerCloseBtn').addEventListener('click', dismissHandler);
+  }
+
+  // Slight delay for smooth entrance
+  setTimeout(() => {
+    banner.classList.add('visible');
+  }, 1000);
+}
+
+function hidePwaInstallBanner() {
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) {
+    banner.classList.remove('visible');
+  }
+}
+
+/**
+ * Universal Install Trigger (called from banner, mobile menu, or quick actions)
+ */
+window.triggerPwaInstall = async function() {
+  window.triggerHaptic(15);
+  
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    hidePwaInstallBanner();
+    if (outcome === 'accepted') {
+      window.triggerHaptic(25);
+    }
+  } else if (isIosDevice()) {
+    showIosInstallGuide();
+  } else {
+    // Standard desktop / browser fallback
+    window.alert('To install Sri Basaveshwara, open your browser menu (⋮ or ...) and choose "Install app" or "Add to Home Screen".');
+  }
+};
+
+/**
+ * iOS Safari Guided Installation Sheet
+ */
+function showIosInstallGuide() {
+  let modal = document.getElementById('ios-install-guide-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'ios-install-guide-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-label', 'Install on iOS');
+    modal.innerHTML = `
+      <div class="guide-card text-left">
+        <div class="flex items-center justify-between mb-3 border-b border-[#28354A] pb-2.5">
+          <div class="flex items-center gap-2.5">
+            <img src="/static/icons/icon-192.png" alt="Sri Basaveshwara" class="w-8 h-8 rounded-lg object-contain">
+            <h4 class="text-sm font-bold text-white">Install Sri Basaveshwara on iPhone</h4>
+          </div>
+          <button id="iosGuideCloseBtn" class="text-gray-400 hover:text-gray-200 text-xl leading-none">&times;</button>
+        </div>
+        <p class="text-xs text-gray-300 mb-4 leading-relaxed">
+          Follow these 2 simple steps in Safari to add Sri Basaveshwara to your home screen:
+        </p>
+        <div class="space-y-3 mb-5">
+          <div class="flex items-start gap-3 p-2.5 rounded-xl bg-[#1A2333] border border-[#28354A]">
+            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs flex-shrink-0">1</div>
+            <div class="text-xs text-gray-200">
+              Tap the <span class="font-semibold text-emerald-400">Share</span> button <i class="bi bi-box-arrow-up text-sm ms-1"></i> in Safari's bottom toolbar.
+            </div>
+          </div>
+          <div class="flex items-start gap-3 p-2.5 rounded-xl bg-[#1A2333] border border-[#28354A]">
+            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs flex-shrink-0">2</div>
+            <div class="text-xs text-gray-200">
+              Scroll down and tap <span class="font-semibold text-emerald-400">Add to Home Screen</span> <i class="bi bi-plus-square text-sm ms-1"></i>.
+            </div>
+          </div>
+        </div>
+        <button id="iosGuideGotItBtn" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors shadow-md">
+          Got it
+        </button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const closeHandler = () => {
+      modal.classList.remove('visible');
+    };
+    document.getElementById('iosGuideCloseBtn').addEventListener('click', closeHandler);
+    document.getElementById('iosGuideGotItBtn').addEventListener('click', closeHandler);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeHandler();
+    });
+  }
+
+  modal.classList.add('visible');
+}
+
+/**
+ * Service Worker Registration & Controlled Update Notifier
+ */
+function initServiceWorkerUpdates() {
+  if (!('serviceWorker' in navigator)) return;
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/static/js/service-worker.js?v=3.2').then((reg) => {
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // New version ready
+            showSwUpdateBanner(newWorker);
+          }
+        });
+      });
+    }).catch((err) => {
+      console.warn('[Sri Basaveshwara] Service worker registration notice:', err);
+    });
+  });
+}
+
+function showSwUpdateBanner(worker) {
+  let banner = document.getElementById('sw-update-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'sw-update-banner';
+    banner.setAttribute('role', 'alert');
+    banner.innerHTML = `
+      <div class="flex items-center gap-2 min-w-0">
+        <i class="bi bi-arrow-repeat text-emerald-400 text-base"></i>
+        <span class="text-xs text-white font-medium truncate">New version available</span>
+      </div>
+      <button id="swUpdateBtn" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex-shrink-0 transition-colors">
+        Update
+      </button>
+    `;
+    document.body.appendChild(banner);
+
+    document.getElementById('swUpdateBtn').addEventListener('click', () => {
+      worker.postMessage({ action: 'skipWaiting' });
+      banner.classList.remove('visible');
+      window.location.reload();
+    });
+  }
+
+  setTimeout(() => {
+    banner.classList.add('visible');
+  }, 2000);
+}
+

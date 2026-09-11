@@ -220,7 +220,7 @@ rm /tmp/restore.sql
 
 ## 8. Deploying to Render.com Cloud Platform
 
-AgriBOS is pre-configured for deployment on **Render.com**.
+Sri Basaveshwara is pre-configured for deployment on **Render.com**.
 
 ### Web Service Settings on Render Dashboard
 - **Environment**: `Python 3`

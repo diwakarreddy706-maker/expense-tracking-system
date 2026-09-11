@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-AgriBOS Staging & Release Candidate Smoke Test Suite.
+Sri Basaveshwara Staging & Release Candidate Smoke Test Suite.
 Validates all UI views, authentication flows, PWA assets, and financial invariants.
 """
 

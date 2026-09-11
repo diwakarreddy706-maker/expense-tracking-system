@@ -1,6 +1,6 @@
-# AgriBOS ERP — Production Go-Live & Operational Deployment Checklist
+# Sri Basaveshwara Harvesting & Co. — Production Go-Live & Operational Deployment Checklist
 
-This document is the authoritative standard operating checklist for transitioning AgriBOS Machinery & Financial ERP into active production and real business use.
+This document is the authoritative standard operating checklist for transitioning Sri Basaveshwara Machinery & Financial ERP into active production and real business use.
 
 ---
 

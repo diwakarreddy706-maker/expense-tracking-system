@@ -1,6 +1,6 @@
-# AgriBOS ERP — Production Master Data Onboarding & Standard Operating Procedure (SOP)
+# Sri Basaveshwara Harvesting & Co. — Production Master Data Onboarding & Standard Operating Procedure (SOP)
 
-This guide documents the authoritative, safe, and structured process for onboarding real business data into AgriBOS Machinery & Financial ERP.
+This guide documents the authoritative, safe, and structured process for onboarding real business data into Sri Basaveshwara Machinery & Financial ERP.
 
 ---
 
@@ -57,7 +57,7 @@ graph TD
 
 ## 3. CSV Import Specifications & Templates
 
-AgriBOS supports preview-enabled, validated CSV import at `/finance/setup/`:
+Sri Basaveshwara supports preview-enabled, validated CSV import at `/finance/setup/`:
 
 | Entity | Template Download Endpoint | Required Columns | Key Constraints |
 |---|---|---|---|

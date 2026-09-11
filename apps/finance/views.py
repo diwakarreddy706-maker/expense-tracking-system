@@ -859,7 +859,7 @@ def business_setup_hub_view(request):
         {
             'name': 'Business Profile',
             'status': 'PASS',
-            'details': 'AgriBOS ERP v1.0 • Currency: INR (₹) • Timezone: Asia/Kolkata',
+            'details': 'Sri Basaveshwara ERP v1.0 • Currency: INR (₹) • Timezone: Asia/Kolkata',
             'link': None,
             'link_label': 'Configured'
         },
