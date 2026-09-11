@@ -5,9 +5,9 @@
 
 ## 1. Executive Summary & Session Checkpoint
 
-- **Date & Checkpoint Timestamp**: September 11, 2026 / 23:10 IST
+- **Date & Checkpoint Timestamp**: September 11, 2026 / 23:15 IST
 - **Current Branch**: `main` (100% in sync with `origin/main` on GitHub)
-- **Latest Commit**: `f21436b` (*Phase 25: PWA install-to-phone overhaul and update branding to Sri Basaveshwara Harvesting & Co.*)
+- **Latest Commit**: `3f3e703` (*docs: add daily checkpoint report for 2026-09-11*)
 - **Live Production URL**: [https://expense-tracking-system-3776.onrender.com](https://expense-tracking-system-3776.onrender.com)
 - **System Health**: 100% Operational, 0 Django configuration issues, 0 pending migrations
 - **Automated Test Suite**: **245 / 245 Tests Passing (100% Pass Rate)**
@@ -55,7 +55,7 @@
 
 ### 2.4 Cloud Deployment to Render
 - Configured Git remote and pushed commits to GitHub repository (`diwakarreddy706-maker/expense-tracking-system`).
-- Automatic deployment to live Render instance triggered and running on latest commit `f21436b`.
+- Automatic deployment to live Render instance triggered and running on latest commit.
 
 ---
 
@@ -75,30 +75,48 @@
 ## 4. Current Exact Stopping Point (Where We Stopped Now)
 
 1. **Working Tree**: Completely clean, 0 unstaged changes, 0 untracked files.
-2. **Git State**: Local `main` branch is at commit `f21436b` and identical to `origin/main`.
-3. **Live Web App**: Render production environment is building/running commit `f21436b` with the updated PWA and brand.
+2. **Git State**: Local `main` branch is in sync with `origin/main` on GitHub.
+3. **Live Web App**: Render production environment is building/running with the updated PWA and brand.
 4. **Active Settings**: PWA Cache version is `sbh-pwa-v3.2`, WhiteNoise static compression active.
 
 ---
 
-## 5. Remaining Items & Action Plan for Tomorrow
+## 5. Exact Scope & Action Plan for Tomorrow
 
-### 5.1 Immediate Next Steps (Planned for Next Session)
-1. **Live Render Smoke-Test**:
-   - Verify on smartphone browser at `https://expense-tracking-system-3776.onrender.com`.
-   - Test "Add to Home Screen" / "Install App" button on live Android & iOS devices.
-   - Verify offline banner appearance when device toggles Airplane Mode.
-2. **Phase 26 / Option 2 — Multilingual Voice Prompts & Communication (Ready to start)**:
-   - Kannada / English voice feedback for field work entry confirmations.
-   - WhatsApp / SMS direct link sharing for Farmer Ledgers and Payment Vouchers.
+Tomorrow's session will implement the following **4 designated mobile field enhancements**:
 
-### 5.2 Held Items (On Hold as Requested by User)
-- **Option 3**: Machinery GPS & Telematics Ingestion (On Hold)
-- **Option 4**: Machine QR Code On-Site Work Logging (On Hold)
-- **Option 5**: Advanced Predictive Fuel & Maintenance Analytics (On Hold)
+### 1. 💬 One-Tap WhatsApp Payment Receipts & Balance Reminders
+- **Target Screens**: Farmer Ledger & Payment Entry screens.
+- **Functionality**:
+  - Adds a direct WhatsApp button on the Farmer Ledger and Payment entry screens.
+  - Automatically opens WhatsApp with a pre-formatted message:
+    > *"Sri Basaveshwara Harvesting: Dear [Farmer Name], we have received ₹[Amount] on [Date]. Your current balance is ₹[Balance]. Thank you."*
+  - Instant digital proof for farmers right in the field without requiring paper printing.
+
+### 2. 📞 Field Quick-Dial & Instant Farmer Search
+- **Target Screens**: Mobile navigation, Farmer List, and Dispatch/Work Entry screens.
+- **Functionality**:
+  - Instant search bar on mobile for searching farmers by name or village.
+  - One-tap `tel:` Call button (`📞 Call Farmer`).
+  - Machine operators can call the farmer directly from the field with a single tap to confirm plot location or arrival time.
+
+### 3. ☀️ High-Contrast Outdoor Sunlight Mode & 🌙 Night Mode
+- **Target Screens**: Global application header, quick settings, and field forms.
+- **Functionality**:
+  - Fast one-tap toggle for extreme high-contrast visuals designed for bright afternoon sun in open fields.
+  - Night Mode tailored for overnight combine harvesting shifts.
+  - Zero eye strain and crystal-clear text readability under direct sunlight glare.
+
+### 4. 🏷️ Quick Field Remarks & Voice-to-Text Helper
+- **Target Screens**: Work Entry, Fuel Log, Expense, and Maintenance forms.
+- **Functionality**:
+  - Pre-made clickable quick tags on forms (e.g., *"Paddy Harvest"*, *"Field Wet / Muddy"*, *"Blade Replaced"*, *"IOCL Pump"*).
+  - Voice-to-text mic helper for remarks/notes fields.
+  - Operators with dusty hands don't have to type long text descriptions on small mobile keyboards.
 
 ---
 
 ## 6. How to Resume Tomorrow
-When starting the next turn or session, simply tell the assistant:
+
+When starting tomorrow's session, simply instruct the assistant:
 > *"Resume from September 11 Checkpoint (`docs/CHECKPOINT_REPORT_2026_09_11.md`)"*
