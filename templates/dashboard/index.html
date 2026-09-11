@@ -5,7 +5,7 @@
 
 {% block content %}
 <!-- Executive Header & Quick Actions -->
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 sm:mb-6">
   <div>
     <div class="flex items-center gap-3">
       <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">{% trans "Executive Dashboard" %}</h2>
@@ -16,7 +16,8 @@
     <p class="text-xs text-gray-400 mt-1 mb-0">Financial Overview &amp; Operational Cost Hierarchy &bull; Authoritative Central Ledger</p>
   </div>
 
-  <div class="flex flex-wrap items-center gap-2">
+  <!-- Desktop Header Actions -->
+  <div class="hidden md:flex flex-wrap items-center gap-2">
     <a href="{% url 'expenses:create' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
       <i class="bi bi-receipt"></i><span>{% trans "New Expense" %}</span>
     </a>
@@ -31,6 +32,57 @@
     </a>
   </div>
 </div>
+
+<!-- ========================================================================= -->
+<!-- 0. MOBILE FIELD QUICK SHORTCUTS GRID (<md)                                -->
+<!-- ========================================================================= -->
+<div class="grid grid-cols-4 gap-2 mb-5 md:hidden">
+  <!-- 1. Quick Expense -->
+  <button
+    type="button"
+    @click="quickExpenseOpen = true"
+    class="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#131A26] border border-[#28354A] active:scale-95 text-center transition-all focus:outline-none min-h-[64px]"
+  >
+    <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-1">
+      <i class="bi bi-receipt text-sm"></i>
+    </div>
+    <span class="text-[10px] font-bold text-white tracking-tight leading-tight">+ Expense</span>
+  </button>
+
+  <!-- 2. + Work -->
+  <a
+    href="{% url 'machines:work_create' %}"
+    class="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#131A26] border border-[#28354A] active:scale-95 text-center transition-all no-underline focus:outline-none min-h-[64px]"
+  >
+    <div class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-1">
+      <i class="bi bi-clock-history text-sm"></i>
+    </div>
+    <span class="text-[10px] font-bold text-white tracking-tight leading-tight">+ Work</span>
+  </a>
+
+  <!-- 3. + Fuel -->
+  <a
+    href="{% url 'fuel:create' %}"
+    class="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#131A26] border border-[#28354A] active:scale-95 text-center transition-all no-underline focus:outline-none min-h-[64px]"
+  >
+    <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-1">
+      <i class="bi bi-fuel-pump-fill text-sm"></i>
+    </div>
+    <span class="text-[10px] font-bold text-white tracking-tight leading-tight">+ Fuel</span>
+  </a>
+
+  <!-- 4. Farmer Ledger -->
+  <a
+    href="{% url 'machines:farmer_ledger' %}"
+    class="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#131A26] border border-[#28354A] active:scale-95 text-center transition-all no-underline focus:outline-none min-h-[64px]"
+  >
+    <div class="w-8 h-8 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 mb-1">
+      <i class="bi bi-book-fill text-sm"></i>
+    </div>
+    <span class="text-[10px] font-bold text-white tracking-tight leading-tight">Ledger</span>
+  </a>
+</div>
+
 
 <!-- ========================================================================= -->
 <!-- 1. TODAY'S MONEY: AUTHORITATIVE LIQUID CASH & BANK POSITION               -->
@@ -319,7 +371,8 @@
     </a>
   </div>
 
-  <div class="overflow-x-auto">
+  <!-- Desktop Table (>=md) -->
+  <div class="hidden md:block overflow-x-auto">
     <table class="w-full text-left text-xs border-collapse">
       <thead>
         <tr class="text-gray-400 border-b border-[#28354A] uppercase tracking-wider font-semibold">
@@ -365,6 +418,43 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Mobile Cards (<md) -->
+  <div class="grid grid-cols-1 gap-3 md:hidden">
+    {% for m in kpis.machine_costs %}
+      <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#28354A]">
+        <div class="flex items-start justify-between mb-2">
+          <div>
+            <div class="font-bold text-white text-sm">{{ m.name }}</div>
+            <div class="text-[11px] font-mono text-cyan-400 mt-0.5">{{ m.machine_code }} &bull; {{ m.machine_type }}</div>
+          </div>
+          {% if m.status == 'ACTIVE' %}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Ready</span>
+          {% elif m.status == 'UNDER_MAINTENANCE' %}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Workshop</span>
+          {% else %}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-400 border border-gray-700">Idle</span>
+          {% endif %}
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center pt-2 border-t border-[#1E293B] text-xs">
+          <div class="bg-[#131A26] p-2 rounded-lg">
+            <span class="text-[10px] text-gray-400 block">Fuel</span>
+            <span class="font-mono font-bold text-amber-400">₹{{ m.fuel_cost }}</span>
+          </div>
+          <div class="bg-[#131A26] p-2 rounded-lg">
+            <span class="text-[10px] text-gray-400 block">Repairs</span>
+            <span class="font-mono font-bold text-cyan-400">₹{{ m.maintenance_cost }}</span>
+          </div>
+          <div class="bg-[#131A26] p-2 rounded-lg">
+            <span class="text-[10px] text-gray-400 block">Total</span>
+            <span class="font-mono font-bold text-white">₹{{ m.total_cost }}</span>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="py-6 text-center text-gray-500 text-xs">No machinery assets registered yet.</div>
+    {% endfor %}
+  </div>
 </div>
 
 <!-- ========================================================================= -->
@@ -381,7 +471,8 @@
       <a href="{% url 'expenses:list' %}" class="text-xs text-gray-400 hover:text-white no-underline">View All</a>
     </div>
 
-    <div class="overflow-x-auto">
+    <!-- Desktop Table -->
+    <div class="hidden sm:block overflow-x-auto">
       <table class="w-full text-left text-xs border-collapse">
         <tbody class="divide-y divide-[#1E293B]">
           {% for exp in kpis.recent_expenses %}
@@ -398,6 +489,24 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Mobile Card Stream -->
+    <div class="space-y-2.5 sm:hidden">
+      {% for exp in kpis.recent_expenses %}
+        <div class="p-3 rounded-xl bg-[#0B0F17] border border-[#28354A] flex items-center justify-between">
+          <div>
+            <div class="font-bold text-white text-xs">{{ exp.category.name }}</div>
+            <div class="text-[10px] text-gray-400 font-mono mt-0.5">{{ exp.expense_date|date:"d M" }} &bull; {{ exp.expense_code }}</div>
+          </div>
+          <div class="text-right">
+            <div class="font-mono font-bold text-rose-400 text-sm">-₹{{ exp.amount }}</div>
+            <div class="text-[10px] text-gray-400">{{ exp.account.account_name|default:"Credit" }}</div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="py-6 text-center text-gray-500 text-xs">No recent expenses recorded.</div>
+      {% endfor %}
+    </div>
   </div>
 
   <!-- Recent Receipts & Settlements -->
@@ -410,7 +519,8 @@
       <a href="{% url 'finance:receivables' %}" class="text-xs text-gray-400 hover:text-white no-underline">Receivables</a>
     </div>
 
-    <div class="overflow-x-auto">
+    <!-- Desktop Table -->
+    <div class="hidden sm:block overflow-x-auto">
       <table class="w-full text-left text-xs border-collapse">
         <tbody class="divide-y divide-[#1E293B]">
           {% for cp in kpis.recent_customer_payments %}
@@ -433,6 +543,34 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
+
+    <!-- Mobile Card Stream -->
+    <div class="space-y-2.5 sm:hidden">
+      {% for cp in kpis.recent_customer_payments %}
+        <div class="p-3 rounded-xl bg-[#0B0F17] border border-emerald-500/30 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-white text-xs">{{ cp.receivable.customer.name }}</div>
+            <div class="text-[10px] text-gray-400 font-mono mt-0.5">{{ cp.payment_date|date:"d M" }} &bull; Customer Payment</div>
+          </div>
+          <div class="text-right font-mono font-bold text-emerald-400 text-sm">
+            +₹{{ cp.amount }}
+          </div>
+        </div>
+      {% empty %}
+      {% endfor %}
+      {% for sp in kpis.recent_supplier_payments %}
+        <div class="p-3 rounded-xl bg-[#0B0F17] border border-rose-500/30 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-white text-xs">{{ sp.payable.supplier.name }}</div>
+            <div class="text-[10px] text-gray-400 font-mono mt-0.5">{{ sp.payment_date|date:"d M" }} &bull; Vendor Payment</div>
+          </div>
+          <div class="text-right font-mono font-bold text-rose-400 text-sm">
+            -₹{{ sp.amount }}
+          </div>
+        </div>
+      {% empty %}
+      {% endfor %}
     </div>
   </div>
 </div>

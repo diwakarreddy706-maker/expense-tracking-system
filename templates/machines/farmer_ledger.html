@@ -215,21 +215,21 @@
         </div>
 
         {% if farmer_balance_due > 0 %}
-        <button type="button" data-bs-toggle="modal" data-bs-target="#collectPaymentModal" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-extrabold text-xs shadow-sm transition-all border-0 cursor-pointer">
+        <button type="button" data-bs-toggle="modal" data-bs-target="#collectPaymentModal" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-extrabold text-xs shadow-sm transition-all border-0 cursor-pointer min-h-[44px]">
           <i class="bi bi-cash-stack text-sm"></i>
           <span>Collect Payment</span>
         </button>
         {% endif %}
 
-        <button type="button" onclick="window.shareContent({ title: 'Udhar Statement - {{ selected_customer.name|escapejs }}', text: 'Sri Basaveshwara & Co Farmer Statement for {{ selected_customer.name|escapejs }} ({{ selected_customer.customer_code }}): Outstanding Udhar: ₹{{ farmer_balance_due|floatformat:0 }}.', phone: '{{ selected_customer.phone|escapejs }}', url: window.location.href })" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-extrabold text-xs shadow-sm transition-all border-0 cursor-pointer">
-          <i class="bi bi-share-fill"></i>
-          <span>Share</span>
-        </button>
-
-        <a href="{{ whatsapp_statement_url }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-extrabold text-xs shadow-sm transition-all no-underline">
-          <i class="bi bi-whatsapp text-sm"></i>
-          <span>WhatsApp Statement</span>
+        <a href="{% url 'machines:farmer_ledger_pdf' customer_id=selected_customer.id %}" target="_blank" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs shadow-sm transition-all no-underline min-h-[44px]">
+          <i class="bi bi-file-earmark-pdf-fill"></i>
+          <span>Official PDF</span>
         </a>
+
+        <button type="button" onclick="window.shareContent({ title: 'Farmer Statement - {{ selected_customer.name|escapejs }}', text: 'Sri Basaveshwara & Co: Statement for {{ selected_customer.name|escapejs }}. Official PDF statement attached.', phone: '{{ selected_customer.phone|escapejs }}', url: window.location.origin + '{% url 'machines:farmer_ledger_pdf' customer_id=selected_customer.id %}' })" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-extrabold text-xs shadow-sm transition-all border-0 cursor-pointer min-h-[44px]">
+          <i class="bi bi-whatsapp text-sm"></i>
+          <span>Share Statement</span>
+        </button>
       </div>
     </div>
 
@@ -281,9 +281,9 @@
       </a>
     </div>
 
-    <!-- Table of Work Sessions -->
+    <!-- Desktop Table of Work Sessions (>=md) -->
     {% if farmer_sessions %}
-      <div class="overflow-x-auto">
+      <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-left text-xs text-gray-700 dark:text-gray-300">
           <thead class="bg-gray-50 dark:bg-[#182234] text-[11px] font-mono uppercase text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-[#28354A]">
             <tr>
@@ -326,7 +326,7 @@
                   ₹{{ s.udhar_amount|floatformat:2 }}
                 </td>
                 <td class="py-3.5 px-3.5 text-right whitespace-nowrap print:hidden">
-                  <a href="{% url 'machines:work_invoice' s.id %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-emerald-700 dark:text-emerald-400 font-bold text-xs border border-gray-200 dark:border-gray-700 no-underline transition-all">
+                  <a href="{% url 'machines:work_invoice' s.id %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-emerald-700 dark:text-emerald-400 font-bold text-xs border border-gray-200 dark:border-gray-700 no-underline transition-all min-h-[38px]">
                     <i class="bi bi-receipt"></i>
                     <span>Invoice</span>
                   </a>
@@ -336,8 +336,39 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Mobile Cards of Work Sessions (<md) -->
+      <div class="space-y-3 md:hidden">
+        {% for s in farmer_sessions %}
+          <div class="mobile-tx-card">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <span class="font-mono font-bold text-white text-xs block">{{ s.manual_bill_no|default:s.work_code }}</span>
+                <span class="text-[11px] text-gray-400 font-mono">{{ s.work_date|date:"d M Y" }} &bull; {{ s.machine.name }}</span>
+              </div>
+              <a href="{% url 'machines:work_invoice' s.id %}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#182234] text-cyan-400 font-bold text-xs border border-[#28354A] no-underline">
+                <i class="bi bi-receipt"></i> Bill
+              </a>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center pt-2 border-t border-[#28354A] text-xs">
+              <div class="bg-[#0B0F17] p-2 rounded-lg">
+                <span class="text-[10px] text-gray-400 block">Total</span>
+                <span class="font-mono font-bold text-white">₹{{ s.total_amount|floatformat:0 }}</span>
+              </div>
+              <div class="bg-[#0B0F17] p-2 rounded-lg">
+                <span class="text-[10px] text-gray-400 block">Advance</span>
+                <span class="font-mono font-bold text-emerald-400">₹{{ s.advance_amount|floatformat:0 }}</span>
+              </div>
+              <div class="bg-[#0B0F17] p-2 rounded-lg">
+                <span class="text-[10px] text-gray-400 block">Udhar</span>
+                <span class="font-mono font-bold text-rose-400">₹{{ s.udhar_amount|floatformat:0 }}</span>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
     {% else %}
-      <div class="p-12 text-center text-gray-500 dark:text-gray-400 text-xs">
+      <div class="p-10 text-center text-gray-500 dark:text-gray-400 text-xs">
         <i class="bi bi-inbox text-3xl text-gray-400 block mb-2"></i>
         No machine work sessions logged for {{ selected_customer.name }} yet.
       </div>
@@ -346,7 +377,7 @@
 
   <!-- Direct Payment Collections & Receipts History -->
   {% if farmer_payments %}
-  <div class="bg-white dark:bg-[#131A26] border border-gray-200 dark:border-[#28354A] rounded-2xl p-6 shadow-sm">
+  <div class="bg-white dark:bg-[#131A26] border border-gray-200 dark:border-[#28354A] rounded-2xl p-4 sm:p-6 shadow-sm">
     <div class="mb-4 pb-3 border-b border-gray-100 dark:border-[#28354A]">
       <h3 class="text-base font-bold text-gray-900 dark:text-white tracking-tight m-0 flex items-center gap-2">
         <i class="bi bi-wallet2 text-emerald-600 dark:text-emerald-400"></i>
@@ -354,7 +385,9 @@
       </h3>
       <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 mb-0">Record of direct debt repayments, bank transfers, and cash collections.</p>
     </div>
-    <div class="overflow-x-auto">
+
+    <!-- Desktop Table (>=md) -->
+    <div class="hidden md:block overflow-x-auto">
       <table class="w-full text-left text-xs text-gray-700 dark:text-gray-300">
         <thead class="bg-gray-50 dark:bg-[#182234] text-[11px] font-mono uppercase text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-[#28354A]">
           <tr>
@@ -386,6 +419,24 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
+
+    <!-- Mobile Cards (<md) -->
+    <div class="space-y-2.5 md:hidden font-mono">
+      {% for p in farmer_payments %}
+        <div class="p-3 rounded-xl bg-[#0B0F17] border border-emerald-500/30 flex items-center justify-between">
+          <div>
+            <span class="font-bold text-white text-xs block">{{ p.payment_code }}</span>
+            <span class="text-[10px] text-gray-400">{{ p.payment_date|date:"d M Y" }} &bull; {{ p.get_payment_method_display }}</span>
+          </div>
+          <div class="text-right">
+            <span class="text-sm font-bold text-emerald-400 block">+₹{{ p.amount|floatformat:2 }}</span>
+            <a href="{% url 'finance:customer_payment_receipt_pdf' p.id %}" target="_blank" class="text-[10px] text-cyan-400 no-underline inline-flex items-center gap-1">
+              <i class="bi bi-file-earmark-pdf"></i> Receipt PDF
+            </a>
+          </div>
+        </div>
+      {% endfor %}
     </div>
   </div>
   {% endif %}

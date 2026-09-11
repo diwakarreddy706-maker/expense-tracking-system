@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block title %}{{ title }} | AgriBOS ERP{% endblock %}
 
 {% block content %}
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-6">
   <div>
     <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">{{ title }}</h2>
     <p class="text-xs text-gray-400 mt-1 mb-0">Record machinery refueling, meter readings, and automatic expense posting</p>
@@ -16,18 +17,18 @@
   </div>
 </div>
 
-<div class="max-w-3xl mx-auto">
-  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 sm:p-8 shadow-sm">
+<div class="max-w-3xl mx-auto form-container-mobile">
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 sm:p-8 shadow-sm">
     <form method="post" novalidate id="fuelEntryForm" class="space-y-4">
       {% csrf_token %}
 
       {% if form.non_field_errors %}
-        <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium">
+        <div class="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium">
           {{ form.non_field_errors }}
         </div>
       {% endif %}
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div>
           <label class="block text-xs font-semibold text-gray-300 mb-1.5">Fueling Date <span class="text-rose-400">*</span></label>
           {{ form.date }}
@@ -44,30 +45,34 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div>
           <label class="block text-xs font-semibold text-gray-300 mb-1.5">Quantity (Litres) <span class="text-rose-400">*</span></label>
-          {{ form.quantity }}
+          <div class="relative">
+            <input type="number" step="0.01" inputmode="decimal" name="{{ form.quantity.name }}" id="{{ form.quantity.id_for_label }}" value="{{ form.quantity.value|default:'' }}" class="form-control bg-[#0B0F17] text-white border-[#28354A] rounded-xl font-bold text-base" placeholder="0.00" required>
+          </div>
           {% if form.quantity.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.quantity.errors.0 }}</div>{% endif %}
         </div>
         <div>
           <label class="block text-xs font-semibold text-gray-300 mb-1.5">Unit Rate (₹/L) <span class="text-rose-400">*</span></label>
-          {{ form.unit_price }}
+          <div class="relative">
+            <input type="number" step="0.01" inputmode="decimal" name="{{ form.unit_price.name }}" id="{{ form.unit_price.id_for_label }}" value="{{ form.unit_price.value|default:'' }}" class="form-control bg-[#0B0F17] text-white border-[#28354A] rounded-xl font-bold text-base" placeholder="0.00" required>
+          </div>
           {% if form.unit_price.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.unit_price.errors.0 }}</div>{% endif %}
         </div>
         <div>
           <label class="block text-xs font-semibold text-gray-300 mb-1.5">Calculated Total</label>
-          <div class="w-full px-3.5 py-2 rounded-xl bg-[#0B0F17] border border-emerald-500/30 flex items-center justify-between shadow-inner" id="totalWrapper">
+          <div class="w-full px-3.5 py-2.5 rounded-xl bg-[#0B0F17] border border-emerald-500/40 flex items-center justify-between shadow-inner min-h-[48px]" id="totalWrapper">
             <span class="text-xs text-gray-400 font-medium">Estimated:</span>
-            <span class="text-emerald-400 font-bold font-mono text-base tabular-nums" id="displaySubtotal">₹0.00</span>
+            <span class="text-emerald-400 font-extrabold font-mono text-lg tabular-nums" id="displaySubtotal">₹0.00</span>
           </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div>
           <label class="block text-xs font-semibold text-gray-300 mb-1.5">Current Meter Reading <span class="text-rose-400">*</span></label>
-          {{ form.meter_reading }}
+          <input type="number" step="0.1" inputmode="decimal" name="{{ form.meter_reading.name }}" id="{{ form.meter_reading.id_for_label }}" value="{{ form.meter_reading.value|default:'' }}" class="form-control bg-[#0B0F17] text-white border-[#28354A] rounded-xl font-bold text-base" placeholder="0.0" required>
           {% if form.meter_reading.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.meter_reading.errors.0 }}</div>{% endif %}
         </div>
         <div>
@@ -80,7 +85,7 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div>
           <div class="flex items-center justify-between mb-1.5">
             <label class="block text-xs font-semibold text-gray-300">Fuel Pump / Supplier</label>
@@ -92,18 +97,18 @@
         </div>
         <div class="sm:col-span-2">
           <label class="block text-xs font-semibold text-gray-300 mb-1.5">Payment Method <span class="text-rose-400">*</span></label>
-          <div class="flex items-center gap-2 mb-2" id="paymentPillContainer">
-            <button type="button" class="pill-selector-item flex-1 text-center" data-value="CASH">
-              <i class="bi bi-cash"></i> Cash
+          <div class="grid grid-cols-4 gap-1.5 sm:gap-2 mb-2" id="paymentPillContainer" data-target-input="payment_method">
+            <button type="button" class="pill-selector-item text-center p-2" data-value="CASH">
+              <i class="bi bi-cash text-sm"></i> <span>Cash</span>
             </button>
-            <button type="button" class="pill-selector-item flex-1 text-center" data-value="UPI">
-              <i class="bi bi-phone"></i> UPI
+            <button type="button" class="pill-selector-item text-center p-2" data-value="UPI">
+              <i class="bi bi-phone text-sm"></i> <span>UPI</span>
             </button>
-            <button type="button" class="pill-selector-item flex-1 text-center" data-value="BANK">
-              <i class="bi bi-bank"></i> Bank
+            <button type="button" class="pill-selector-item text-center p-2" data-value="BANK">
+              <i class="bi bi-bank text-sm"></i> <span>Bank</span>
             </button>
-            <button type="button" class="pill-selector-item flex-1 text-center" data-value="CREDIT">
-              <i class="bi bi-clock-history"></i> Credit
+            <button type="button" class="pill-selector-item text-center p-2" data-value="CREDIT">
+              <i class="bi bi-clock-history text-sm"></i> <span>Credit</span>
             </button>
           </div>
           <div class="hidden">
@@ -113,7 +118,7 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <label class="block text-xs font-semibold text-gray-300 mb-1.5">Debited Account (Required for Cash/Bank/UPI)</label>
           {{ form.account }}
@@ -125,13 +130,25 @@
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-3 border-t border-[#28354A] pt-4 mt-6">
-        <a href="{% url 'fuel:list' %}" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+      <!-- Desktop Action Bar (Hidden on mobile) -->
+      <div class="hidden lg:flex items-center justify-end gap-3 border-t border-[#28354A] pt-4 mt-6">
+        <a href="{% url 'fuel:list' %}" class="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline min-h-[44px] inline-flex items-center">
           Cancel
         </a>
-        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400">
+        <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 min-h-[44px]">
           <i class="bi bi-check-lg"></i>
           <span>Save Fuel Log &amp; Post Ledger</span>
+        </button>
+      </div>
+
+      <!-- Mobile Sticky Action Bar (<lg) -->
+      <div class="mobile-sticky-action-bar flex items-center justify-between gap-3">
+        <a href="{% url 'fuel:list' %}" class="flex-1 text-center py-2.5 px-3 rounded-xl bg-gray-800 text-gray-300 font-semibold text-xs border border-[#28354A] no-underline min-h-[48px] flex items-center justify-center">
+          Cancel
+        </a>
+        <button type="submit" class="flex-[2] py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-950/60 border border-emerald-400/40 min-h-[48px] flex items-center justify-center gap-1.5">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>Save Fuel Entry</span>
         </button>
       </div>
     </form>

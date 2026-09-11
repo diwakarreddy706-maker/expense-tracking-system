@@ -1,5 +1,5 @@
-{% load static %}
-<!-- Modernized Quick Expense Modal -->
+{% load static i18n %}
+<!-- Modernized Mobile-First Quick Expense Modal -->
 <div
   class="modal fade fixed inset-0 z-50 overflow-y-auto"
   id="quickExpenseModal"
@@ -18,51 +18,56 @@
   @click.self="quickExpenseOpen = false"
   @keydown.escape.window="quickExpenseOpen = false"
 >
-  <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-center justify-center p-4">
-    <div class="modal-content relative w-full max-w-lg bg-[#131A26] border border-[#28354A] rounded-2xl shadow-2xl overflow-hidden text-gray-100">
+  <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="modal-content relative w-full max-w-lg bg-[#131A26] border-t sm:border border-[#28354A] rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden text-gray-100 pb-6 sm:pb-0" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
       <form id="quickExpenseForm" method="post" action="{% url 'api_expenses_quick' %}">
         {% csrf_token %}
 
+        <!-- Mobile Touch Handle (Mobile Only) -->
+        <div class="sm:hidden flex justify-center pt-3 pb-1">
+          <div class="w-12 h-1.5 rounded-full bg-gray-600"></div>
+        </div>
+
         <!-- Header -->
-        <div class="px-6 py-4 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+        <div class="px-5 sm:px-6 py-3.5 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
               <i class="bi bi-lightning-fill text-base"></i>
             </div>
             <div>
-              <h3 class="text-sm font-bold text-white tracking-tight" id="quickExpenseModalLabel">Quick Expense Entry</h3>
-              <p class="text-[11px] text-gray-400">Record operational field expenditure immediately</p>
+              <h3 class="text-sm font-bold text-white tracking-tight m-0" id="quickExpenseModalLabel">{% trans "Quick Expense Entry" %}</h3>
+              <p class="text-[11px] text-gray-400 m-0">20s field expenditure (ವೆಚ್ಚ ದಾಖಲಾತಿ)</p>
             </div>
           </div>
           <button
             type="button"
-            class="btn-close text-gray-400 hover:text-white p-1 rounded-lg focus:outline-none"
+            class="btn-close text-gray-400 hover:text-white p-2 rounded-xl focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center"
             data-bs-dismiss="modal"
             @click="quickExpenseOpen = false"
             aria-label="Close"
           >
-            <i class="bi bi-x-lg text-sm"></i>
+            <i class="bi bi-x-lg text-xs"></i>
           </button>
         </div>
 
         <!-- Body -->
-        <div class="p-6 space-y-4">
+        <div class="p-4 sm:p-6 space-y-3.5 sm:space-y-4">
           <div id="quickExpenseAlert" class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs hidden"></div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label class="block text-xs font-semibold text-gray-300 mb-1.5" for="quickExpAmount">
                 Amount (₹) <span class="text-rose-400">*</span>
               </label>
               <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 font-bold text-sm">₹</span>
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-emerald-400 font-extrabold text-lg">₹</span>
                 <input
                   type="number"
                   step="0.01"
                   inputmode="decimal"
                   name="amount"
                   id="quickExpAmount"
-                  class="w-full pl-8 pr-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white font-bold text-base num-tabular placeholder-gray-600 focus:outline-none"
+                  class="w-full pl-9 pr-3 py-3 rounded-xl bg-[#0B0F17] border border-emerald-500/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 text-white font-extrabold text-xl num-tabular placeholder-gray-600 focus:outline-none min-h-[50px]"
                   placeholder="0.00"
                   required
                 >
@@ -76,7 +81,7 @@
               <select
                 name="category_id"
                 id="quickExpCat"
-                class="w-full px-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none"
+                class="w-full px-3 py-3 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-sm font-medium focus:outline-none min-h-[48px]"
                 required
               >
                 <option value="">Loading Categories...</option>
@@ -84,7 +89,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label class="block text-xs font-semibold text-gray-300 mb-1.5" for="quickExpAcc">
                 Payment Account <span class="text-rose-400">*</span>
@@ -92,7 +97,7 @@
               <select
                 name="account_id"
                 id="quickExpAcc"
-                class="w-full px-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none"
+                class="w-full px-3 py-3 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-sm font-medium focus:outline-none min-h-[48px]"
                 required
               >
                 <option value="">Loading Accounts...</option>
@@ -106,7 +111,7 @@
               <select
                 name="payment_method"
                 id="quickExpMethod"
-                class="w-full px-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none"
+                class="w-full px-3 py-3 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-sm font-medium focus:outline-none min-h-[48px]"
               >
                 <option value="CASH">Cash</option>
                 <option value="UPI">UPI</option>
@@ -122,7 +127,7 @@
             <select
               name="machine_id"
               id="quickExpMch"
-              class="w-full px-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none"
+              class="w-full px-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-sm font-medium focus:outline-none min-h-[48px]"
             >
               <option value="">-- None / General Enterprise --</option>
             </select>
@@ -136,17 +141,17 @@
               type="text"
               name="description"
               id="quickExpDesc"
-              class="w-full px-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-600 focus:outline-none"
+              class="w-full px-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-sm placeholder-gray-600 focus:outline-none min-h-[48px]"
               placeholder="e.g. Tractor grease, spare bolt, hydraulic leak weld"
             >
           </div>
         </div>
 
-        <!-- Footer -->
-        <div class="px-6 py-4 border-t border-[#28354A] flex items-center justify-end gap-3 bg-[#162030]">
+        <!-- Footer Actions -->
+        <div class="px-5 sm:px-6 py-3.5 border-t border-[#28354A] flex items-center justify-between sm:justify-end gap-3 bg-[#162030]">
           <button
             type="button"
-            class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium text-xs border border-gray-700 transition-colors"
+            class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-gray-700 transition-colors min-h-[48px] flex items-center justify-center"
             data-bs-dismiss="modal"
             @click="quickExpenseOpen = false"
           >
@@ -155,9 +160,9 @@
           <button
             type="submit"
             id="quickExpenseSubmitBtn"
-            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-md shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            class="flex-[2] sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 min-h-[48px] cursor-pointer"
           >
-            <i class="bi bi-check-lg"></i>
+            <i class="bi bi-check-circle-fill"></i>
             <span>Post Expense</span>
           </button>
         </div>
@@ -165,3 +170,4 @@
     </div>
   </div>
 </div>
+

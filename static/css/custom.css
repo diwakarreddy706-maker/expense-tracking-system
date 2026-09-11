@@ -797,7 +797,8 @@ html:not(.dark) .theme-icon-moon {
 }
 
 /* ==============================================================================
-   MOBILE APP & BROWSER ENHANCEMENTS
+/* ==============================================================================
+   MOBILE APP & BROWSER ENHANCEMENTS & GLOBAL MOBILE FORM SYSTEM
    ============================================================================== */
 
 /* iOS & Android Safe Area Inset Helpers */
@@ -806,10 +807,16 @@ html:not(.dark) .theme-icon-moon {
 .safe-left { padding-left: env(safe-area-inset-left, 0px); }
 .safe-right { padding-right: env(safe-area-inset-right, 0px); }
 
-/* Mobile Touch Tap Target Minimums */
+/* Universal Touch Tap Target Minimums & 16px Input Font Guarantee */
 @media (max-width: 1023px) {
-  button, .btn, a.btn, input, select, textarea {
-    min-height: 42px;
+  button, .btn, a.btn, input, select, textarea, .form-control, .form-select {
+    min-height: 48px;
+    font-size: 16px !important; /* Prevents auto-zoom on iOS Safari & Android Chrome */
+  }
+
+  input[type="checkbox"], input[type="radio"] {
+    min-height: 22px;
+    min-width: 22px;
   }
 }
 
@@ -852,8 +859,8 @@ html.sunlight-mode {
   left: 50%;
   transform: translateX(-50%) translateY(-100px);
   z-index: 9999;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: #131A26;
   border: 1.5px solid #10B981;
@@ -904,18 +911,95 @@ html.sunlight-mode {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 35;
-  background: rgba(17, 24, 39, 0.95);
+  z-index: 45;
+  background: rgba(17, 24, 39, 0.96);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid #28354A;
   padding: 0.75rem 1rem;
-  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
 }
 
 @media (min-width: 1024px) {
   .mobile-sticky-action-bar {
     display: none !important;
+  }
+}
+
+/* Ensure Form Containers Have Ample Bottom Padding on Mobile */
+@media (max-width: 1023px) {
+  .form-container-mobile {
+    padding-bottom: 7rem !important;
+  }
+}
+
+/* Tactile Pill Selectors for Quick Form Choices (Cash/UPI/Bank, etc.) */
+.pill-selector-item {
+  min-height: 48px;
+  padding: 0.625rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid #28354A;
+  background-color: #0B0F17;
+  color: #94A3B8;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pill-selector-item:hover {
+  background-color: #182234;
+  color: #F1F5F9;
+  border-color: #384860;
+}
+
+.pill-selector-item.active {
+  background-color: rgba(16, 185, 129, 0.18);
+  border-color: #10B981;
+  color: #34D399;
+  box-shadow: 0 0 0 1px #10B981;
+}
+
+/* Double-Submit Protection Loading Spinner State */
+.btn.is-submitting,
+button.is-submitting {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.btn.is-submitting .submit-spinner,
+button.is-submitting .submit-spinner {
+  display: inline-block !important;
+}
+
+/* Mobile Transaction Card Utilities */
+.mobile-tx-card {
+  background: #131A26;
+  border: 1px solid #28354A;
+  border-radius: 1rem;
+  padding: 1rem;
+  transition: border-color 0.15s ease;
+}
+
+.mobile-tx-card:active {
+  border-color: #10B981;
+}
+
+/* Accessibility: Respect Reduced Motion Preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -955,4 +1039,16 @@ html:not(.dark) nav.lg\:hidden a.text-cyan-400,
 html:not(.dark) nav.lg\:hidden a.text-amber-400 {
   color: #059669 !important;
 }
+
+html:not(.dark) .mobile-sticky-action-bar {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-top-color: #E2E8F0 !important;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+html:not(.dark) .mobile-tx-card {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+
 

@@ -24,11 +24,73 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Automatically enforce numeric keypad inputmode on all currency / quantity inputs
-  document.querySelectorAll('input[type="number"], input[name*="amount"], input[name*="rate"], input[name*="liters"], input[name*="acre"], input[name*="hour"]').forEach(el => {
+  // Automatically enforce numeric & decimal keypad inputmode across all financial & operational inputs
+  document.querySelectorAll('input[type="number"], input[name*="amount"], input[name*="rate"], input[name*="price"], input[name*="liters"], input[name*="quantity"], input[name*="acre"], input[name*="hour"], input[name*="reading"], input[name*="meter"]').forEach(el => {
     if (!el.getAttribute('inputmode')) {
       el.setAttribute('inputmode', 'decimal');
     }
+  });
+
+  document.querySelectorAll('input[type="tel"], input[name*="phone"], input[name*="mobile"]').forEach(el => {
+    if (!el.getAttribute('inputmode')) {
+      el.setAttribute('inputmode', 'tel');
+    }
+  });
+
+  // Universal Double-Submit Protection for Financial & Operational Forms
+  document.querySelectorAll('form[method="post"]').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      // Check if already submitting
+      if (form.dataset.submitting === 'true') {
+        e.preventDefault();
+        return false;
+      }
+
+      // Check form validity before locking
+      if (form.checkValidity && !form.checkValidity()) {
+        return; // Let browser HTML5 validation messages display
+      }
+
+      const submitBtns = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+      submitBtns.forEach(btn => {
+        btn.classList.add('is-submitting');
+        btn.disabled = true;
+        
+        // Add spinner if not already present
+        if (!btn.querySelector('.submit-spinner')) {
+          const spinner = document.createElement('span');
+          spinner.className = 'spinner-border spinner-border-sm submit-spinner me-1.5';
+          spinner.setAttribute('role', 'status');
+          spinner.setAttribute('aria-hidden', 'true');
+          btn.prepend(spinner);
+        }
+      });
+
+      form.dataset.submitting = 'true';
+      window.triggerHaptic(15);
+    });
+  });
+
+  // Universal Pill Selector Handler (.pill-selector-item)
+  document.querySelectorAll('.pill-selector-item').forEach(pill => {
+    pill.addEventListener('click', function(e) {
+      e.preventDefault();
+      const parent = pill.parentElement;
+      const targetInputId = parent.dataset.targetInput || pill.dataset.targetInput;
+      const val = pill.dataset.value;
+
+      parent.querySelectorAll('.pill-selector-item').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+
+      if (targetInputId) {
+        const targetInput = document.getElementById(targetInputId) || document.querySelector(`[name="${targetInputId}"]`);
+        if (targetInput) {
+          targetInput.value = val;
+          targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+      window.triggerHaptic(10);
+    });
   });
 
   // Attach tactile haptic feedback to interactive primary action buttons
