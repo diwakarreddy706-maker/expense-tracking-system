@@ -108,12 +108,20 @@
     </div>
   </div>
 
-  <!-- Search Filter Bar -->
-  <div class="relative print:hidden">
-    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 z-10">
-      <i class="bi bi-search"></i>
+  <!-- Search Filter Bar with Clear and Quick Action Indicator -->
+  <div class="relative print:hidden flex items-center gap-2">
+    <div class="relative flex-1">
+      <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 z-10">
+        <i class="bi bi-search"></i>
+      </div>
+      <input type="text" id="farmerSearchInput" placeholder="Search by Farmer Name, Phone Number (e.g. 9880123456), Bill No, or Village..." class="w-full pl-11 pr-10 py-3 rounded-xl bg-white dark:bg-[#131A26] border border-gray-200 dark:border-[#28354A] text-gray-900 dark:text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 placeholder-gray-400 transition-colors shadow-sm">
+      <button type="button" id="farmerSearchClearBtn" onclick="document.getElementById('farmerSearchInput').value=''; document.getElementById('farmerSearchInput').dispatchEvent(new Event('input')); this.classList.add('hidden');" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-white cursor-pointer bg-transparent border-0">
+        <i class="bi bi-x-circle-fill text-sm"></i>
+      </button>
     </div>
-    <input type="text" id="farmerSearchInput" placeholder="Search by Farmer Name, Phone Number (e.g. 9880123456), Bill No, or Village..." class="w-full pl-11 pr-4 py-3 rounded-xl bg-white dark:bg-[#131A26] border border-gray-200 dark:border-[#28354A] text-gray-900 dark:text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 placeholder-gray-400 transition-colors shadow-sm">
+    <div id="searchCounterBadge" class="hidden px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold whitespace-nowrap">
+      0 found
+    </div>
   </div>
 
   <!-- Selectable Farmer Cards Carousel / Horizontal Grid -->
@@ -122,7 +130,7 @@
       {% for fd in farmers_data %}
         {% if selected_customer.id == fd.id %}
           <!-- Selected Farmer Card (Solid Emerald Accent matching screenshot) -->
-          <a href="{% url 'machines:farmer_ledger_detail' fd.id %}" class="farmer-card block p-4 rounded-xl border no-underline transition-all bg-emerald-600 border-emerald-500 shadow-md ring-2 ring-emerald-400 text-white" data-search="{{ fd.name|lower }} {{ fd.phone|lower }} {{ fd.village|lower }} {{ fd.customer_code|lower }}">
+          <div class="farmer-card block p-4 rounded-xl border no-underline transition-all bg-emerald-600 border-emerald-500 shadow-md ring-2 ring-emerald-400 text-white relative group" data-search="{{ fd.name|lower }} {{ fd.phone|lower }} {{ fd.village|lower }} {{ fd.customer_code|lower }}">
             <div class="flex items-center justify-between mb-2">
               <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-emerald-800/80 text-white border border-emerald-400/40">
                 {{ fd.customer_code }}
@@ -131,20 +139,33 @@
                 UDHAR: ₹{{ fd.outstanding_udhar|floatformat:0|intcomma }}
               </span>
             </div>
-            <div class="text-sm font-black text-white truncate">
-              {{ fd.name }}
+            <a href="{% url 'machines:farmer_ledger_detail' fd.id %}" class="block no-underline text-white">
+              <div class="text-sm font-black text-white truncate">
+                {{ fd.name }}
+              </div>
+              <div class="text-xs text-emerald-100 mt-1 flex items-center gap-1.5 truncate font-medium">
+                <i class="bi bi-geo-alt text-[10px]"></i>
+                <span class="truncate">{{ fd.village }}</span>
+              </div>
+            </a>
+            <!-- Quick Dial & WhatsApp Actions Bar -->
+            <div class="mt-3 pt-2.5 border-t border-emerald-500/40 flex items-center justify-between gap-1.5">
+              {% if fd.phone %}
+                <a href="tel:{{ fd.phone }}" class="flex-1 inline-flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-emerald-700/80 hover:bg-emerald-800 text-white font-mono text-[11px] font-bold no-underline transition-colors" title="Call {{ fd.name }}">
+                  <i class="bi bi-telephone-fill text-[10px]"></i>
+                  <span>{{ fd.phone }}</span>
+                </a>
+                <button type="button" onclick="window.sendWhatsAppReminder({ name: '{{ fd.name|escapejs }}', phone: '{{ fd.phone|escapejs }}', balanceDue: '{{ fd.outstanding_udhar }}', pdfUrl: window.location.origin + '{% url 'machines:farmer_ledger_detail' fd.id %}' })" class="inline-flex items-center justify-center p-1.5 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-black font-bold text-xs shadow-sm border-0 cursor-pointer" title="Send WhatsApp Udhar Reminder">
+                  <i class="bi bi-whatsapp"></i>
+                </button>
+              {% else %}
+                <span class="text-[11px] text-emerald-200">No phone recorded</span>
+              {% endif %}
             </div>
-            <div class="text-xs text-emerald-100 mt-1 flex items-center gap-1.5 truncate font-medium">
-              <i class="bi bi-telephone text-[10px]"></i>
-              <span class="font-mono">{{ fd.phone }}</span>
-              <span>•</span>
-              <i class="bi bi-geo-alt text-[10px]"></i>
-              <span class="truncate">{{ fd.village }}</span>
-            </div>
-          </a>
+          </div>
         {% else %}
           <!-- Unselected Farmer Card (Crisp White/Dark matching screenshot) -->
-          <a href="{% url 'machines:farmer_ledger_detail' fd.id %}" class="farmer-card block p-4 rounded-xl border no-underline transition-all bg-white dark:bg-[#131A26] border-gray-200 dark:border-[#28354A] hover:border-emerald-500 hover:shadow-sm" data-search="{{ fd.name|lower }} {{ fd.phone|lower }} {{ fd.village|lower }} {{ fd.customer_code|lower }}">
+          <div class="farmer-card block p-4 rounded-xl border no-underline transition-all bg-white dark:bg-[#131A26] border-gray-200 dark:border-[#28354A] hover:border-emerald-500 hover:shadow-sm" data-search="{{ fd.name|lower }} {{ fd.phone|lower }} {{ fd.village|lower }} {{ fd.customer_code|lower }}">
             <div class="flex items-center justify-between mb-2">
               <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
                 {{ fd.customer_code }}
@@ -153,17 +174,30 @@
                 UDHAR: ₹{{ fd.outstanding_udhar|floatformat:0|intcomma }}
               </span>
             </div>
-            <div class="text-sm font-bold text-gray-900 dark:text-white truncate">
-              {{ fd.name }}
+            <a href="{% url 'machines:farmer_ledger_detail' fd.id %}" class="block no-underline text-gray-900 dark:text-white">
+              <div class="text-sm font-bold text-gray-900 dark:text-white truncate">
+                {{ fd.name }}
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1.5 truncate">
+                <i class="bi bi-geo-alt text-[10px]"></i>
+                <span class="truncate">{{ fd.village }}</span>
+              </div>
+            </a>
+            <!-- Quick Dial & WhatsApp Actions Bar -->
+            <div class="mt-3 pt-2.5 border-t border-gray-100 dark:border-[#28354A] flex items-center justify-between gap-1.5">
+              {% if fd.phone %}
+                <a href="tel:{{ fd.phone }}" class="flex-1 inline-flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-gray-100 dark:bg-[#182234] hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-gray-700 dark:text-gray-200 hover:text-emerald-600 font-mono text-[11px] font-semibold border border-gray-200 dark:border-[#28354A] no-underline transition-colors" title="Call {{ fd.name }}">
+                  <i class="bi bi-telephone-fill text-[10px] text-emerald-500"></i>
+                  <span>{{ fd.phone }}</span>
+                </a>
+                <button type="button" onclick="window.sendWhatsAppReminder({ name: '{{ fd.name|escapejs }}', phone: '{{ fd.phone|escapejs }}', balanceDue: '{{ fd.outstanding_udhar }}', pdfUrl: window.location.origin + '{% url 'machines:farmer_ledger_detail' fd.id %}' })" class="inline-flex items-center justify-center p-1.5 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] border border-[#25D366]/40 text-xs shadow-sm cursor-pointer transition-colors" title="Send WhatsApp Udhar Reminder">
+                  <i class="bi bi-whatsapp"></i>
+                </button>
+              {% else %}
+                <span class="text-[11px] text-gray-400">No phone</span>
+              {% endif %}
             </div>
-            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1.5 truncate">
-              <i class="bi bi-telephone text-[10px]"></i>
-              <span class="font-mono">{{ fd.phone }}</span>
-              <span>•</span>
-              <i class="bi bi-geo-alt text-[10px]"></i>
-              <span class="truncate">{{ fd.village }}</span>
-            </div>
-          </a>
+          </div>
         {% endif %}
       {% empty %}
         <div class="col-span-full p-6 text-center text-gray-400 text-xs bg-white dark:bg-[#131A26] rounded-xl border border-gray-200 dark:border-[#28354A]">
@@ -177,7 +211,7 @@
   <!-- Active Farmer Detailed Profile Card (Dark Sleek Banner matching screenshot) -->
   <div class="bg-[#0F172A] border border-[#1E293B] rounded-2xl p-6 shadow-xl text-white">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-800">
-      <!-- Left: Farmer Identity -->
+      <!-- Left: Farmer Identity & Quick-Dial -->
       <div class="flex items-center gap-4">
         <div class="w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center text-white font-black text-2xl shadow-lg flex-shrink-0">
           {{ selected_customer.name|slice:":1"|upper }}
@@ -194,13 +228,16 @@
               <span class="font-medium text-gray-200">S/O: {{ selected_customer.notes }}</span>
               <span>•</span>
             {% endif %}
-            <span class="inline-flex items-center gap-1 font-mono">
-              <i class="bi bi-telephone text-emerald-400"></i> {{ selected_customer.phone|default:"--" }}
-            </span>
-            <span>•</span>
             <span class="inline-flex items-center gap-1">
               <i class="bi bi-geo-alt text-emerald-400"></i> {{ selected_customer.location_address|default:"Gangavati" }}
             </span>
+            {% if selected_customer.phone %}
+              <span>•</span>
+              <a href="tel:{{ selected_customer.phone }}" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-mono text-xs border border-emerald-500/40 no-underline transition-colors" title="Instant Call Farmer">
+                <i class="bi bi-telephone-outbound-fill text-[10px]"></i>
+                <span>📞 Call: {{ selected_customer.phone }}</span>
+              </a>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -226,9 +263,10 @@
           <span>Official PDF</span>
         </a>
 
-        <button type="button" onclick="window.shareContent({ title: 'Farmer Statement - {{ selected_customer.name|escapejs }}', text: 'Sri Basaveshwara & Co: Statement for {{ selected_customer.name|escapejs }}. Official PDF statement attached.', phone: '{{ selected_customer.phone|escapejs }}', url: window.location.origin + '{% url 'machines:farmer_ledger_pdf' customer_id=selected_customer.id %}' })" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-extrabold text-xs shadow-sm transition-all border-0 cursor-pointer min-h-[44px]">
+        <!-- One-Tap WhatsApp Statement & Balance Reminder -->
+        <button type="button" onclick="window.sendWhatsAppReminder({ name: '{{ selected_customer.name|escapejs }}', phone: '{{ selected_customer.phone|escapejs }}', totalBilled: '{{ farmer_total_billed }}', totalPaid: '{{ farmer_adv_paid|add:farmer_rec_paid }}', balanceDue: '{{ farmer_balance_due }}', pdfUrl: window.location.origin + '{% url 'machines:farmer_ledger_pdf' customer_id=selected_customer.id %}' })" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-extrabold text-xs shadow-sm transition-all border-0 cursor-pointer min-h-[44px]" title="Send instant WhatsApp statement breakdown to {{ selected_customer.name }}">
           <i class="bi bi-whatsapp text-sm"></i>
-          <span>Share Statement</span>
+          <span>WhatsApp Statement</span>
         </button>
       </div>
     </div>
@@ -326,10 +364,16 @@
                   ₹{{ s.udhar_amount|floatformat:2 }}
                 </td>
                 <td class="py-3.5 px-3.5 text-right whitespace-nowrap print:hidden">
-                  <a href="{% url 'machines:work_invoice' s.id %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-emerald-700 dark:text-emerald-400 font-bold text-xs border border-gray-200 dark:border-gray-700 no-underline transition-all min-h-[38px]">
-                    <i class="bi bi-receipt"></i>
-                    <span>Invoice</span>
-                  </a>
+                  <div class="inline-flex items-center gap-1.5">
+                    <button type="button" onclick="window.sendWhatsAppReceipt({ voucher: '{{ s.manual_bill_no|default:s.work_code|escapejs }}', date: '{{ s.work_date|date:"d-m-Y" }}', farmerName: '{{ selected_customer.name|escapejs }}', phone: '{{ selected_customer.phone|escapejs }}', machine: '{{ s.machine.name|escapejs }}', acres: '{{ s.acres_worked|default:"" }}', hours: '{{ s.net_working_hours }}', gross: '{{ s.total_amount }}', advance: '{{ s.advance_amount }}', balance: '{{ s.udhar_amount }}', totalUdhar: '{{ farmer_balance_due }}' })" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366]/30 text-emerald-600 dark:text-[#25D366] font-bold text-xs border border-[#25D366]/40 cursor-pointer transition-all min-h-[38px]" title="Send WhatsApp Bill Receipt to {{ selected_customer.name }}">
+                      <i class="bi bi-whatsapp"></i>
+                      <span>WhatsApp</span>
+                    </button>
+                    <a href="{% url 'machines:work_invoice' s.id %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-emerald-700 dark:text-emerald-400 font-bold text-xs border border-gray-200 dark:border-gray-700 no-underline transition-all min-h-[38px]">
+                      <i class="bi bi-receipt"></i>
+                      <span>Invoice</span>
+                    </a>
+                  </div>
                 </td>
               </tr>
             {% endfor %}
@@ -346,9 +390,14 @@
                 <span class="font-mono font-bold text-white text-xs block">{{ s.manual_bill_no|default:s.work_code }}</span>
                 <span class="text-[11px] text-gray-400 font-mono">{{ s.work_date|date:"d M Y" }} &bull; {{ s.machine.name }}</span>
               </div>
-              <a href="{% url 'machines:work_invoice' s.id %}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#182234] text-cyan-400 font-bold text-xs border border-[#28354A] no-underline">
-                <i class="bi bi-receipt"></i> Bill
-              </a>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="window.sendWhatsAppReceipt({ voucher: '{{ s.manual_bill_no|default:s.work_code|escapejs }}', date: '{{ s.work_date|date:"d-m-Y" }}', farmerName: '{{ selected_customer.name|escapejs }}', phone: '{{ selected_customer.phone|escapejs }}', machine: '{{ s.machine.name|escapejs }}', acres: '{{ s.acres_worked|default:"" }}', hours: '{{ s.net_working_hours }}', gross: '{{ s.total_amount }}', advance: '{{ s.advance_amount }}', balance: '{{ s.udhar_amount }}', totalUdhar: '{{ farmer_balance_due }}' })" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#25D366]/20 text-[#25D366] font-bold text-xs border border-[#25D366]/40 cursor-pointer" title="WhatsApp Receipt">
+                  <i class="bi bi-whatsapp"></i>
+                </button>
+                <a href="{% url 'machines:work_invoice' s.id %}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#182234] text-cyan-400 font-bold text-xs border border-[#28354A] no-underline">
+                  <i class="bi bi-receipt"></i> Bill
+                </a>
+              </div>
             </div>
             <div class="grid grid-cols-3 gap-2 text-center pt-2 border-t border-[#28354A] text-xs">
               <div class="bg-[#0B0F17] p-2 rounded-lg">
@@ -410,10 +459,16 @@
               <td class="py-2.5 px-3 text-gray-800 dark:text-gray-200">{{ p.account.account_name }}</td>
               <td class="py-2.5 px-3 text-gray-500 dark:text-gray-400">{{ p.reference_no|default:"--" }}</td>
               <td class="py-2.5 px-3 text-right print:hidden">
-                <a href="{% url 'finance:customer_payment_receipt_pdf' p.id %}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] border border-emerald-300 dark:border-emerald-500/30 no-underline transition-all">
-                  <i class="bi bi-file-earmark-pdf-fill"></i>
-                  <span>Receipt PDF</span>
-                </a>
+                <div class="inline-flex items-center gap-1">
+                  <button type="button" onclick="window.sendWhatsAppPaymentSettlement({ receiptNo: '{{ p.payment_code|escapejs }}', farmerName: '{{ selected_customer.name|escapejs }}', phone: '{{ selected_customer.phone|escapejs }}', amount: '{{ p.amount }}', method: '{{ p.get_payment_method_display|escapejs }}', date: '{{ p.payment_date|date:"d-m-Y" }}', remainingBalance: '{{ farmer_balance_due }}' })" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366]/30 text-emerald-600 dark:text-[#25D366] font-bold text-[11px] border border-[#25D366]/40 cursor-pointer transition-all" title="Send WhatsApp Receipt">
+                    <i class="bi bi-whatsapp"></i>
+                    <span>Receipt</span>
+                  </button>
+                  <a href="{% url 'finance:customer_payment_receipt_pdf' p.id %}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] border border-emerald-300 dark:border-emerald-500/30 no-underline transition-all">
+                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                    <span>PDF</span>
+                  </a>
+                </div>
               </td>
             </tr>
           {% endfor %}
@@ -429,10 +484,13 @@
             <span class="font-bold text-white text-xs block">{{ p.payment_code }}</span>
             <span class="text-[10px] text-gray-400">{{ p.payment_date|date:"d M Y" }} &bull; {{ p.get_payment_method_display }}</span>
           </div>
-          <div class="text-right">
+          <div class="text-right flex items-center gap-2">
             <span class="text-sm font-bold text-emerald-400 block">+₹{{ p.amount|floatformat:2 }}</span>
+            <button type="button" onclick="window.sendWhatsAppPaymentSettlement({ receiptNo: '{{ p.payment_code|escapejs }}', farmerName: '{{ selected_customer.name|escapejs }}', phone: '{{ selected_customer.phone|escapejs }}', amount: '{{ p.amount }}', method: '{{ p.get_payment_method_display|escapejs }}', date: '{{ p.payment_date|date:"d-m-Y" }}', remainingBalance: '{{ farmer_balance_due }}' })" class="p-1.5 rounded-lg bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/40 cursor-pointer" title="WhatsApp Receipt">
+              <i class="bi bi-whatsapp text-xs"></i>
+            </button>
             <a href="{% url 'finance:customer_payment_receipt_pdf' p.id %}" target="_blank" class="text-[10px] text-cyan-400 no-underline inline-flex items-center gap-1">
-              <i class="bi bi-file-earmark-pdf"></i> Receipt PDF
+              <i class="bi bi-file-earmark-pdf"></i> PDF
             </a>
           </div>
         </div>
@@ -561,16 +619,36 @@ document.addEventListener('DOMContentLoaded', function() {
   const cards = document.querySelectorAll('.farmer-card');
 
   if (searchInput) {
+    const clearBtn = document.getElementById('farmerSearchClearBtn');
+    const counterBadge = document.getElementById('searchCounterBadge');
+
     searchInput.addEventListener('input', function() {
       const q = this.value.toLowerCase().trim();
+      let matchedCount = 0;
+
+      if (clearBtn) {
+        if (q) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+
       cards.forEach(card => {
         const text = card.getAttribute('data-search') || '';
         if (!q || text.includes(q)) {
           card.classList.remove('hidden');
+          matchedCount++;
         } else {
           card.classList.add('hidden');
         }
       });
+
+      if (counterBadge) {
+        if (q) {
+          counterBadge.textContent = `${matchedCount} found`;
+          counterBadge.classList.remove('hidden');
+        } else {
+          counterBadge.classList.add('hidden');
+        }
+      }
     });
   }
 

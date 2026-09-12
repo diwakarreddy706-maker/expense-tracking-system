@@ -6,28 +6,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
   <title>{% block title %}{{ title|default:"Sri Basaveshwara Harvesting & Co." }}{% endblock %}</title>
 
-  <!-- Instant Theme Initializer (Prevents Theme Flash) -->
+  <!-- Instant Theme Initializer (Prevents Theme Flash: Dark / Light / Sunlight) -->
   <script>
     (function() {
-      const savedTheme = localStorage.getItem('agribos_theme');
-      if (savedTheme === 'light') {
-        document.documentElement.classList.remove('dark');
+      const savedTheme = localStorage.getItem('sbh_theme') || localStorage.getItem('agribos_theme') || 'dark';
+      const root = document.documentElement;
+      root.classList.remove('dark', 'light', 'sunlight');
+      root.removeAttribute('data-theme');
+      if (savedTheme === 'sunlight') {
+        root.classList.add('sunlight');
+        root.setAttribute('data-theme', 'sunlight');
+      } else if (savedTheme === 'light') {
+        root.classList.add('light');
+        root.setAttribute('data-theme', 'light');
       } else {
-        document.documentElement.classList.add('dark');
+        root.classList.add('dark');
+        root.setAttribute('data-theme', 'dark');
       }
     })();
-
-    window.toggleTheme = function() {
-      const isDark = document.documentElement.classList.contains('dark');
-      if (isDark) {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('agribos_theme', 'light');
-      } else {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('agribos_theme', 'dark');
-      }
-      window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: isDark ? 'light' : 'dark' } }));
-    };
   </script>
 
   <!-- PWA & Mobile Meta Tags -->
@@ -56,10 +52,11 @@
   <link rel="stylesheet" href="{% static 'css/custom.css' %}">
   <link rel="stylesheet" href="{% static 'css/print.css' %}" media="print">
 
-  <!-- Core HTMX & Alpine.js Vendors -->
+  <!-- Core HTMX, Alpine.js Vendors & Mobile Field Helpers -->
   <script defer src="{% static 'vendor/alpine.min.js' %}"></script>
   <script src="{% static 'vendor/htmx.min.js' %}"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+  <script src="{% static 'js/field-helpers.js' %}"></script>
 
   {% block extra_head %}{% endblock %}
 </head>

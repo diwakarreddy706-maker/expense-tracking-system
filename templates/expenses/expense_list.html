@@ -28,6 +28,27 @@
   </div>
 </div>
 
+<!-- Horizontal Swipeable Category Pill Filter (Mobile & Tablet) -->
+<div class="flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none pb-2 mb-4 -mx-1 px-1">
+  <a
+    href="{% url 'expenses:list' %}{% if query %}?q={{ query }}{% endif %}"
+    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold no-underline transition-all active:scale-95 min-h-[40px] {% if not cat_id %}bg-emerald-600 text-white shadow-sm shadow-emerald-900/30 border border-emerald-500{% else %}bg-[#131A26] hover:bg-[#182234] text-gray-300 border border-[#28354A]{% endif %}"
+  >
+    <i class="bi bi-grid-fill text-[11px]"></i>
+    <span>All</span>
+  </a>
+
+  {% for cat in categories %}
+    <a
+      href="{% url 'expenses:list' %}?category={{ cat.id }}{% if query %}&q={{ query }}{% endif %}{% if acc_id %}&account={{ acc_id }}{% endif %}{% if method %}&method={{ method }}{% endif %}"
+      class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold no-underline transition-all active:scale-95 min-h-[40px] {% if cat_id == cat.id|stringformat:'i' %}bg-emerald-600 text-white shadow-sm shadow-emerald-900/30 border border-emerald-500{% else %}bg-[#131A26] hover:bg-[#182234] text-gray-300 border border-[#28354A]{% endif %}"
+    >
+      <span class="w-2 h-2 rounded-full" style="background-color: {{ cat.color_hex|default:'#10B981' }};"></span>
+      <span>{{ cat.name }}</span>
+    </a>
+  {% endfor %}
+</div>
+
 <!-- Multi-Parameter Search & Filter Bar -->
 <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
   <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 items-center">

@@ -34,75 +34,65 @@
 </div>
 
 <!-- ========================================================================= -->
-<!-- 0. MOBILE FIELD QUICK SHORTCUTS GRID (<md)                                -->
+<!-- 0. MOBILE DAILY CLOSING STATUS RIBBON (<md)                               -->
 <!-- ========================================================================= -->
-<div class="grid grid-cols-4 gap-2 mb-5 md:hidden">
-  <!-- 1. Quick Expense -->
-  <button
-    type="button"
-    @click="quickExpenseOpen = true"
-    class="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#131A26] border border-[#28354A] active:scale-95 text-center transition-all focus:outline-none min-h-[64px]"
-  >
-    <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-1">
-      <i class="bi bi-receipt text-sm"></i>
-    </div>
-    <span class="text-[10px] font-bold text-white tracking-tight leading-tight">+ Expense</span>
-  </button>
-
-  <!-- 2. + Work -->
-  <a
-    href="{% url 'machines:work_create' %}"
-    class="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#131A26] border border-[#28354A] active:scale-95 text-center transition-all no-underline focus:outline-none min-h-[64px]"
-  >
-    <div class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-1">
-      <i class="bi bi-clock-history text-sm"></i>
-    </div>
-    <span class="text-[10px] font-bold text-white tracking-tight leading-tight">+ Work</span>
-  </a>
-
-  <!-- 3. + Fuel -->
-  <a
-    href="{% url 'fuel:create' %}"
-    class="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#131A26] border border-[#28354A] active:scale-95 text-center transition-all no-underline focus:outline-none min-h-[64px]"
-  >
-    <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-1">
-      <i class="bi bi-fuel-pump-fill text-sm"></i>
-    </div>
-    <span class="text-[10px] font-bold text-white tracking-tight leading-tight">+ Fuel</span>
-  </a>
-
-  <!-- 4. Farmer Ledger -->
-  <a
-    href="{% url 'machines:farmer_ledger' %}"
-    class="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#131A26] border border-[#28354A] active:scale-95 text-center transition-all no-underline focus:outline-none min-h-[64px]"
-  >
-    <div class="w-8 h-8 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 mb-1">
-      <i class="bi bi-book-fill text-sm"></i>
-    </div>
-    <span class="text-[10px] font-bold text-white tracking-tight leading-tight">Ledger</span>
-  </a>
+<div class="block md:hidden mb-4">
+  {% if kpis.is_day_closed %}
+    {% if kpis.closing_status == 'BALANCED' %}
+      <div class="flex items-center justify-between p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs shadow-sm">
+        <div class="flex items-center gap-2 font-bold">
+          <i class="bi bi-shield-fill-check text-base"></i>
+          <span>Day Closed &amp; Balanced</span>
+        </div>
+        <span class="text-[10px] font-mono opacity-80 font-semibold">{{ kpis.today|date:"d M" }}</span>
+      </div>
+    {% elif kpis.closing_status == 'SURPLUS' %}
+      <div class="flex items-center justify-between p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs shadow-sm">
+        <div class="flex items-center gap-2 font-bold">
+          <i class="bi bi-exclamation-triangle-fill text-base"></i>
+          <span>Closed with Surplus (+₹{{ kpis.closing_difference }})</span>
+        </div>
+        <span class="text-[10px] font-mono opacity-80 font-semibold">{{ kpis.today|date:"d M" }}</span>
+      </div>
+    {% else %}
+      <div class="flex items-center justify-between p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs shadow-sm">
+        <div class="flex items-center gap-2 font-bold">
+          <i class="bi bi-exclamation-octagon-fill text-base"></i>
+          <span>Closed with Deficit (-₹{{ kpis.closing_difference|cut:"-" }})</span>
+        </div>
+        <span class="text-[10px] font-mono opacity-80 font-semibold">{{ kpis.today|date:"d M" }}</span>
+      </div>
+    {% endif %}
+  {% else %}
+    <a href="{% url 'finance:daily_closing' %}" class="flex items-center justify-between p-3 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-bold no-underline shadow-sm transition-all active:scale-[0.98]">
+      <div class="flex items-center gap-2">
+        <i class="bi bi-hourglass-split text-base animate-pulse"></i>
+        <span>Daily Closing Pending</span>
+      </div>
+      <span class="inline-flex items-center gap-1 text-[11px] font-extrabold bg-amber-500 text-black px-2.5 py-1 rounded-lg">
+        Reconcile <i class="bi bi-arrow-right"></i>
+      </span>
+    </a>
+  {% endif %}
 </div>
 
-
 <!-- ========================================================================= -->
 <!-- 1. TODAY'S MONEY: AUTHORITATIVE LIQUID CASH & BANK POSITION               -->
 <!-- ========================================================================= -->
-<!-- ========================================================================= -->
-<!-- 1. TODAY'S MONEY: AUTHORITATIVE LIQUID CASH & BANK POSITION               -->
-<!-- ========================================================================= -->
-<div class="glass-card p-5 sm:p-6 mb-6 shadow-sm">
-  <div class="flex flex-wrap items-center justify-between border-b border-[#28354A] pb-4 mb-5 gap-3">
+<div class="glass-card p-4 sm:p-6 mb-6 shadow-sm">
+  <div class="flex flex-wrap items-center justify-between border-b border-[#28354A] pb-3 sm:pb-4 mb-4 sm:mb-5 gap-3">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-        <i class="bi bi-wallet2 text-lg"></i>
+      <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+        <i class="bi bi-wallet2 text-base sm:text-lg"></i>
       </div>
       <div>
-        <h3 class="text-sm font-bold text-white tracking-tight m-0">Today's Financial Summary &amp; Central Ledger Flow</h3>
-        <p class="text-[11px] text-gray-400 m-0">Live Authoritative Ledger Equation ({{ kpis.today|date:"d M Y" }})</p>
+        <h3 class="text-xs sm:text-sm font-bold text-white tracking-tight m-0">Today's Financial Summary &amp; Ledger Flow</h3>
+        <p class="text-[10px] sm:text-[11px] text-gray-400 m-0">Live Authoritative Equation ({{ kpis.today|date:"d M Y" }})</p>
       </div>
     </div>
 
-    <div>
+    <!-- Desktop Closing Badge -->
+    <div class="hidden md:block">
       {% if kpis.is_day_closed %}
         {% if kpis.closing_status == 'BALANCED' %}
           <span class="status-pill status-pill-active">
@@ -125,8 +115,39 @@
     </div>
   </div>
 
-  <!-- Visual Equation Strip: Opening (+) Received (-) Spent (=) Expected Closing -->
-  <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-center items-center mb-5">
+  <!-- Mobile Compact 2x2 Summary Matrix (<md viewports & <420px) -->
+  <div class="grid grid-cols-2 gap-2.5 mb-4 md:hidden">
+    <!-- 1. Total Income / Received -->
+    <div class="p-3 rounded-xl bg-[#0B0F17]/90 border border-emerald-500/30">
+      <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider block">Total Inflow</span>
+      <div class="text-sm font-black text-emerald-400 num-tabular tabular-nums mt-0.5 truncate">+₹{{ kpis.money_received_today }}</div>
+      <span class="text-[9px] text-gray-500 block">Received Today</span>
+    </div>
+
+    <!-- 2. Total Expense / Spent -->
+    <div class="p-3 rounded-xl bg-[#0B0F17]/90 border border-rose-500/30">
+      <span class="text-[9px] font-bold text-rose-400 uppercase tracking-wider block">Total Outflow</span>
+      <div class="text-sm font-black text-rose-400 num-tabular tabular-nums mt-0.5 truncate">-₹{{ kpis.money_spent_today }}</div>
+      <span class="text-[9px] text-gray-500 block">Spent Today</span>
+    </div>
+
+    <!-- 3. Receivables / Udhar -->
+    <div class="p-3 rounded-xl bg-[#0B0F17]/90 border border-amber-500/30">
+      <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider block">Receivables</span>
+      <div class="text-sm font-black text-amber-400 num-tabular tabular-nums mt-0.5 truncate">₹{{ kpis.receivables_to_receive }}</div>
+      <span class="text-[9px] text-gray-500 block">Pending Invoices</span>
+    </div>
+
+    <!-- 4. Savings / Net Liquid Balance -->
+    <div class="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/40">
+      <span class="text-[9px] font-bold text-cyan-300 uppercase tracking-wider block">Net Liquid</span>
+      <div class="text-sm font-black text-cyan-400 num-tabular tabular-nums mt-0.5 truncate">₹{{ kpis.total_current_liquid }}</div>
+      <span class="text-[9px] text-cyan-500 block">Cash + Bank + UPI</span>
+    </div>
+  </div>
+
+  <!-- Desktop Visual Equation Strip: Opening (+) Received (-) Spent (=) Expected Closing (>=md viewports) -->
+  <div class="hidden md:grid md:grid-cols-5 gap-3 text-center items-center mb-5">
     <!-- 1. Opening -->
     <div class="p-3.5 rounded-xl bg-[#0B0F17]/80 border border-[#28354A]">
       <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block">1. Opening Liquid</span>

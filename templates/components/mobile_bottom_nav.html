@@ -1,18 +1,17 @@
 {% load static i18n %}
 {% comment %}
-  Mobile Bottom Navigation Bar
-  Optimized for 320px–1023px viewports. Fixed to bottom with safe-area support.
-  Minimum 48px touch targets, active state indication, and accessible ARIA attributes.
+Mobile Bottom Navigation Bar Optimized for 320px–1023px viewports.
+5-Tab Navigation: Home | Operations | Center FAB | Ledger | Menu
+Fixed to bottom with safe-area support. Minimum 48px touch targets, active state indication.
 {% endcomment %}
 
 <nav
   class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[#111827]/95 backdrop-blur-md border-t border-[#28354A] transition-transform duration-200 print:hidden"
-  style="padding-bottom: env(safe-area-inset-bottom, 0px);"
+  style="padding-bottom: env(safe-area-inset-bottom, 0px)"
   aria-label="Mobile Bottom Navigation"
 >
   <div class="grid grid-cols-5 h-16 max-w-md mx-auto items-center px-1">
-    
-    <!-- 1. Dashboard -->
+    <!-- 1. Home / Dashboard -->
     <a
       href="{% url 'dashboard:index' %}"
       class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none {% if request.resolver_match.app_name == 'dashboard' or request.path == '/' %}text-emerald-400 font-semibold{% else %}text-gray-400 hover:text-gray-200{% endif %}"
@@ -22,25 +21,29 @@
       <div class="relative flex items-center justify-center">
         <i class="bi bi-grid-1x2-fill text-lg"></i>
         {% if request.resolver_match.app_name == 'dashboard' or request.path == '/' %}
-          <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
         {% endif %}
       </div>
       <span class="text-[10px] mt-0.5 tracking-tight truncate">{% trans "Home" %}</span>
     </a>
 
-    <!-- 2. + Fuel -->
+    <!-- 2. Operations / Work -->
     <a
-      href="{% url 'fuel:create' %}"
-      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none {% if request.resolver_match.app_name == 'fuel' and request.resolver_match.url_name == 'create' %}text-amber-400 font-semibold{% else %}text-gray-400 hover:text-amber-300{% endif %}"
-      title="Log Machinery Refueling"
+      href="{% url 'machines:work_list' %}"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none {% if request.resolver_match.app_name == 'machines' and 'work' in request.resolver_match.url_name %}text-cyan-400 font-semibold{% else %}text-gray-400 hover:text-cyan-300{% endif %}"
+      {% if request.resolver_match.app_name == 'machines' and 'work' in request.resolver_match.url_name %}aria-current="page"{% endif %}
+      title="Machinery Work Logs"
     >
       <div class="relative flex items-center justify-center">
-        <i class="bi bi-fuel-pump-fill text-lg text-amber-400"></i>
+        <i class="bi bi-clock-history text-lg"></i>
+        {% if request.resolver_match.app_name == 'machines' and 'work' in request.resolver_match.url_name %}
+        <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+        {% endif %}
       </div>
-      <span class="text-[10px] mt-0.5 tracking-tight truncate">{% trans "+ Fuel" %}</span>
+      <span class="text-[10px] mt-0.5 tracking-tight truncate">{% trans "Operations" %}</span>
     </a>
 
-    <!-- 3. Quick Action Hub (Center Action Button) -->
+    <!-- 3. Center Quick Action FAB -->
     <div class="flex items-center justify-center relative -top-2">
       <button
         type="button"
@@ -53,16 +56,20 @@
       </button>
     </div>
 
-    <!-- 4. + Work Log -->
+    <!-- 4. Farmer Ledger -->
     <a
-      href="{% url 'machines:work_create' %}"
-      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none active:scale-95 {% if request.resolver_match.app_name == 'machines' and request.resolver_match.url_name == 'work_create' %}text-cyan-400 font-semibold{% else %}text-gray-400 hover:text-cyan-300{% endif %}"
-      title="Record Machine Work Hours / Acres"
+      href="{% url 'machines:farmer_ledger' %}"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none {% if request.resolver_match.app_name == 'machines' and 'farmer_ledger' in request.resolver_match.url_name %}text-emerald-400 font-semibold{% else %}text-gray-400 hover:text-emerald-300{% endif %}"
+      {% if request.resolver_match.app_name == 'machines' and 'farmer_ledger' in request.resolver_match.url_name %}aria-current="page"{% endif %}
+      title="Farmer Credit Ledger"
     >
       <div class="relative flex items-center justify-center">
-        <i class="bi bi-clock-history text-lg text-cyan-400"></i>
+        <i class="bi bi-journal-text text-lg"></i>
+        {% if request.resolver_match.app_name == 'machines' and 'farmer_ledger' in request.resolver_match.url_name %}
+        <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        {% endif %}
       </div>
-      <span class="text-[10px] mt-0.5 tracking-tight truncate">{% trans "+ Work" %}</span>
+      <span class="text-[10px] mt-0.5 tracking-tight truncate">{% trans "Ledger" %}</span>
     </a>
 
     <!-- 5. Menu Drawer -->
@@ -78,6 +85,5 @@
       </div>
       <span class="text-[10px] mt-0.5 tracking-tight truncate">{% trans "Menu" %}</span>
     </button>
-
   </div>
 </nav>

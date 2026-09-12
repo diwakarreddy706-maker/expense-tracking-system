@@ -134,9 +134,38 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-gray-300 mb-1.5" for="quickExpDesc">
-              Description / Notes
-            </label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-semibold text-gray-300 m-0" for="quickExpDesc">
+                Description / Notes
+              </label>
+              <button
+                type="button"
+                onclick="window.toggleVoiceDictation(this, 'quickExpDesc', 'kn-IN')"
+                class="mic-btn flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 rounded-lg transition-all cursor-pointer"
+                title="Speak Description"
+                aria-pressed="false"
+              >
+                <i class="bi bi-mic-fill"></i>
+                <span>🎤 Speak</span>
+              </button>
+            </div>
+
+            <!-- Quick Chips -->
+            <div class="flex items-center gap-1.5 flex-wrap mb-2">
+              <button type="button" onclick="window.insertQuickChip('Grease & Oil', 'quickExpDesc')" class="quick-chip">
+                🔧 Grease &amp; Oil
+              </button>
+              <button type="button" onclick="window.insertQuickChip('Blade Sharpening', 'quickExpDesc')" class="quick-chip quick-chip-amber">
+                🔪 Blade Sharp
+              </button>
+              <button type="button" onclick="window.insertQuickChip('Operator Tiffin', 'quickExpDesc')" class="quick-chip quick-chip-cyan">
+                🍱 Tiffin / Food
+              </button>
+              <button type="button" onclick="window.insertQuickChip('Welding Work', 'quickExpDesc')" class="quick-chip quick-chip-rose">
+                👨‍🔧 Welding
+              </button>
+            </div>
+
             <input
               type="text"
               name="description"

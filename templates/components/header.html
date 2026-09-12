@@ -83,16 +83,18 @@
       {% endif %}
     </form>
 
-    <!-- Theme Toggle (Dark / Light) -->
+    <!-- Theme Toggle (Dark / Light / Outdoor Sunlight Mode) -->
     <button
       type="button"
-      onclick="window.toggleTheme()"
-      class="p-2 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-300 hover:text-amber-400 text-xs transition-colors focus:outline-none active:scale-95 flex items-center justify-center"
-      title="Toggle Light / Dark Mode"
-      aria-label="Toggle Theme"
+      onclick="window.cycleTheme()"
+      class="p-2 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-300 hover:text-amber-400 text-xs transition-colors focus:outline-none active:scale-95 flex items-center gap-1.5 justify-center min-w-[40px] min-h-[40px]"
+      title="Switch Theme: Dark 🌙 &bull; Light 🌤️ &bull; Sunlight ☀️"
+      aria-label="Toggle Theme (Dark, Light, Outdoor Sunlight)"
     >
-      <i class="bi bi-sun-fill text-amber-500 theme-icon-sun text-sm"></i>
-      <i class="bi bi-moon-stars-fill text-indigo-300 theme-icon-moon text-sm"></i>
+      <i class="bi bi-brightness-high-fill text-amber-400 text-sm hidden dark:inline"></i>
+      <i class="bi bi-sun-fill text-amber-500 text-sm hidden sunlight:inline"></i>
+      <i class="bi bi-moon-stars-fill text-indigo-400 text-sm hidden light:inline"></i>
+      <span class="sr-only" id="currentThemeLabel">Theme Switcher</span>
     </button>
 
     <!-- Mobile Quick Search Trigger (<md) -->

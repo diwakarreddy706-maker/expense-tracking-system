@@ -135,7 +135,16 @@
             <td class="py-3.5 px-4 text-gray-400 font-mono text-[11px] whitespace-nowrap">{{ b.work_date|date:"d M Y" }}</td>
             <td class="py-3.5 px-4">
               <div class="font-semibold text-white">{{ b.customer.name }}</div>
-              <div class="text-[10px] text-gray-400">{{ b.customer.phone|default:"" }}</div>
+              {% if b.customer.phone %}
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <a href="tel:{{ b.customer.phone }}" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-mono no-underline inline-flex items-center gap-0.5" title="Call {{ b.customer.name }}">
+                    <i class="bi bi-telephone-fill text-[9px]"></i> {{ b.customer.phone }}
+                  </a>
+                  <button type="button" onclick="window.sendWhatsAppMessage('{{ b.customer.phone|escapejs }}', '🌾 Sri Basaveshwara Harvesting & Co.: Hello {{ b.customer.name|escapejs }}, regarding your booking #{{ b.booking_code }}.')" class="text-[10px] text-[#25D366] hover:text-[#20bd5a] bg-transparent border-0 p-0 cursor-pointer" title="WhatsApp {{ b.customer.name }}">
+                    <i class="bi bi-whatsapp"></i>
+                  </button>
+                </div>
+              {% endif %}
             </td>
             <td class="py-3.5 px-4">
               {% if b.machine %}

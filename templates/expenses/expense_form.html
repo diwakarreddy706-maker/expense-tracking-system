@@ -132,7 +132,45 @@
       </div>
 
       <div>
-        <label class="block text-xs font-semibold text-gray-300 mb-1.5">Description / Expense Notes</label>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="block text-xs font-semibold text-gray-300 m-0" for="id_description">Description / Expense Notes</label>
+          <button
+            type="button"
+            onclick="window.toggleVoiceDictation(this, 'id_description', 'kn-IN')"
+            class="mic-btn flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 px-2 py-1 rounded-lg transition-all cursor-pointer"
+            title="Speak Description (Voice dictation)"
+            aria-pressed="false"
+          >
+            <i class="bi bi-mic-fill"></i>
+            <span>🎤 Speak Notes</span>
+          </button>
+        </div>
+
+        <!-- Quick Expense Chips -->
+        <div class="flex items-center gap-1.5 flex-wrap mb-2">
+          <button type="button" onclick="window.insertQuickChip('Grease & Lubricant Oil (ಗ್ರೀಸ್ & ಆಯಿಲ್)', 'id_description')" class="quick-chip">
+            🔧 Grease &amp; Oil
+          </button>
+          <button type="button" onclick="window.insertQuickChip('Cutter Blade Sharpening (ಬ್ಲೇಡ್ ಶಾರ್ಪ್)', 'id_description')" class="quick-chip quick-chip-amber">
+            🔪 Blade Sharpening
+          </button>
+          <button type="button" onclick="window.insertQuickChip('Thresher Belt Replacement (ಬೆಲ್ಟ್ ಬದಲಾವಣೆ)', 'id_description')" class="quick-chip quick-chip-amber">
+            ⚙️ Belt Replacement
+          </button>
+          <button type="button" onclick="window.insertQuickChip('Operator Tiffin / Meals (ಟಿಫಿನ್ / ಊಟ)', 'id_description')" class="quick-chip quick-chip-cyan">
+            🍱 Operator Tiffin
+          </button>
+          <button type="button" onclick="window.insertQuickChip('Hydraulic Pipe Welding & Repair', 'id_description')" class="quick-chip quick-chip-rose">
+            👨‍🔧 Welding Repair
+          </button>
+          <button type="button" onclick="window.insertQuickChip('Spare Bolts, Bearings & Pins', 'id_description')" class="quick-chip">
+            🔩 Spare Hardware
+          </button>
+          <button type="button" onclick="window.insertQuickChip('Toll & Road Transport Permit', 'id_description')" class="quick-chip quick-chip-cyan">
+            🛣️ Toll / Transport
+          </button>
+        </div>
+
         {{ form.description }}
       </div>
 

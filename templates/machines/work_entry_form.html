@@ -273,9 +273,47 @@
           </div>
         </div>
 
-        <!-- Remarks / Notes -->
+        <!-- Remarks / Notes with Quick Field Chips & Voice-to-Text -->
         <div>
-          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Operational Remarks / Field Notes</label>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-semibold text-gray-300 m-0" for="id_notes">Operational Remarks / Field Notes</label>
+            <button
+              type="button"
+              onclick="window.toggleVoiceDictation(this, 'id_notes', 'kn-IN')"
+              class="mic-btn flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 px-2 py-1 rounded-lg transition-all cursor-pointer"
+              title="Speak Remarks (Kannada / English voice dictation)"
+              aria-pressed="false"
+            >
+              <i class="bi bi-mic-fill"></i>
+              <span>🎤 Speak Notes</span>
+            </button>
+          </div>
+          
+          <!-- Quick Remark Chips for Rapid Touch Input -->
+          <div class="flex items-center gap-1.5 flex-wrap mb-2">
+            <button type="button" onclick="window.insertQuickChip('Paddy Harvest (ಭತ್ತ ಕೊಯ್ಲು)', 'id_notes')" class="quick-chip">
+              🌾 Paddy Harvest
+            </button>
+            <button type="button" onclick="window.insertQuickChip('BPT 5204 (ಸೋನಾ ಮಸೂರಿ)', 'id_notes')" class="quick-chip">
+              🌾 BPT 5204
+            </button>
+            <button type="button" onclick="window.insertQuickChip('Muddy Field / Wet Soil (ಕೆಸರು ಗದ್ದೆ)', 'id_notes')" class="quick-chip quick-chip-amber">
+              🚜 Muddy Field
+            </button>
+            <button type="button" onclick="window.insertQuickChip('Lodged Crop (ಹಾಲಾದ ಬೆಳೆ)', 'id_notes')" class="quick-chip quick-chip-amber">
+              🌾 Lodged Crop
+            </button>
+            <button type="button" onclick="window.insertQuickChip('Night Shift Work (ರಾತ್ರಿ ಪಾಳಿ)', 'id_notes')" class="quick-chip quick-chip-cyan">
+              🌙 Night Shift
+            </button>
+            <button type="button" onclick="window.insertQuickChip('Operator Food / Bata Advance', 'id_notes')" class="quick-chip quick-chip-rose">
+              🍱 Food Bata
+            </button>
+            <button type="button" onclick="window.insertQuickChip('Full Payment Promised Tomorrow', 'id_notes')" class="quick-chip">
+              💵 Balance Tomorrow
+            </button>
+          </div>
+
           {{ form.notes }}
         </div>
       </div>
