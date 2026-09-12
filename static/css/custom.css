@@ -1201,6 +1201,385 @@ html:not(.dark) #ios-install-guide-modal .guide-card {
 }
 
 /* ==============================================================================
+   4. LIGHT THEME SYSTEM (PREMIUM TOUCH-FIRST LIGHT MODE)
+   ============================================================================== */
+
+html[data-theme="light"],
+html.light {
+  --theme-bg-base:        #F8FAFC !important;
+  --theme-surface-card:   #FFFFFF !important;
+  --theme-surface-hover:  #F1F5F9 !important;
+  --theme-border:         #E2E8F0 !important;
+
+  --theme-primary:        #059669 !important;
+  --theme-primary-glow:   rgba(5, 150, 105, 0.15) !important;
+  --theme-warning:        #D97706 !important;
+  --theme-danger:         #DC2626 !important;
+  --theme-info:           #0284C7 !important;
+  --theme-purple:         #7C3AED !important;
+
+  --theme-text-main:      #0F172A !important;
+  --theme-text-muted:     #475569 !important;
+  --theme-text-dim:       #94A3B8 !important;
+  color-scheme: light !important;
+}
+
+html[data-theme="light"] body,
+html.light body {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+/* Light Theme Cards & Containers */
+html[data-theme="light"] .glass-card,
+html.light .glass-card,
+html[data-theme="light"] .card,
+html.light .card {
+  background-color: #FFFFFF !important;
+  background-image: none !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
+  color: #0F172A !important;
+}
+
+/* Override Dark Backgrounds in Light Mode */
+html[data-theme="light"] .bg-\[\#0B0F17\],
+html.light .bg-\[\#0B0F17\],
+html[data-theme="light"] .bg-\[\#0B0F17\]\/90,
+html.light .bg-\[\#0B0F17\]\/90,
+html[data-theme="light"] .bg-\[\#0B0F17\]\/80,
+html.light .bg-\[\#0B0F17\]\/80,
+html[data-theme="light"] .bg-\[\#0B0F17\]\/60,
+html.light .bg-\[\#0B0F17\]\/60,
+html[data-theme="light"] .bg-\[\#0D1117\],
+html.light .bg-\[\#0D1117\],
+html[data-theme="light"] .bg-\[\#0F172A\],
+html.light .bg-\[\#0F172A\],
+html[data-theme="light"] .bg-\[\#111827\],
+html.light .bg-\[\#111827\],
+html[data-theme="light"] .bg-\[\#111827\]\/80,
+html.light .bg-\[\#111827\]\/80,
+html[data-theme="light"] .bg-\[\#111827\]\/40,
+html.light .bg-\[\#111827\]\/40,
+html[data-theme="light"] .bg-\[\#131A26\],
+html.light .bg-\[\#131A26\],
+html[data-theme="light"] .bg-\[\#161F2E\],
+html.light .bg-\[\#161F2E\],
+html[data-theme="light"] .bg-\[\#162030\],
+html.light .bg-\[\#162030\],
+html[data-theme="light"] .bg-\[\#182234\],
+html.light .bg-\[\#182234\],
+html[data-theme="light"] .bg-\[\#1E293B\],
+html.light .bg-\[\#1E293B\],
+html[data-theme="light"] .dark\:bg-\[\#0B0F17\],
+html.light .dark\:bg-\[\#0B0F17\],
+html[data-theme="light"] .dark\:bg-\[\#0F172A\],
+html.light .dark\:bg-\[\#0F172A\],
+html[data-theme="light"] .dark\:bg-\[\#111827\],
+html.light .dark\:bg-\[\#111827\],
+html[data-theme="light"] .dark\:bg-\[\#131A26\],
+html.light .dark\:bg-\[\#131A26\],
+html[data-theme="light"] .dark\:bg-\[\#182234\],
+html.light .dark\:bg-\[\#182234\],
+html[data-theme="light"] .dark\:bg-gray-800,
+html.light .dark\:bg-gray-800,
+html[data-theme="light"] .dark\:bg-gray-900,
+html.light .dark\:bg-gray-900,
+html[data-theme="light"] .bg-gray-900,
+html.light .bg-gray-900,
+html[data-theme="light"] .bg-gray-800,
+html.light .bg-gray-800,
+html[data-theme="light"] .bg-slate-900,
+html.light .bg-slate-900 {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #E2E8F0 !important;
+}
+
+/* Subtle Nested Backgrounds (Sub-cards, tables, meter reading widgets) */
+html[data-theme="light"] .bg-gradient-to-br,
+html.light .bg-gradient-to-br,
+html[data-theme="light"] .from-\[\#162030\],
+html.light .from-\[\#162030\],
+html[data-theme="light"] .to-\[\#0E1522\],
+html.light .to-\[\#0E1522\],
+html[data-theme="light"] .bg-\[\#0B0F17\],
+html.light .bg-\[\#0B0F17\],
+html[data-theme="light"] .bg-\[\#0B0F17\]\/80,
+html.light .bg-\[\#0B0F17\]\/80,
+html[data-theme="light"] .bg-\[\#0B0F17\]\/60,
+html.light .bg-\[\#0B0F17\]\/60 {
+  background-image: none !important;
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+}
+
+/* Header & Sidebar in Light Mode */
+html[data-theme="light"] header,
+html.light header {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: #E2E8F0 !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+html[data-theme="light"] .app-sidebar,
+html.light .app-sidebar,
+html[data-theme="light"] aside,
+html.light aside {
+  background-color: #FFFFFF !important;
+  border-right-color: #E2E8F0 !important;
+}
+
+html[data-theme="light"] footer,
+html.light footer {
+  background-color: #F8FAFC !important;
+  border-top-color: #E2E8F0 !important;
+  color: #64748B !important;
+}
+
+/* Text Colors in Light Mode */
+html[data-theme="light"] .text-white,
+html.light .text-white,
+html[data-theme="light"] .dark\:text-white,
+html.light .dark\:text-white {
+  color: #0F172A !important;
+}
+
+html[data-theme="light"] .text-gray-200,
+html.light .text-gray-200,
+html[data-theme="light"] .text-gray-300,
+html.light .text-gray-300,
+html[data-theme="light"] .dark\:text-gray-200,
+html.light .dark\:text-gray-200,
+html[data-theme="light"] .dark\:text-gray-300,
+html.light .dark\:text-gray-300 {
+  color: #1E293B !important;
+}
+
+html[data-theme="light"] .text-gray-400,
+html.light .text-gray-400,
+html[data-theme="light"] .text-gray-500,
+html.light .text-gray-500,
+html[data-theme="light"] .dark\:text-gray-400,
+html.light .dark\:text-gray-400 {
+  color: #64748B !important;
+}
+
+/* High Contrast Accent Colors in Light Mode */
+html[data-theme="light"] .text-cyan-400,
+html.light .text-cyan-400,
+html[data-theme="light"] .text-cyan-300,
+html.light .text-cyan-300 {
+  color: #0284C7 !important;
+}
+
+html[data-theme="light"] .text-emerald-400,
+html.light .text-emerald-400,
+html[data-theme="light"] .text-emerald-300,
+html.light .text-emerald-300 {
+  color: #059669 !important;
+}
+
+html[data-theme="light"] .text-amber-400,
+html.light .text-amber-400,
+html[data-theme="light"] .text-amber-300,
+html.light .text-amber-300 {
+  color: #D97706 !important;
+}
+
+html[data-theme="light"] .text-rose-400,
+html.light .text-rose-400,
+html[data-theme="light"] .text-rose-300,
+html.light .text-rose-300 {
+  color: #DC2626 !important;
+}
+
+html[data-theme="light"] .text-purple-400,
+html.light .text-purple-400,
+html[data-theme="light"] .text-purple-300,
+html.light .text-purple-300 {
+  color: #7C3AED !important;
+}
+
+/* Borders in Light Mode */
+html[data-theme="light"] .border-\[\#28354A\],
+html.light .border-\[\#28354A\],
+html[data-theme="light"] .border-\[\#1E293B\],
+html.light .border-\[\#1E293B\],
+html[data-theme="light"] .border-\[\#30363D\],
+html.light .border-\[\#30363D\],
+html[data-theme="light"] .dark\:border-\[\#28354A\],
+html.light .dark\:border-\[\#28354A\],
+html[data-theme="light"] .dark\:border-gray-700,
+html.light .dark\:border-gray-700,
+html[data-theme="light"] .border-gray-800,
+html.light .border-gray-800,
+html[data-theme="light"] .border-gray-700,
+html.light .border-gray-700,
+html[data-theme="light"] .divide-\[\#1E293B\] > :not([hidden]) ~ :not([hidden]),
+html.light .divide-\[\#1E293B\] > :not([hidden]) ~ :not([hidden]),
+html[data-theme="light"] .divide-\[\#28354A\] > :not([hidden]) ~ :not([hidden]),
+html.light .divide-\[\#28354A\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #E2E8F0 !important;
+}
+
+/* Form Controls in Light Mode */
+html[data-theme="light"] input,
+html.light input,
+html[data-theme="light"] select,
+html.light select,
+html[data-theme="light"] textarea,
+html.light textarea,
+html[data-theme="light"] .form-control,
+html.light .form-control,
+html[data-theme="light"] .form-select,
+html.light .form-select {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+html[data-theme="light"] input::placeholder,
+html.light input::placeholder,
+html[data-theme="light"] textarea::placeholder,
+html.light textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Buttons in Light Mode */
+html[data-theme="light"] .bg-emerald-600,
+html.light .bg-emerald-600,
+html[data-theme="light"] .bg-emerald-500,
+html.light .bg-emerald-500 {
+  background-color: #059669 !important;
+  color: #FFFFFF !important;
+}
+
+html[data-theme="light"] .bg-emerald-600:hover,
+html.light .bg-emerald-600:hover,
+html[data-theme="light"] .bg-emerald-500:hover,
+html.light .bg-emerald-500:hover {
+  background-color: #047857 !important;
+  color: #FFFFFF !important;
+}
+
+html[data-theme="light"] .bg-emerald-600 *,
+html.light .bg-emerald-600 *,
+html[data-theme="light"] .bg-emerald-500 *,
+html.light .bg-emerald-500 * {
+  color: #FFFFFF !important;
+}
+
+/* Secondary & Action Buttons in Light Mode */
+html[data-theme="light"] .bg-\[\#182234\],
+html.light .bg-\[\#182234\],
+html[data-theme="light"] .bg-gray-800,
+html.light .bg-gray-800 {
+  background-color: #F1F5F9 !important;
+  color: #1E293B !important;
+  border-color: #CBD5E1 !important;
+}
+
+html[data-theme="light"] .bg-\[\#182234\]:hover,
+html.light .bg-\[\#182234\]:hover,
+html[data-theme="light"] .bg-gray-800:hover,
+html.light .bg-gray-800:hover {
+  background-color: #E2E8F0 !important;
+  color: #0F172A !important;
+}
+
+/* Dropdown menus & Modals in Light Mode */
+html[data-theme="light"] .bg-\[\#161F2E\],
+html.light .bg-\[\#161F2E\],
+html[data-theme="light"] .modal-content,
+html.light .modal-content {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Tables & Table Rows in Light Mode */
+html[data-theme="light"] tr.hover\:bg-gray-800\/40:hover,
+html.light tr.hover\:bg-gray-800\/40:hover,
+html[data-theme="light"] table tbody tr:hover,
+html.light table tbody tr:hover {
+  background-color: #F8FAFC !important;
+}
+
+/* Status Pills & Badges in Light Mode */
+html[data-theme="light"] .bg-emerald-500\/10,
+html.light .bg-emerald-500\/10 {
+  background-color: #ECFDF5 !important;
+  color: #059669 !important;
+  border-color: #A7F3D0 !important;
+}
+
+html[data-theme="light"] .bg-amber-500\/10,
+html.light .bg-amber-500\/10,
+html[data-theme="light"] .bg-amber-500\/15,
+html.light .bg-amber-500\/15 {
+  background-color: #FFFBEB !important;
+  color: #D97706 !important;
+  border-color: #FDE68A !important;
+}
+
+html[data-theme="light"] .bg-rose-500\/10,
+html.light .bg-rose-500\/10 {
+  background-color: #FEF2F2 !important;
+  color: #DC2626 !important;
+  border-color: #FECACA !important;
+}
+
+html[data-theme="light"] .bg-cyan-500\/10,
+html.light .bg-cyan-500\/10 {
+  background-color: #F0F9FF !important;
+  color: #0284C7 !important;
+  border-color: #BAE6FD !important;
+}
+
+html[data-theme="light"] .bg-purple-500\/10,
+html.light .bg-purple-500\/10 {
+  background-color: #F5F3FF !important;
+  color: #7C3AED !important;
+  border-color: #DDD6FE !important;
+}
+
+/* Mobile Bottom Navigation in Light Mode */
+html[data-theme="light"] #mobileBottomNav,
+html.light #mobileBottomNav,
+html[data-theme="light"] .mobile-bottom-nav,
+html.light .mobile-bottom-nav {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-top-color: #E2E8F0 !important;
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Theme Toggle Button Icon Rules */
+.theme-icon-dark,
+.theme-icon-light,
+.theme-icon-sunlight {
+  display: none !important;
+}
+
+html.dark .theme-icon-dark,
+html[data-theme="dark"] .theme-icon-dark,
+html:not([data-theme]) .theme-icon-dark {
+  display: inline-block !important;
+}
+
+html.light .theme-icon-light,
+html[data-theme="light"] .theme-icon-light {
+  display: inline-block !important;
+}
+
+html.sunlight .theme-icon-sunlight,
+html[data-theme="sunlight"] .theme-icon-sunlight {
+  display: inline-block !important;
+}
+
+/* ==============================================================================
    5. HIGH-CONTRAST OUTDOOR SUNLIGHT MODE (FIELD OPERATION THEME)
    Designed for direct sunlight outdoor legibility on combine harvesters.
    ============================================================================== */
