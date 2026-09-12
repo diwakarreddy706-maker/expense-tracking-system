@@ -106,7 +106,7 @@ def seed_master_defaults():
         try:
             if not ExpenseCategory.objects.filter(code=code).exists() and not ExpenseCategory.objects.filter(name=name).exists():
                 ExpenseCategory.objects.create(
-                    code=code, name=name, color_hex=color, icon=icon, is_active=True
+                    code=code, name=name, color_hex=color, icon_class=icon, is_active=True
                 )
                 created_cats += 1
         except Exception:
