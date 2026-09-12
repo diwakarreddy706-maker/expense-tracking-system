@@ -93,15 +93,38 @@ class ReportService:
             if end_date:
                 exp_qs = exp_qs.filter(expense_date__lte=end_date)
 
-            fuel_cost = exp_qs.filter(
-                Q(category__name__icontains='fuel') | Q(category__name__icontains='diesel') | Q(category__code__icontains='fuel')
-            ).aggregate(s=Sum('amount'))['s'] or zero
+            fuel_q = (
+                Q(fuel_entry__isnull=False) |
+                Q(category__name__icontains='fuel') |
+                Q(category__name__icontains='diesel') |
+                Q(category__name__icontains='lubricant') |
+                Q(category__name__icontains='petrol') |
+                Q(category__name__icontains='oil') |
+                Q(category__code__icontains='fuel') |
+                Q(category__code__icontains='diesel') |
+                Q(category__parent__name__icontains='fuel') |
+                Q(category__parent__name__icontains='diesel')
+            )
 
-            maint_cost = exp_qs.exclude(
-                Q(category__name__icontains='fuel') | Q(category__name__icontains='diesel') | Q(category__code__icontains='fuel')
-            ).aggregate(s=Sum('amount'))['s'] or zero
+            maintenance_q = (
+                Q(maintenance_job__isnull=False) |
+                Q(category__name__icontains='repair') |
+                Q(category__name__icontains='maintenance') |
+                Q(category__name__icontains='spare') |
+                Q(category__name__icontains='service') |
+                Q(category__name__icontains='part') |
+                Q(category__code__icontains='maint') |
+                Q(category__code__icontains='repair') |
+                Q(category__code__icontains='spare') |
+                Q(category__parent__name__icontains='maint') |
+                Q(category__parent__name__icontains='repair')
+            )
 
-            total_cost = (fuel_cost + maint_cost).quantize(Decimal('0.01'))
+            fuel_cost = exp_qs.filter(fuel_q).aggregate(s=Sum('amount'))['s'] or zero
+            maint_cost = exp_qs.filter(maintenance_q).exclude(fuel_q).aggregate(s=Sum('amount'))['s'] or zero
+            other_cost = exp_qs.exclude(fuel_q).exclude(maintenance_q).aggregate(s=Sum('amount'))['s'] or zero
+
+            total_cost = (fuel_cost + maint_cost + other_cost).quantize(Decimal('0.01'))
             meter = m.current_meter_reading or zero
             cost_per_unit = (total_cost / meter).quantize(Decimal('0.01')) if meter > zero else zero
 

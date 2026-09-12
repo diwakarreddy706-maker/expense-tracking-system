@@ -213,6 +213,48 @@
     {% endwith %}
   </nav>
 
+  <!-- Sidebar Quick Preferences (Language & Theme Toggle - Optimized for Mobile Drawer & Desktop) -->
+  <div class="px-3 py-2 border-t border-[#1E293B] bg-[#0B0F17]/60 flex items-center justify-between gap-2">
+    <!-- Language Toggle Form -->
+    <form action="{% url 'set_language' %}" method="post" class="m-0 flex-1">
+      {% csrf_token %}
+      <input name="next" type="hidden" value="{{ request.get_full_path }}">
+      {% get_current_language as CURRENT_LANGUAGE %}
+      {% if CURRENT_LANGUAGE == 'kn' %}
+        <input name="language" type="hidden" value="en">
+        <button
+          type="submit"
+          class="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-emerald-400 hover:text-white text-xs font-semibold transition-colors active:scale-95"
+          title="Switch to English"
+        >
+          <i class="bi bi-translate text-xs"></i>
+          <span>English</span>
+        </button>
+      {% else %}
+        <input name="language" type="hidden" value="kn">
+        <button
+          type="submit"
+          class="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-amber-400 hover:text-white text-xs font-semibold transition-colors active:scale-95"
+          title="ಕನ್ನಡಕ್ಕೆ ಬದಲಾಯಿಸಿ"
+        >
+          <i class="bi bi-translate text-xs"></i>
+          <span>ಕನ್ನಡ</span>
+        </button>
+      {% endif %}
+    </form>
+
+    <!-- Theme Switcher Button -->
+    <button
+      type="button"
+      onclick="window.cycleTheme()"
+      class="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-300 hover:text-amber-400 text-xs font-semibold transition-colors active:scale-95"
+      title="Cycle Theme: Dark 🌙 &bull; Light 🌤️ &bull; Sunlight ☀️"
+    >
+      <i class="bi bi-sun-fill text-amber-400 text-xs"></i>
+      <span>Theme</span>
+    </button>
+  </div>
+
   <!-- Sidebar Footer / User Profile & Logout -->
   <div class="p-3 border-t border-[#28354A] bg-[#0B0F17]/80">
     <div class="flex items-center justify-between px-2 py-1.5 rounded-lg bg-[#182234]">

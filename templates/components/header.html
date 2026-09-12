@@ -53,8 +53,8 @@
 
   <!-- Right Side: Controls, Search, Theme, Language & Profile -->
   <div class="flex items-center gap-2 sm:gap-3">
-    <!-- Language Switcher (EN | ಕನ್ನಡ) -->
-    <form action="{% url 'set_language' %}" method="post" class="m-0 flex items-center">
+    <!-- Language Switcher (EN | ಕನ್ನಡ) - Hidden on <sm, accessible via drawer -->
+    <form action="{% url 'set_language' %}" method="post" class="m-0 hidden sm:flex items-center">
       {% csrf_token %}
       <input name="next" type="hidden" value="{{ request.get_full_path }}">
       {% get_current_language as CURRENT_LANGUAGE %}
@@ -83,11 +83,11 @@
       {% endif %}
     </form>
 
-    <!-- Theme Toggle (Dark / Light / Outdoor Sunlight Mode) -->
+    <!-- Theme Toggle (Dark / Light / Outdoor Sunlight Mode) - Hidden on <sm, accessible via drawer -->
     <button
       type="button"
       onclick="window.cycleTheme()"
-      class="p-2 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-300 hover:text-amber-400 text-xs transition-colors focus:outline-none active:scale-95 flex items-center gap-1.5 justify-center min-w-[40px] min-h-[40px]"
+      class="hidden sm:flex p-2 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-300 hover:text-amber-400 text-xs transition-colors focus:outline-none active:scale-95 items-center gap-1.5 justify-center min-w-[40px] min-h-[40px]"
       title="Switch Theme: Dark 🌙 &bull; Light 🌤️ &bull; Sunlight ☀️"
       aria-label="Toggle Theme (Dark, Light, Outdoor Sunlight)"
     >

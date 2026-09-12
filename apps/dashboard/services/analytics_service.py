@@ -122,13 +122,35 @@ class DashboardAnalyticsService:
             is_reversed=False
         )
 
-        fuel_cost_month = month_expenses.filter(
-            Q(category__name__icontains='fuel') | Q(category__name__icontains='diesel') | Q(category__code__icontains='fuel')
-        ).aggregate(s=Sum('amount'))['s'] or zero
+        fuel_q = (
+            Q(fuel_entry__isnull=False) |
+            Q(category__name__icontains='fuel') |
+            Q(category__name__icontains='diesel') |
+            Q(category__name__icontains='lubricant') |
+            Q(category__name__icontains='petrol') |
+            Q(category__name__icontains='oil') |
+            Q(category__code__icontains='fuel') |
+            Q(category__code__icontains='diesel') |
+            Q(category__parent__name__icontains='fuel') |
+            Q(category__parent__name__icontains='diesel')
+        )
 
-        maintenance_cost_month = month_expenses.filter(
-            Q(category__name__icontains='repair') | Q(category__name__icontains='maintenance') | Q(category__name__icontains='spare')
-        ).aggregate(s=Sum('amount'))['s'] or zero
+        maintenance_q = (
+            Q(maintenance_job__isnull=False) |
+            Q(category__name__icontains='repair') |
+            Q(category__name__icontains='maintenance') |
+            Q(category__name__icontains='spare') |
+            Q(category__name__icontains='service') |
+            Q(category__name__icontains='part') |
+            Q(category__code__icontains='maint') |
+            Q(category__code__icontains='repair') |
+            Q(category__code__icontains='spare') |
+            Q(category__parent__name__icontains='maint') |
+            Q(category__parent__name__icontains='repair')
+        )
+
+        fuel_cost_month = month_expenses.filter(fuel_q).aggregate(s=Sum('amount'))['s'] or zero
+        maintenance_cost_month = month_expenses.filter(maintenance_q).exclude(fuel_q).aggregate(s=Sum('amount'))['s'] or zero
 
         # Employee wage payouts disbursed this month
         emp_payouts_month = emp_p.filter(
@@ -162,15 +184,11 @@ class DashboardAnalyticsService:
                 is_deleted=False,
                 is_reversed=False
             )
-            m_fuel = m_expenses.filter(
-                Q(category__name__icontains='fuel') | Q(category__name__icontains='diesel') | Q(category__code__icontains='fuel')
-            ).aggregate(s=Sum('amount'))['s'] or zero
+            m_fuel = m_expenses.filter(fuel_q).aggregate(s=Sum('amount'))['s'] or zero
+            m_maint = m_expenses.filter(maintenance_q).exclude(fuel_q).aggregate(s=Sum('amount'))['s'] or zero
+            m_other = m_expenses.exclude(fuel_q).exclude(maintenance_q).aggregate(s=Sum('amount'))['s'] or zero
 
-            m_maint = m_expenses.exclude(
-                Q(category__name__icontains='fuel') | Q(category__name__icontains='diesel') | Q(category__code__icontains='fuel')
-            ).aggregate(s=Sum('amount'))['s'] or zero
-
-            m_total_cost = (m_fuel + m_maint).quantize(Decimal('0.01'))
+            m_total_cost = (m_fuel + m_maint + m_other).quantize(Decimal('0.01'))
             meter = m.current_meter_reading or zero
 
             cost_per_unit = (m_total_cost / meter).quantize(Decimal('0.01')) if meter > zero else zero

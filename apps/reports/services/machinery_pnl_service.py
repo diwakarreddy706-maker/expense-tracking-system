@@ -94,29 +94,47 @@ class MachineryPnLPDFService:
             if end_date:
                 exp_qs = exp_qs.filter(expense_date__lte=end_date)
 
-            fuel_cost = exp_qs.filter(
-                Q(category__name__icontains='fuel') | Q(category__name__icontains='diesel') | Q(category__code__icontains='fuel')
-            ).aggregate(s=Sum('amount'))['s'] or zero
+            fuel_q = (
+                Q(fuel_entry__isnull=False) |
+                Q(category__name__icontains='fuel') |
+                Q(category__name__icontains='diesel') |
+                Q(category__name__icontains='lubricant') |
+                Q(category__name__icontains='petrol') |
+                Q(category__name__icontains='oil') |
+                Q(category__code__icontains='fuel') |
+                Q(category__code__icontains='diesel') |
+                Q(category__parent__name__icontains='fuel') |
+                Q(category__parent__name__icontains='diesel')
+            )
 
-            maint_cost = exp_qs.filter(
-                Q(category__name__icontains='repair') | Q(category__name__icontains='service') | Q(category__name__icontains='maintenance') | Q(category__code__icontains='maint')
-            ).aggregate(s=Sum('amount'))['s'] or zero
+            maint_q = (
+                Q(maintenance_job__isnull=False) |
+                Q(category__name__icontains='repair') |
+                Q(category__name__icontains='service') |
+                Q(category__name__icontains='maintenance') |
+                Q(category__code__icontains='maint')
+            )
 
-            parts_cost = exp_qs.filter(
-                Q(category__name__icontains='spare') | Q(category__name__icontains='part') | Q(category__code__icontains='spare')
-            ).aggregate(s=Sum('amount'))['s'] or zero
+            parts_q = (
+                Q(category__name__icontains='spare') |
+                Q(category__name__icontains='part') |
+                Q(category__code__icontains='spare')
+            )
 
-            wage_cost = exp_qs.filter(
-                Q(category__name__icontains='wage') | Q(category__name__icontains='salary') | Q(category__name__icontains='operator') | Q(category__code__icontains='wage')
-            ).aggregate(s=Sum('amount'))['s'] or zero
+            wage_q = (
+                Q(category__name__icontains='wage') |
+                Q(category__name__icontains='salary') |
+                Q(category__name__icontains='operator') |
+                Q(category__code__icontains='wage')
+            )
+
+            fuel_cost = exp_qs.filter(fuel_q).aggregate(s=Sum('amount'))['s'] or zero
+            maint_cost = exp_qs.filter(maint_q).exclude(fuel_q).aggregate(s=Sum('amount'))['s'] or zero
+            parts_cost = exp_qs.filter(parts_q).exclude(fuel_q).exclude(maint_q).aggregate(s=Sum('amount'))['s'] or zero
+            wage_cost = exp_qs.filter(wage_q).exclude(fuel_q).exclude(maint_q).exclude(parts_q).aggregate(s=Sum('amount'))['s'] or zero
 
             # Other costs attributed to this machine
-            other_cost = exp_qs.exclude(
-                Q(category__name__icontains='fuel') | Q(category__name__icontains='diesel') | Q(category__code__icontains='fuel') |
-                Q(category__name__icontains='repair') | Q(category__name__icontains='service') | Q(category__name__icontains='maintenance') | Q(category__code__icontains='maint') |
-                Q(category__name__icontains='spare') | Q(category__name__icontains='part') | Q(category__code__icontains='spare') |
-                Q(category__name__icontains='wage') | Q(category__name__icontains='salary') | Q(category__name__icontains='operator') | Q(category__code__icontains='wage')
-            ).aggregate(s=Sum('amount'))['s'] or zero
+            other_cost = exp_qs.exclude(fuel_q).exclude(maint_q).exclude(parts_q).exclude(wage_q).aggregate(s=Sum('amount'))['s'] or zero
 
             total_maint_parts = (maint_cost + parts_cost).quantize(Decimal('0.01'))
             total_cost = (fuel_cost + total_maint_parts + wage_cost + other_cost).quantize(Decimal('0.01'))
