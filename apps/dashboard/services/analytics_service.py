@@ -164,6 +164,17 @@ class DashboardAnalyticsService:
         if other_expenses_month < zero:
             other_expenses_month = zero
 
+        if total_expenses_month > zero:
+            fuel_pct = int(round((fuel_cost_month / total_expenses_month) * 100))
+            maintenance_pct = int(round((maintenance_cost_month / total_expenses_month) * 100))
+            emp_pct = int(round((emp_payouts_month / total_expenses_month) * 100))
+            other_pct = max(0, 100 - fuel_pct - maintenance_pct - emp_pct) if (fuel_pct + maintenance_pct + emp_pct) <= 100 else 0
+        else:
+            fuel_pct = 0
+            maintenance_pct = 0
+            emp_pct = 0
+            other_pct = 0
+
         # ====================================================================
         # 4. BUDGET CONTROL SUMMARY (Current Month)
         # ====================================================================
@@ -246,6 +257,10 @@ class DashboardAnalyticsService:
             'emp_payouts_month': emp_payouts_month.quantize(Decimal('0.01')),
             'other_expenses_month': other_expenses_month.quantize(Decimal('0.01')),
             'total_expenses_month': total_expenses_month.quantize(Decimal('0.01')),
+            'fuel_pct': fuel_pct,
+            'maintenance_pct': maintenance_pct,
+            'emp_pct': emp_pct,
+            'other_pct': other_pct,
             # 4. Budget Controls (Month)
             'budget_summary': budget_summary,
             # 5. Machine Cost Intelligence
