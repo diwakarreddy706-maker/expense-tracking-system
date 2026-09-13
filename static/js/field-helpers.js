@@ -50,7 +50,7 @@
   };
 
   /**
-   * Generates and sends a polite and respectful Statement / Balance update to the farmer (no URLs).
+   * Generates and sends a polite, clear, and respectful Statement / Balance update to the farmer (no URLs).
    * @param {Object} data - { name, phone, totalBilled, totalPaid, balanceDue }
    */
   window.sendWhatsAppReminder = function (data) {
@@ -59,27 +59,26 @@
     const hasFullBreakdown = data.totalBilled && Number(data.totalBilled) > 0;
 
     let message =
-      `🌾 *SRI BASAVESHWARA HARVESTING & CO.* 🌾\n` +
-      `_Agricultural Machinery & Harvesting Services_\n\n` +
+      `🌾 *SRI BASAVESHWARA HARVESTING & CO.* 🌾\n\n` +
       `Namaste *${name}* Ji, 🙏\n\n` +
-      `Hope you are doing well. This is a gentle update regarding your harvesting service account:\n\n`;
+      `Here is a summary of your harvesting account:\n\n`;
 
     if (hasFullBreakdown) {
       const totalBilled = Number(data.totalBilled || 0).toLocaleString('en-IN');
       const totalPaid = Number(data.totalPaid || 0).toLocaleString('en-IN');
       message +=
-        `📋 Total Work Billed: *₹${totalBilled}*\n` +
-        `✅ Amount Received: *₹${totalPaid}*\n` +
-        `🔴 *Pending Balance: ₹${balanceDue}*\n\n`;
+        `• Total Work Billed: *₹${totalBilled}*\n` +
+        `• Amount Received: *₹${totalPaid}*\n` +
+        `• *Pending Balance: ₹${balanceDue}*\n\n`;
     } else {
       message +=
-        `🔴 *Current Pending Balance: ₹${balanceDue}*\n\n`;
+        `• *Pending Balance: ₹${balanceDue}*\n\n`;
     }
 
     message +=
-      `Whenever convenient for you, kindly arrange the settlement.\n\n` +
-      `_If you have already made the payment, kindly ignore this message._\n\n` +
-      `Thank you very much for your valued partnership and support! 🙏🌾`;
+      `Kindly arrange the settlement at your convenience.\n\n` +
+      `_If already paid, please ignore this message._\n\n` +
+      `Thank you for your valuable support! 🙏🌾`;
 
     window.sendWhatsAppMessage(data.phone, message);
   };
@@ -110,18 +109,15 @@
     const message =
       `🌾 *SRI BASAVESHWARA HARVESTING & CO.* 🌾\n` +
       `*HARVESTING BILL RECEIPT*\n\n` +
-      `📄 Bill / Voucher: *#${voucher}*\n` +
-      `📅 Date: ${date}\n` +
-      `👨‍🌾 Farmer: *${farmerName}*\n` +
-      `🚜 Machine: ${machine}\n` +
-      `⏱️ Work Done: ${metrics}\n` +
-      `--------------------------------\n` +
-      `💰 Gross Bill: *₹${gross}*\n` +
-      `💵 Advance Collected: *₹${advance}*\n` +
-      `⚠️ Added to Udhar: *₹${balanceAdded}*\n` +
-      `📊 Total Account Udhar: *₹${totalUdhar}*\n` +
-      `--------------------------------\n` +
-      `Thank you for trusting Sri Basaveshwara & Co.! 🙏`;
+      `Namaste *${farmerName}* Ji, 🙏\n\n` +
+      `• Bill No: *#${voucher}* (${date})\n` +
+      `• Machine: ${machine}\n` +
+      `• Work Done: ${metrics}\n` +
+      `• Gross Bill: *₹${gross}*\n` +
+      `• Advance Paid: *₹${advance}*\n` +
+      `• *Added to Udhar: ₹${balanceAdded}*\n` +
+      `• *Total Pending Udhar: ₹${totalUdhar}*\n\n` +
+      `Thank you for choosing our harvesting services! 🙏🌾`;
 
     window.sendWhatsAppMessage(bill.phone, message);
   };
@@ -141,14 +137,13 @@
     const message =
       `🌾 *SRI BASAVESHWARA HARVESTING & CO.* 🌾\n` +
       `*PAYMENT COLLECTION RECEIPT*\n\n` +
-      `Dear *${farmerName}*,\n` +
+      `Namaste *${farmerName}* Ji, 🙏\n\n` +
       `We have received your payment with thanks:\n\n` +
-      `💵 Received Amount: *₹${amount}*\n` +
-      `💳 Mode: ${method}\n` +
-      `📅 Date: ${date}\n` +
-      `🧾 Ref / Receipt: #${receiptNo}\n` +
-      `🔴 *Remaining Balance (Udhar): ₹${remaining}*\n\n` +
-      `Thank you for settling your account! 🙏`;
+      `• Received Amount: *₹${amount}*\n` +
+      `• Payment Mode: ${method}\n` +
+      `• Receipt No: #${receiptNo} (${date})\n` +
+      `• *Remaining Udhar: ₹${remaining}*\n\n` +
+      `Thank you for settling your account! 🙏🌾`;
 
     window.sendWhatsAppMessage(payment.phone, message);
   };
