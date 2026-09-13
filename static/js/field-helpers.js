@@ -50,7 +50,7 @@
   };
 
   /**
-   * Generates and sends a polite, clear, and respectful Statement / Balance update to the farmer (no URLs).
+   * Generates and sends a polite, clear, and respectful Statement / Balance update to the farmer (no URLs, no emojis).
    * @param {Object} data - { name, phone, totalBilled, totalPaid, balanceDue }
    */
   window.sendWhatsAppReminder = function (data) {
@@ -59,32 +59,32 @@
     const hasFullBreakdown = data.totalBilled && Number(data.totalBilled) > 0;
 
     let message =
-      `🌾 *SRI BASAVESHWARA HARVESTING & CO.* 🌾\n\n` +
-      `Namaste *${name}* Ji, 🙏\n\n` +
+      `*SRI BASAVESHWARA HARVESTING & CO.*\n\n` +
+      `Namaste ${name} Ji,\n\n` +
       `Here is a summary of your harvesting account:\n\n`;
 
     if (hasFullBreakdown) {
       const totalBilled = Number(data.totalBilled || 0).toLocaleString('en-IN');
       const totalPaid = Number(data.totalPaid || 0).toLocaleString('en-IN');
       message +=
-        `• Total Work Billed: *₹${totalBilled}*\n` +
-        `• Amount Received: *₹${totalPaid}*\n` +
-        `• *Pending Balance: ₹${balanceDue}*\n\n`;
+        `- Total Work Billed: *Rs. ${totalBilled}*\n` +
+        `- Amount Received: *Rs. ${totalPaid}*\n` +
+        `- *Pending Balance: Rs. ${balanceDue}*\n\n`;
     } else {
       message +=
-        `• *Pending Balance: ₹${balanceDue}*\n\n`;
+        `- *Pending Balance: Rs. ${balanceDue}*\n\n`;
     }
 
     message +=
       `Kindly arrange the settlement at your convenience.\n\n` +
       `_If already paid, please ignore this message._\n\n` +
-      `Thank you for your valuable support! 🙏🌾`;
+      `Thank you for your valuable support.`;
 
     window.sendWhatsAppMessage(data.phone, message);
   };
 
   /**
-   * Generates and sends a single Machine Work / Harvesting Bill Receipt to the farmer.
+   * Generates and sends a single Machine Work / Harvesting Bill Receipt to the farmer (no emojis).
    * @param {Object} bill - { voucher, date, farmerName, phone, machine, acres, hours, gross, advance, balance, totalUdhar }
    */
   window.sendWhatsAppReceipt = function (bill) {
@@ -107,23 +107,23 @@
     if (!metrics) metrics = 'Harvesting Work';
 
     const message =
-      `🌾 *SRI BASAVESHWARA HARVESTING & CO.* 🌾\n` +
+      `*SRI BASAVESHWARA HARVESTING & CO.*\n` +
       `*HARVESTING BILL RECEIPT*\n\n` +
-      `Namaste *${farmerName}* Ji, 🙏\n\n` +
-      `• Bill No: *#${voucher}* (${date})\n` +
-      `• Machine: ${machine}\n` +
-      `• Work Done: ${metrics}\n` +
-      `• Gross Bill: *₹${gross}*\n` +
-      `• Advance Paid: *₹${advance}*\n` +
-      `• *Added to Udhar: ₹${balanceAdded}*\n` +
-      `• *Total Pending Udhar: ₹${totalUdhar}*\n\n` +
-      `Thank you for choosing our harvesting services! 🙏🌾`;
+      `Namaste ${farmerName} Ji,\n\n` +
+      `- Bill No: *#${voucher}* (${date})\n` +
+      `- Machine: ${machine}\n` +
+      `- Work Done: ${metrics}\n` +
+      `- Gross Bill: *Rs. ${gross}*\n` +
+      `- Advance Paid: *Rs. ${advance}*\n` +
+      `- *Added to Udhar: Rs. ${balanceAdded}*\n` +
+      `- *Total Pending Udhar: Rs. ${totalUdhar}*\n\n` +
+      `Thank you for choosing our harvesting services.`;
 
     window.sendWhatsAppMessage(bill.phone, message);
   };
 
   /**
-   * Generates and sends a direct Payment Settlement Confirmation to the farmer.
+   * Generates and sends a direct Payment Settlement Confirmation to the farmer (no emojis).
    * @param {Object} payment - { receiptNo, farmerName, phone, amount, method, date, remainingBalance }
    */
   window.sendWhatsAppPaymentSettlement = function (payment) {
@@ -135,15 +135,15 @@
     const remaining = Number(payment.remainingBalance || 0).toLocaleString('en-IN');
 
     const message =
-      `🌾 *SRI BASAVESHWARA HARVESTING & CO.* 🌾\n` +
+      `*SRI BASAVESHWARA HARVESTING & CO.*\n` +
       `*PAYMENT COLLECTION RECEIPT*\n\n` +
-      `Namaste *${farmerName}* Ji, 🙏\n\n` +
+      `Namaste ${farmerName} Ji,\n\n` +
       `We have received your payment with thanks:\n\n` +
-      `• Received Amount: *₹${amount}*\n` +
-      `• Payment Mode: ${method}\n` +
-      `• Receipt No: #${receiptNo} (${date})\n` +
-      `• *Remaining Udhar: ₹${remaining}*\n\n` +
-      `Thank you for settling your account! 🙏🌾`;
+      `- Received Amount: *Rs. ${amount}*\n` +
+      `- Payment Mode: ${method}\n` +
+      `- Receipt No: #${receiptNo} (${date})\n` +
+      `- *Remaining Udhar: Rs. ${remaining}*\n\n` +
+      `Thank you for settling your account.`;
 
     window.sendWhatsAppMessage(payment.phone, message);
   };

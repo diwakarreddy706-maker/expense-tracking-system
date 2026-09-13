@@ -140,7 +140,7 @@
                   <a href="tel:{{ b.customer.phone }}" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-mono no-underline inline-flex items-center gap-0.5" title="Call {{ b.customer.name }}">
                     <i class="bi bi-telephone-fill text-[9px]"></i> {{ b.customer.phone }}
                   </a>
-                  <button type="button" onclick="window.sendWhatsAppMessage('{{ b.customer.phone|escapejs }}', '🌾 Sri Basaveshwara Harvesting & Co.: Hello {{ b.customer.name|escapejs }}, regarding your booking #{{ b.booking_code }}.')" class="text-[10px] text-[#25D366] hover:text-[#20bd5a] bg-transparent border-0 p-0 cursor-pointer" title="WhatsApp {{ b.customer.name }}">
+                  <button type="button" onclick="window.sendWhatsAppMessage('{{ b.customer.phone|escapejs }}', 'Sri Basaveshwara Harvesting & Co.: Hello {{ b.customer.name|escapejs }}, regarding your booking #{{ b.booking_code }}.')" class="text-[10px] text-[#25D366] hover:text-[#20bd5a] bg-transparent border-0 p-0 cursor-pointer" title="WhatsApp {{ b.customer.name }}">
                     <i class="bi bi-whatsapp"></i>
                   </button>
                 </div>

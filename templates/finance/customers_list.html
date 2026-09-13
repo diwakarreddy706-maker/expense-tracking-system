@@ -89,7 +89,7 @@
                     <i class="bi bi-telephone-fill text-[10px]"></i>
                     <span>{{ c.phone }}</span>
                   </a>
-                  <button type="button" onclick="window.sendWhatsAppMessage('{{ c.phone|escapejs }}', '🌾 Sri Basaveshwara Harvesting & Co.: Hello {{ c.name|escapejs }}, this is Sri Basaveshwara Harvesting.')" class="p-1 text-xs text-[#25D366] hover:text-[#20bd5a] bg-transparent border-0 cursor-pointer" title="WhatsApp {{ c.name }}">
+                  <button type="button" onclick="window.sendWhatsAppMessage('{{ c.phone|escapejs }}', 'Sri Basaveshwara Harvesting & Co.: Hello {{ c.name|escapejs }}, this is Sri Basaveshwara Harvesting.')" class="p-1 text-xs text-[#25D366] hover:text-[#20bd5a] bg-transparent border-0 cursor-pointer" title="WhatsApp {{ c.name }}">
                     <i class="bi bi-whatsapp"></i>
                   </button>
                 </div>
