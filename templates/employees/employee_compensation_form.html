@@ -6,7 +6,7 @@
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
     <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">{{ title }}</h2>
-    <p class="text-xs text-gray-400 mt-1 mb-0">Define authoritative wage / salary structure for <strong class="text-white">{{ employee.full_name }}</strong> ({{ employee.employee_code }})</p>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Set pay rate (daily wage, monthly salary, or per-acre commission) for <strong class="text-white">{{ employee.full_name }}</strong> ({{ employee.employee_code }})</p>
   </div>
   <div>
     <a href="{% url 'employees:financial_profile' employee.id %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">

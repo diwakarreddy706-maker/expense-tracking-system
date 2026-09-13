@@ -6,7 +6,7 @@
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
   <div>
     <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Daily Financial Closing &amp; Cash Reconciliation</h2>
-    <p class="text-xs text-gray-400 mt-1 mb-0">Reconcile physical cash counts, bank balances, and digital wallets against authoritative ledger movements</p>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Count physical cash and verify bank balances against today's transactions</p>
   </div>
   <div>
     <span class="px-3 py-1.5 rounded-xl bg-[#131A26] border border-[#28354A] text-cyan-400 text-xs font-semibold inline-flex items-center gap-1.5">
@@ -116,7 +116,7 @@
             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
               <i class="bi bi-calculator text-base"></i>
             </div>
-            <h3 class="text-sm font-bold text-white tracking-tight m-0">Authoritative Ledger Calculation</h3>
+            <h3 class="text-sm font-bold text-white tracking-tight m-0">Calculated System Balance</h3>
           </div>
           <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">{{ closing_date|date:"d M Y" }}</span>
         </div>
@@ -141,7 +141,7 @@
             </div>
           {% endif %}
           <div class="flex justify-between items-center border-t border-[#28354A] pt-3 text-sm">
-            <span class="text-white font-bold">Authoritative Expected Closing:</span>
+            <span class="text-white font-bold">Expected Closing Balance:</span>
             <span class="text-xl font-extrabold text-emerald-400 font-mono">₹{{ reconciliation.expected_closing }}</span>
           </div>
         </div>

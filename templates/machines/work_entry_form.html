@@ -322,7 +322,7 @@
       <div class="hidden lg:flex flex-row items-center justify-between gap-4 pt-4 border-t border-[#28354A]">
         <div class="text-xs text-gray-400 flex items-center gap-1.5">
           <i class="bi bi-shield-check text-emerald-400"></i>
-          <span>Server-side authoritative calculation &amp; ledger sync active.</span>
+          <span>Auto-calculates bill amount and updates farmer credit ledger.</span>
         </div>
         <div class="flex items-center gap-3">
           <a href="{% url 'machines:work_list' %}" class="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline min-h-[44px] inline-flex items-center">
@@ -330,7 +330,7 @@
           </a>
           <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer min-h-[44px]">
             <i class="bi bi-check2-circle text-base"></i>
-            <span>Save Machine Bill to DB</span>
+            <span>Save &amp; Generate Bill</span>
           </button>
         </div>
       </div>

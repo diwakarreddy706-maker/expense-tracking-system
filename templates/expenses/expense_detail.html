@@ -237,7 +237,7 @@
             You are reversing expense <strong class="text-white font-mono">{{ expense.expense_code }}</strong> (<span class="text-rose-400 font-bold font-mono">₹{{ expense.amount }}</span>).
           </p>
           <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 leading-relaxed">
-            <i class="bi bi-info-circle mr-1"></i> Under Single Authoritative Ledger rules, this will post a compensatory <strong>CREDIT REVERSAL</strong> transaction to restore account balance while preserving complete audit history.
+            <i class="bi bi-info-circle mr-1"></i> Canceling this expense will refund the money back to the account balance and record this cancellation in the audit trail.
           </div>
           <div>
             <label class="block text-xs font-semibold text-gray-300 mb-1.5">Reason for Reversal <span class="text-rose-400">* (min 5 characters)</span></label>
