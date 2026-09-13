@@ -122,12 +122,6 @@
       </button>
     </div>
 
-    <!-- Live Financial System Badge -->
-    <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-mono">
-      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-      <span class="hidden md:inline">Double-Entry Safe</span>
-    </div>
-
     <!-- Quick Add Expense Trigger (Desktop/Tablet Only - Mobile uses Bottom FAB) -->
     {% if request.user.is_authenticated %}
       {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.profile.role == 'MANAGER' or request.user.is_superuser %}
