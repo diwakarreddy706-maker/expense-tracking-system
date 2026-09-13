@@ -92,11 +92,45 @@ class DashboardAnalyticsService:
         # ====================================================================
         # 2. OUTSTANDING MONEY STATES (3 Separate Obligation Silos)
         # ====================================================================
-        # Customer Receivables (Money to Receive)
+        # Customer Receivables (Money to Receive) & Aging Analysis
         rcv_data = Receivable.objects.filter(
             is_deleted=False, is_reversed=False
         ).aggregate(t=Sum('total_amount'), r=Sum('received_amount'))
         receivables_to_receive = ((rcv_data['t'] or zero) - (rcv_data['r'] or zero)).quantize(Decimal('0.01'))
+
+        unpaid_receivables = Receivable.objects.filter(
+            is_deleted=False, is_reversed=False
+        ).exclude(status=Receivable.STATUS_PAID)
+
+        rcv_0_15_count = 0
+        rcv_0_15_amount = zero
+        rcv_16_30_count = 0
+        rcv_16_30_amount = zero
+        rcv_30_plus_count = 0
+        rcv_30_plus_amount = zero
+
+        for r in unpaid_receivables:
+            rem = (r.total_amount - r.received_amount).quantize(Decimal('0.01'))
+            if rem <= zero:
+                continue
+            ref_date = r.due_date or r.bill_date or (r.created_at.date() if r.created_at else today)
+            days = (today - ref_date).days if ref_date else 0
+            if days <= 15:
+                rcv_0_15_count += 1
+                rcv_0_15_amount += rem
+            elif days <= 30:
+                rcv_16_30_count += 1
+                rcv_16_30_amount += rem
+            else:
+                rcv_30_plus_count += 1
+                rcv_30_plus_amount += rem
+
+        receivables_aging = {
+            'bucket_0_15': {'count': rcv_0_15_count, 'amount': rcv_0_15_amount.quantize(Decimal('0.01'))},
+            'bucket_16_30': {'count': rcv_16_30_count, 'amount': rcv_16_30_amount.quantize(Decimal('0.01'))},
+            'bucket_30_plus': {'count': rcv_30_plus_count, 'amount': rcv_30_plus_amount.quantize(Decimal('0.01'))},
+            'total_count': rcv_0_15_count + rcv_16_30_count + rcv_30_plus_count,
+        }
 
         # Supplier Payables (Money to Pay)
         pay_data = Payable.objects.filter(
@@ -249,6 +283,7 @@ class DashboardAnalyticsService:
             'total_current_liquid': total_current_liquid,
             # 2. Outstanding Money
             'receivables_to_receive': receivables_to_receive,
+            'receivables_aging': receivables_aging,
             'payables_to_pay': payables_to_pay,
             'employee_wages_due': employee_wages_due,
             # 3. Operational Costs (Month)

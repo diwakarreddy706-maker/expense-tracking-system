@@ -52,25 +52,163 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Layout Wrapper */
-.app-wrapper {
-  display: flex;
-  min-height: 100vh;
-}
-
-/* Sidebar Navigation */
-.app-sidebar {
-  width: var(--sidebar-width);
-  background-color: var(--theme-surface-card);
-  border-right: 1px solid var(--theme-border);
+/* Layout Wrapper & Responsive Spacing */
+.app-wrapper,
+.app-layout-wrapper {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.app-sidebar-container {
   position: fixed;
   top: 0;
   bottom: 0;
   left: 0;
-  z-index: 1000;
-  transition: width 0.25s ease, transform 0.25s ease;
+  z-index: 40;
+  width: 18rem;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-main-layout {
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .app-layout-wrapper {
+    flex-direction: row !important;
+  }
+
+  .app-sidebar-container,
+  aside[aria-label="Main Navigation"],
+  .app-sidebar {
+    position: sticky !important;
+    top: 0 !important;
+    height: 100vh !important;
+    width: 16rem !important;
+    min-width: 16rem !important;
+    max-width: 16rem !important;
+    flex-shrink: 0 !important;
+    transform: none !important;
+    z-index: 30 !important;
+    box-shadow: none !important;
+  }
+
+  .app-main-layout {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    width: calc(100% - 16rem) !important;
+  }
+}
+
+/* Glassmorphism & High-Elevation Surfaces */
+.glass-card {
+  background: linear-gradient(145deg, rgba(19, 28, 46, 0.85) 0%, rgba(13, 19, 32, 0.95) 100%);
+  border: 1px solid rgba(40, 53, 74, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.45);
+}
+
+.glass-card-emerald:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 8px 30px -4px rgba(16, 185, 129, 0.15);
+}
+
+.glass-card-amber:hover {
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 8px 30px -4px rgba(245, 158, 11, 0.15);
+}
+
+.glass-card-rose:hover {
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 8px 30px -4px rgba(239, 68, 68, 0.15);
+}
+
+.card-hover-lift {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* Micro Status Badges */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.status-pill-active {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.status-pill-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.status-pill-danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.status-pill-info {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.status-pill-purple {
+  background: rgba(139, 92, 246, 0.12);
+  color: #A78BFA;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+/* Table Typography & Rows */
+.dashboard-table th {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94A3B8;
+  padding: 0.875rem 1rem;
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.dashboard-table td {
+  padding: 0.875rem 1rem;
+  font-size: 0.8125rem;
+  border-top: 1px solid rgba(30, 41, 59, 0.8);
+}
+
+.dashboard-table tr:hover td {
+  background: rgba(30, 41, 59, 0.35);
 }
 
 .sidebar-header {
@@ -570,6 +708,31 @@ html:not(.dark) [class*="bg-gray-800"] {
   background-color: #F1F5F9 !important;
 }
 
+/* Gradients Removal in Light Mode */
+html:not(.dark) .bg-gradient-to-br,
+html:not(.dark) .bg-gradient-to-r,
+html:not(.dark) .bg-gradient-to-tr,
+html:not(.dark) [class*="from-[#162030]"],
+html:not(.dark) [class*="to-[#0E1522]"],
+html:not(.dark) [class*="from-[#131A26]"] {
+  background-image: none !important;
+}
+
+/* Meter Widget & Machine Metric Containers in Light Mode */
+html:not(.dark) .meter-widget {
+  background-image: none !important;
+  background-color: #F1F5F9 !important;
+  border: 1px solid #CBD5E1 !important;
+}
+html:not(.dark) .meter-widget span {
+  color: #475569 !important;
+}
+html:not(.dark) .meter-widget .text-emerald-400,
+html:not(.dark) .meter-widget .text-emerald-500 {
+  color: #047857 !important;
+  font-weight: 800 !important;
+}
+
 /* Equation Strip inner stat cards inside .glass-card */
 html:not(.dark) .glass-card .p-3\.5 {
   background-color: #F8FAFC !important;
@@ -583,7 +746,7 @@ html:not(.dark) [class*="border-[#30363D]"],
 html:not(.dark) [class*="border-[#374761]"],
 html:not(.dark) .border-gray-800,
 html:not(.dark) .border-gray-700 {
-  border-color: #E2E8F0 !important;
+  border-color: #CBD5E1 !important;
 }
 
 /* High-Contrast Typography */
@@ -614,7 +777,7 @@ html:not(.dark) .text-gray-400 {
 }
 
 html:not(.dark) .text-gray-500 {
-  color: #94A3B8 !important;
+  color: #64748B !important;
 }
 
 /* Quick Action & Stat Badges in Light Mode (High Contrast) */
@@ -628,48 +791,76 @@ html:not(.dark) .text-cyan-400 {
   color: #0E7490 !important; /* Deep ocean cyan */
 }
 
-html:not(.dark) .text-emerald-400 {
+html:not(.dark) .text-emerald-400,
+html:not(.dark) .text-emerald-500 {
   color: #047857 !important; /* Deep emerald */
 }
 
-html:not(.dark) .text-rose-400 {
+html:not(.dark) .text-rose-400,
+html:not(.dark) .text-rose-500 {
   color: #BE123C !important; /* Deep crimson */
 }
 
-html:not(.dark) .text-purple-400 {
+html:not(.dark) .text-purple-400,
+html:not(.dark) .text-purple-500 {
   color: #6D28D9 !important; /* Deep royal violet */
 }
 
 /* Keep Green CTA Buttons white text */
 html:not(.dark) .bg-emerald-600,
-html:not(.dark) .bg-emerald-500 {
+html:not(.dark) .bg-emerald-500,
+html:not(.dark) button.bg-emerald-600,
+html:not(.dark) a.bg-emerald-600 {
+  background-color: #059669 !important;
   color: #FFFFFF !important;
 }
 html:not(.dark) .bg-emerald-600 *,
-html:not(.dark) .bg-emerald-500 * {
+html:not(.dark) .bg-emerald-500 *,
+html:not(.dark) button.bg-emerald-600 *,
+html:not(.dark) a.bg-emerald-600 * {
   color: #FFFFFF !important;
 }
 
-/* Status Badges in Light Mode */
+/* Status Badges & Pills in Light Mode */
 html:not(.dark) [class*="bg-emerald-500/10"],
-html:not(.dark) [class*="bg-emerald-500/20"] {
-  background-color: rgba(16, 185, 129, 0.12) !important;
-  border-color: rgba(16, 185, 129, 0.35) !important;
+html:not(.dark) [class*="bg-emerald-500/20"],
+html:not(.dark) .status-pill-active {
+  background-color: #DCFCE7 !important;
+  border-color: #86EFAC !important;
+  color: #15803D !important;
 }
 html:not(.dark) [class*="bg-amber-500/10"],
-html:not(.dark) [class*="bg-amber-500/20"] {
-  background-color: rgba(245, 158, 11, 0.12) !important;
-  border-color: rgba(245, 158, 11, 0.35) !important;
+html:not(.dark) [class*="bg-amber-500/20"],
+html:not(.dark) .status-pill-pending {
+  background-color: #FEF3C7 !important;
+  border-color: #FCD34D !important;
+  color: #B45309 !important;
 }
 html:not(.dark) [class*="bg-rose-500/10"],
-html:not(.dark) [class*="bg-rose-500/20"] {
-  background-color: rgba(239, 68, 68, 0.12) !important;
-  border-color: rgba(239, 68, 68, 0.35) !important;
+html:not(.dark) [class*="bg-rose-500/20"],
+html:not(.dark) .status-pill-danger {
+  background-color: #FFE4E6 !important;
+  border-color: #FDA4AF !important;
+  color: #BE123C !important;
 }
 html:not(.dark) [class*="bg-cyan-500/10"],
-html:not(.dark) [class*="bg-cyan-500/20"] {
-  background-color: rgba(6, 182, 212, 0.12) !important;
-  border-color: rgba(6, 182, 212, 0.35) !important;
+html:not(.dark) [class*="bg-cyan-500/20"],
+html:not(.dark) .status-pill-info {
+  background-color: #CFFAFE !important;
+  border-color: #67E8F9 !important;
+  color: #0E7490 !important;
+}
+
+/* Card Action Buttons in Light Mode */
+html:not(.dark) a.bg-\[\#182234\],
+html:not(.dark) button.bg-\[\#182234\],
+html:not(.dark) [class*="bg-[#182234]"] {
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+}
+html:not(.dark) a.bg-\[\#182234\]:hover,
+html:not(.dark) button.bg-\[\#182234\]:hover {
+  background-color: #F1F5F9 !important;
 }
 
 /* Glassmorphism Header & Mobile Bottom Nav */
@@ -1587,9 +1778,9 @@ html[data-theme="sunlight"] .theme-icon-sunlight {
 html[data-theme="sunlight"],
 html.sunlight {
   --theme-bg-base: #FFFFFF !important;
-  --theme-surface-card: #F8FAFC !important;
-  --theme-surface-hover: #E2E8F0 !important;
-  --theme-border: #000000 !important;
+  --theme-surface-card: #FFFFFF !important;
+  --theme-surface-hover: #F1F5F9 !important;
+  --theme-border: #0F172A !important;
   --theme-text-main: #000000 !important;
   --theme-text-muted: #1E293B !important;
   --theme-text-dim: #334155 !important;
@@ -1602,7 +1793,32 @@ html.sunlight body {
   color: #000000 !important;
 }
 
+/* Gradients Removal in Sunlight Mode */
+html[data-theme="sunlight"] .bg-gradient-to-br,
+html[data-theme="sunlight"] .bg-gradient-to-r,
+html[data-theme="sunlight"] .bg-gradient-to-tr,
+html[data-theme="sunlight"] [class*="from-[#162030]"],
+html[data-theme="sunlight"] [class*="to-[#0E1522]"],
+html[data-theme="sunlight"] [class*="from-[#131A26]"],
+html.sunlight .bg-gradient-to-br,
+html.sunlight .bg-gradient-to-r,
+html.sunlight .bg-gradient-to-tr,
+html.sunlight [class*="from-[#162030]"],
+html.sunlight [class*="to-[#0E1522]"],
+html.sunlight [class*="from-[#131A26]"] {
+  background-image: none !important;
+}
+
 /* High-Contrast Card & Border Overrides in Sunlight Mode */
+html[data-theme="sunlight"] .glass-card,
+html[data-theme="sunlight"] .glass-panel,
+html.sunlight .glass-card,
+html.sunlight .glass-panel {
+  background: #FFFFFF !important;
+  border: 1.5px solid #0F172A !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
 html[data-theme="sunlight"] .bg-\[\#0B0F17\],
 html[data-theme="sunlight"] .bg-\[\#0F172A\],
 html[data-theme="sunlight"] .bg-\[\#111827\],
@@ -1616,39 +1832,231 @@ html[data-theme="sunlight"] .dark\:bg-\[\#111827\],
 html[data-theme="sunlight"] .dark\:bg-\[\#131A26\],
 html[data-theme="sunlight"] .dark\:bg-\[\#182234\],
 html[data-theme="sunlight"] .dark\:bg-gray-800,
-html[data-theme="sunlight"] .dark\:bg-gray-900 {
+html[data-theme="sunlight"] .dark\:bg-gray-900,
+html.sunlight .bg-\[\#0B0F17\],
+html.sunlight .bg-\[\#0F172A\],
+html.sunlight .bg-\[\#111827\],
+html.sunlight .bg-\[\#131A26\],
+html.sunlight .bg-\[\#162030\],
+html.sunlight .bg-\[\#182234\],
+html.sunlight .bg-\[\#1E293B\],
+html.sunlight .dark\:bg-\[\#0B0F17\],
+html.sunlight .dark\:bg-\[\#0F172A\],
+html.sunlight .dark\:bg-\[\#111827\],
+html.sunlight .dark\:bg-\[\#131A26\],
+html.sunlight .dark\:bg-\[\#182234\],
+html.sunlight .dark\:bg-gray-800,
+html.sunlight .dark\:bg-gray-900 {
   background-color: #FFFFFF !important;
   color: #000000 !important;
   border-color: #0F172A !important;
 }
 
+/* Meter Widget in Sunlight Mode */
+html[data-theme="sunlight"] .meter-widget,
+html.sunlight .meter-widget {
+  background-image: none !important;
+  background-color: #F8FAFC !important;
+  border: 1.5px solid #0F172A !important;
+}
+html[data-theme="sunlight"] .meter-widget span,
+html.sunlight .meter-widget span {
+  color: #0F172A !important;
+  font-weight: 700 !important;
+}
+html[data-theme="sunlight"] .meter-widget .text-emerald-400,
+html.sunlight .meter-widget .text-emerald-400,
+html[data-theme="sunlight"] .meter-widget .text-emerald-500,
+html.sunlight .meter-widget .text-emerald-500 {
+  color: #047857 !important;
+  font-weight: 900 !important;
+}
+
+/* General Typography in Sunlight Mode */
 html[data-theme="sunlight"] .text-white,
 html[data-theme="sunlight"] .dark\:text-white,
+html[data-theme="sunlight"] .text-gray-100,
 html[data-theme="sunlight"] .text-gray-200,
 html[data-theme="sunlight"] .text-gray-300,
 html[data-theme="sunlight"] .dark\:text-gray-200,
-html[data-theme="sunlight"] .dark\:text-gray-300 {
+html[data-theme="sunlight"] .dark\:text-gray-300,
+html.sunlight .text-white,
+html.sunlight .dark\:text-white,
+html.sunlight .text-gray-100,
+html.sunlight .text-gray-200,
+html.sunlight .text-gray-300,
+html.sunlight .dark\:text-gray-200,
+html.sunlight .dark\:text-gray-300 {
   color: #000000 !important;
   font-weight: 700 !important;
 }
 
 html[data-theme="sunlight"] .text-gray-400,
 html[data-theme="sunlight"] .text-gray-500,
-html[data-theme="sunlight"] .dark\:text-gray-400 {
+html[data-theme="sunlight"] .dark\:text-gray-400,
+html.sunlight .text-gray-400,
+html.sunlight .text-gray-500,
+html.sunlight .dark\:text-gray-400 {
   color: #1E293B !important;
   font-weight: 600 !important;
+}
+
+/* Keep Green CTA Buttons white text on emerald background in Sunlight Mode */
+html[data-theme="sunlight"] .bg-emerald-600,
+html[data-theme="sunlight"] .bg-emerald-500,
+html[data-theme="sunlight"] button.bg-emerald-600,
+html[data-theme="sunlight"] a.bg-emerald-600,
+html.sunlight .bg-emerald-600,
+html.sunlight .bg-emerald-500,
+html.sunlight button.bg-emerald-600,
+html.sunlight a.bg-emerald-600 {
+  background-color: #059669 !important;
+  color: #FFFFFF !important;
+  border-color: #047857 !important;
+}
+html[data-theme="sunlight"] .bg-emerald-600 *,
+html[data-theme="sunlight"] .bg-emerald-500 *,
+html[data-theme="sunlight"] button.bg-emerald-600 *,
+html[data-theme="sunlight"] a.bg-emerald-600 *,
+html.sunlight .bg-emerald-600 *,
+html.sunlight .bg-emerald-500 *,
+html.sunlight button.bg-emerald-600 *,
+html.sunlight a.bg-emerald-600 * {
+  color: #FFFFFF !important;
+}
+
+/* Quick Action & Stat Badges in Sunlight Mode */
+html[data-theme="sunlight"] .text-amber-300,
+html[data-theme="sunlight"] .text-amber-400,
+html.sunlight .text-amber-300,
+html.sunlight .text-amber-400 {
+  color: #B45309 !important;
+  font-weight: 700 !important;
+}
+html[data-theme="sunlight"] .text-cyan-300,
+html[data-theme="sunlight"] .text-cyan-400,
+html.sunlight .text-cyan-300,
+html.sunlight .text-cyan-400 {
+  color: #0E7490 !important;
+  font-weight: 700 !important;
+}
+html[data-theme="sunlight"] .text-emerald-400,
+html[data-theme="sunlight"] .text-emerald-500,
+html.sunlight .text-emerald-400,
+html.sunlight .text-emerald-500 {
+  color: #047857 !important;
+  font-weight: 800 !important;
+}
+html[data-theme="sunlight"] .text-rose-400,
+html[data-theme="sunlight"] .text-rose-500,
+html.sunlight .text-rose-400,
+html.sunlight .text-rose-500 {
+  color: #BE123C !important;
+  font-weight: 700 !important;
+}
+
+/* Status Badges & Pills in Sunlight Mode */
+html[data-theme="sunlight"] .status-pill-active,
+html.sunlight .status-pill-active {
+  background-color: #DCFCE7 !important;
+  color: #14532D !important;
+  border: 1.5px solid #16A34A !important;
+  font-weight: 800 !important;
+}
+html[data-theme="sunlight"] .status-pill-pending,
+html.sunlight .status-pill-pending {
+  background-color: #FEF3C7 !important;
+  color: #78350F !important;
+  border: 1.5px solid #D97706 !important;
+  font-weight: 800 !important;
+}
+html[data-theme="sunlight"] .status-pill-danger,
+html.sunlight .status-pill-danger {
+  background-color: #FFE4E6 !important;
+  color: #881337 !important;
+  border: 1.5px solid #E11D48 !important;
+  font-weight: 800 !important;
+}
+html[data-theme="sunlight"] .status-pill-info,
+html.sunlight .status-pill-info {
+  background-color: #CFFAFE !important;
+  color: #0C4A6E !important;
+  border: 1.5px solid #0891B2 !important;
+  font-weight: 800 !important;
+}
+
+/* Status Badges & Code Tags in Sunlight Mode */
+html[data-theme="sunlight"] [class*="bg-emerald-500/10"],
+html[data-theme="sunlight"] [class*="bg-emerald-500/20"],
+html.sunlight [class*="bg-emerald-500/10"],
+html.sunlight [class*="bg-emerald-500/20"] {
+  background-color: #DCFCE7 !important;
+  border: 1.5px solid #16A34A !important;
+  color: #14532D !important;
+  font-weight: 800 !important;
+}
+html[data-theme="sunlight"] [class*="bg-amber-500/10"],
+html[data-theme="sunlight"] [class*="bg-amber-500/20"],
+html.sunlight [class*="bg-amber-500/10"],
+html.sunlight [class*="bg-amber-500/20"] {
+  background-color: #FEF3C7 !important;
+  border: 1.5px solid #D97706 !important;
+  color: #78350F !important;
+  font-weight: 800 !important;
+}
+html[data-theme="sunlight"] [class*="bg-rose-500/10"],
+html[data-theme="sunlight"] [class*="bg-rose-500/20"],
+html.sunlight [class*="bg-rose-500/10"],
+html.sunlight [class*="bg-rose-500/20"] {
+  background-color: #FFE4E6 !important;
+  border: 1.5px solid #E11D48 !important;
+  color: #881337 !important;
+  font-weight: 800 !important;
+}
+html[data-theme="sunlight"] [class*="bg-cyan-500/10"],
+html[data-theme="sunlight"] [class*="bg-cyan-500/20"],
+html.sunlight [class*="bg-cyan-500/10"],
+html.sunlight [class*="bg-cyan-500/20"] {
+  background-color: #CFFAFE !important;
+  border: 1.5px solid #0891B2 !important;
+  color: #0E7490 !important;
+  font-weight: 800 !important;
+}
+
+/* Card Action Buttons in Sunlight Mode */
+html[data-theme="sunlight"] a.bg-\[\#182234\],
+html[data-theme="sunlight"] button.bg-\[\#182234\],
+html[data-theme="sunlight"] [class*="bg-[#182234]"],
+html.sunlight a.bg-\[\#182234\],
+html.sunlight button.bg-\[\#182234\],
+html.sunlight [class*="bg-[#182234]"] {
+  background-color: #FFFFFF !important;
+  border: 1.5px solid #0F172A !important;
+}
+html[data-theme="sunlight"] a.bg-\[\#182234\]:hover,
+html[data-theme="sunlight"] button.bg-\[\#182234\]:hover,
+html.sunlight a.bg-\[\#182234\]:hover,
+html.sunlight button.bg-\[\#182234\]:hover {
+  background-color: #F1F5F9 !important;
 }
 
 html[data-theme="sunlight"] .border-\[\#28354A\],
 html[data-theme="sunlight"] .border-\[\#1E293B\],
 html[data-theme="sunlight"] .dark\:border-\[\#28354A\],
-html[data-theme="sunlight"] .dark\:border-gray-700 {
-  border-color: #334155 !important;
+html[data-theme="sunlight"] .dark\:border-gray-700,
+html.sunlight .border-\[\#28354A\],
+html.sunlight .border-\[\#1E293B\],
+html.sunlight .dark\:border-\[\#28354A\],
+html.sunlight .dark\:border-gray-700 {
+  border-color: #0F172A !important;
 }
 
 html[data-theme="sunlight"] input,
 html[data-theme="sunlight"] select,
-html[data-theme="sunlight"] textarea {
+html[data-theme="sunlight"] textarea,
+html.sunlight input,
+html.sunlight select,
+html.sunlight textarea {
   background-color: #FFFFFF !important;
   color: #000000 !important;
   border-color: #0F172A !important;

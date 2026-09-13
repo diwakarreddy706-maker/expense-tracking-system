@@ -1,4 +1,4 @@
-{% load static i18n %}
+{% load static i18n currency_tags %}
 <!-- Top Application Header Bar -->
 <header class="h-16 border-b border-[#28354A] bg-[#111827]/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 lg:px-8">
   <!-- Left Side: Mobile Menu Button & Breadcrumb Context -->
@@ -20,8 +20,8 @@
       <span class="font-bold text-xs tracking-tight text-white group-hover:text-emerald-400 transition-colors truncate max-w-[130px]">Sri Basaveshwara</span>
     </a>
 
-    <!-- Desktop/Tablet Brand Display (>=sm) -->
-    <div class="hidden sm:flex items-center gap-2.5 text-xs">
+    <!-- Desktop/Tablet Brand Display (>=sm, <lg) -->
+    <div class="hidden sm:flex lg:hidden items-center gap-2.5 text-xs">
       <div class="w-7 h-7 rounded-full bg-slate-900 border border-emerald-500/40 shadow-sm flex items-center justify-center flex-shrink-0 overflow-hidden">
         <img src="{% static 'icons/favicon-32x32.png' %}" alt="Logo" class="w-full h-full object-cover">
       </div>
@@ -35,18 +35,18 @@
   {% if kpis.available_balance is not None %}
     <div class="hidden xl:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[#131A26] border border-[#28354A] text-xs">
       <span class="text-gray-400 font-medium">{% trans "Liquid" %}:</span>
-      <span class="text-emerald-400 font-mono font-bold">₹{{ kpis.available_balance|floatformat:2 }}</span>
+      <span class="text-emerald-400 font-mono font-bold">₹{{ kpis.available_balance|inr }}</span>
       {% if kpis.cash_balance is not None %}
         <span class="text-gray-600">|</span>
-        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">{% trans "Cash" %}:</span> ₹{{ kpis.cash_balance|floatformat:0 }}</span>
+        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">{% trans "Cash" %}:</span> ₹{{ kpis.cash_balance|inr }}</span>
       {% endif %}
       {% if kpis.bank_balance is not None %}
         <span class="text-gray-600">|</span>
-        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">{% trans "Bank" %}:</span> ₹{{ kpis.bank_balance|floatformat:0 }}</span>
+        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">{% trans "Bank" %}:</span> ₹{{ kpis.bank_balance|inr }}</span>
       {% endif %}
       {% if kpis.upi_balance is not None %}
         <span class="text-gray-600">|</span>
-        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">{% trans "UPI" %}:</span> ₹{{ kpis.upi_balance|floatformat:0 }}</span>
+        <span class="text-gray-300 font-mono"><span class="text-gray-500 font-sans">{% trans "UPI" %}:</span> ₹{{ kpis.upi_balance|inr }}</span>
       {% endif %}
     </div>
   {% endif %}

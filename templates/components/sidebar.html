@@ -1,6 +1,6 @@
 {% load static i18n %}
 <aside
-  class="fixed inset-y-0 left-0 z-50 w-72 sm:w-64 bg-[#111827] border-r border-[#28354A] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto lg:z-auto shadow-2xl lg:shadow-none"
+  class="app-sidebar-container bg-[#0F172A] border-r border-[#1E293B] shadow-2xl lg:shadow-none"
   :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
   style="will-change: transform;"
   @click.away="sidebarOpen = false"
@@ -212,69 +212,5 @@
 
     {% endwith %}
   </nav>
-
-  <!-- Sidebar Quick Preferences (Language & Theme Toggle - Optimized for Mobile Drawer & Desktop) -->
-  <div class="px-3 py-2 border-t border-[#1E293B] bg-[#0B0F17]/60 flex items-center justify-between gap-2">
-    <!-- Language Toggle Form -->
-    <form action="{% url 'set_language' %}" method="post" class="m-0 flex-1">
-      {% csrf_token %}
-      <input name="next" type="hidden" value="{{ request.get_full_path }}">
-      {% get_current_language as CURRENT_LANGUAGE %}
-      {% if CURRENT_LANGUAGE == 'kn' %}
-        <input name="language" type="hidden" value="en">
-        <button
-          type="submit"
-          class="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-emerald-400 hover:text-white text-xs font-semibold transition-colors active:scale-95"
-          title="Switch to English"
-        >
-          <i class="bi bi-translate text-xs"></i>
-          <span>English</span>
-        </button>
-      {% else %}
-        <input name="language" type="hidden" value="kn">
-        <button
-          type="submit"
-          class="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-amber-400 hover:text-white text-xs font-semibold transition-colors active:scale-95"
-          title="ಕನ್ನಡಕ್ಕೆ ಬದಲಾಯಿಸಿ"
-        >
-          <i class="bi bi-translate text-xs"></i>
-          <span>ಕನ್ನಡ</span>
-        </button>
-      {% endif %}
-    </form>
-
-    <!-- Theme Switcher Button -->
-    <button
-      type="button"
-      onclick="window.cycleTheme()"
-      class="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-300 hover:text-amber-400 text-xs font-semibold transition-colors active:scale-95"
-      title="Cycle Theme: Dark 🌙 &bull; Light 🌤️ &bull; Sunlight ☀️"
-    >
-      <i class="bi bi-brightness-high-fill text-amber-400 text-xs theme-icon-dark"></i>
-      <i class="bi bi-sun-fill text-amber-500 text-xs theme-icon-sunlight"></i>
-      <i class="bi bi-moon-stars-fill text-indigo-400 text-xs theme-icon-light"></i>
-      <span>Theme</span>
-    </button>
-  </div>
-
-  <!-- Sidebar Footer / User Profile & Logout -->
-  <div class="p-3 border-t border-[#28354A] bg-[#0B0F17]/80">
-    <div class="flex items-center justify-between px-2 py-1.5 rounded-lg bg-[#182234]">
-      <a href="{% url 'accounts:profile' %}" class="flex items-center gap-2.5 min-w-0 text-gray-300 hover:text-white no-underline">
-        <div class="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-xs flex-shrink-0">
-          {{ request.user.username|slice:":2"|upper }}
-        </div>
-        <div class="truncate">
-          <div class="text-xs font-semibold text-white truncate">{{ request.user.get_full_name|default:request.user.username }}</div>
-          <div class="text-[11px] text-gray-400 truncate">{{ request.user.email|default:"Operator" }}</div>
-        </div>
-      </a>
-      <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
-        {% csrf_token %}
-        <button type="submit" class="text-gray-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-gray-800/80 transition-colors focus:outline-none" title="Sign Out" aria-label="Sign Out">
-          <i class="bi bi-box-arrow-right text-base"></i>
-        </button>
-      </form>
-    </div>
-  </div>
 </aside>
+
