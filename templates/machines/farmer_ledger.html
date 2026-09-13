@@ -208,32 +208,32 @@
   </div>
 
   {% if selected_customer %}
-  <!-- Active Farmer Detailed Profile Card (Dark Sleek Banner matching screenshot) -->
-  <div class="bg-[#0F172A] border border-[#1E293B] rounded-2xl p-6 shadow-xl text-white">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-800">
+  <!-- Active Farmer Detailed Profile Card -->
+  <div class="bg-white dark:bg-[#131A26] border border-gray-200 dark:border-[#28354A] rounded-2xl p-6 shadow-sm text-gray-900 dark:text-white mb-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-100 dark:border-[#28354A]">
       <!-- Left: Farmer Identity & Quick-Dial -->
       <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center text-white font-black text-2xl shadow-lg flex-shrink-0">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-600 dark:bg-emerald-500 flex items-center justify-center text-white font-black text-2xl shadow-md flex-shrink-0">
           {{ selected_customer.name|slice:":1"|upper }}
         </div>
         <div>
           <div class="flex items-center gap-2 flex-wrap">
-            <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight m-0">{{ selected_customer.name }}</h2>
-            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase">
+            <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight m-0">{{ selected_customer.name }}</h2>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40 uppercase">
               {{ selected_customer.customer_code }}
             </span>
           </div>
-          <div class="text-xs text-gray-300 mt-1 flex flex-wrap items-center gap-2">
+          <div class="text-xs text-gray-600 dark:text-gray-300 mt-1 flex flex-wrap items-center gap-2">
             {% if selected_customer.notes %}
-              <span class="font-medium text-gray-200">S/O: {{ selected_customer.notes }}</span>
-              <span>•</span>
+              <span class="font-medium text-gray-700 dark:text-gray-200">S/O: {{ selected_customer.notes }}</span>
+              <span class="text-gray-400">•</span>
             {% endif %}
-            <span class="inline-flex items-center gap-1">
-              <i class="bi bi-geo-alt text-emerald-400"></i> {{ selected_customer.location_address|default:"Gangavati" }}
+            <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
+              <i class="bi bi-geo-alt text-emerald-600 dark:text-emerald-400"></i> {{ selected_customer.location_address|default:"Gangavati" }}
             </span>
             {% if selected_customer.phone %}
-              <span>•</span>
-              <a href="tel:{{ selected_customer.phone }}" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-mono text-xs border border-emerald-500/40 no-underline transition-colors" title="Instant Call Farmer">
+              <span class="text-gray-400">•</span>
+              <a href="tel:{{ selected_customer.phone }}" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-mono text-xs border border-emerald-300 dark:border-emerald-500/40 no-underline transition-colors font-bold" title="Instant Call Farmer">
                 <i class="bi bi-telephone-outbound-fill text-[10px]"></i>
                 <span>📞 Call: {{ selected_customer.phone }}</span>
               </a>
@@ -245,8 +245,8 @@
       <!-- Right: Katha Status & Actions -->
       <div class="flex flex-wrap items-center gap-3">
         <div class="text-left sm:text-right mr-1">
-          <span class="text-[9px] font-mono uppercase tracking-wider text-gray-400 block">KATHA STATUS</span>
-          <span class="inline-block px-3 py-1 rounded-full text-[11px] font-mono font-black tracking-wide mt-0.5 {% if farmer_balance_due > 0 %}bg-amber-500/20 text-amber-300 border border-amber-500/40{% else %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/40{% endif %}">
+          <span class="text-[9px] font-mono uppercase tracking-wider text-gray-500 dark:text-gray-400 block">KATHA STATUS</span>
+          <span class="inline-block px-3 py-1 rounded-full text-[11px] font-mono font-black tracking-wide mt-0.5 {% if farmer_balance_due > 0 %}bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40{% else %}bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40{% endif %}">
             {% if farmer_balance_due > 0 %}PENDING UDHAR{% else %}SETTLED / NIL{% endif %}
           </span>
         </div>
@@ -264,41 +264,41 @@
         </a>
 
         <!-- One-Tap WhatsApp Statement & Balance Reminder -->
-        <button type="button" onclick="window.sendWhatsAppReminder({ name: '{{ selected_customer.name|escapejs }}', phone: '{{ selected_customer.phone|escapejs }}', totalBilled: '{{ farmer_total_billed }}', totalPaid: '{{ farmer_adv_paid|add:farmer_rec_paid }}', balanceDue: '{{ farmer_balance_due }}', pdfUrl: window.location.origin + '{% url 'machines:farmer_ledger_pdf' customer_id=selected_customer.id %}' })" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-extrabold text-xs shadow-sm transition-all border-0 cursor-pointer min-h-[44px]" title="Send instant WhatsApp statement breakdown to {{ selected_customer.name }}">
+        <button type="button" onclick="window.sendWhatsAppReminder({ name: '{{ selected_customer.name|escapejs }}', phone: '{{ selected_customer.phone|escapejs }}', totalBilled: '{{ farmer_total_billed }}', totalPaid: '{{ farmer_adv_paid|add:farmer_rec_paid }}', balanceDue: '{{ farmer_balance_due }}' })" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-extrabold text-xs shadow-sm transition-all border-0 cursor-pointer min-h-[44px]" title="Send instant WhatsApp statement breakdown to {{ selected_customer.name }}">
           <i class="bi bi-whatsapp text-sm"></i>
           <span>WhatsApp Statement</span>
         </button>
       </div>
     </div>
 
-    <!-- Farmer 4-Metric Grid (Inside dark card matching screenshot) -->
+    <!-- Farmer 4-Metric Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6">
       <!-- 1. Total Work Done -->
-      <div class="bg-[#1E293B]/60 border border-gray-800 rounded-xl p-4">
-        <span class="text-[10px] font-mono uppercase tracking-wider text-gray-400 block">TOTAL WORK DONE</span>
-        <div class="text-xl font-black text-white font-mono mt-1">{{ farmer_sessions_count }} Sessions</div>
-        <span class="text-[11px] text-gray-400 mt-0.5 block">Machine execution history</span>
+      <div class="bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#28354A] rounded-xl p-4 shadow-sm">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-gray-400 block font-bold">TOTAL WORK DONE</span>
+        <div class="text-xl font-black text-slate-900 dark:text-white font-mono mt-1">{{ farmer_sessions_count }} Sessions</div>
+        <span class="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5 block">Machine execution history</span>
       </div>
 
       <!-- 2. Total Billed -->
-      <div class="bg-[#1E293B]/60 border border-gray-800 rounded-xl p-4">
-        <span class="text-[10px] font-mono uppercase tracking-wider text-gray-400 block">TOTAL BILLED</span>
-        <div class="text-xl font-black text-white font-mono mt-1">₹{{ farmer_total_billed|floatformat:0|intcomma }}</div>
-        <span class="text-[11px] text-gray-400 mt-0.5 block">Gross invoice total</span>
+      <div class="bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#28354A] rounded-xl p-4 shadow-sm">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-gray-400 block font-bold">TOTAL BILLED</span>
+        <div class="text-xl font-black text-slate-900 dark:text-white font-mono mt-1">₹{{ farmer_total_billed|floatformat:0|intcomma }}</div>
+        <span class="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5 block">Gross invoice total</span>
       </div>
 
       <!-- 3. Advance + Paid -->
-      <div class="bg-[#1E293B]/60 border border-gray-800 rounded-xl p-4">
-        <span class="text-[10px] font-mono uppercase tracking-wider text-emerald-400 block">ADVANCE + PAID</span>
-        <div class="text-xl font-black text-emerald-400 font-mono mt-1">₹{{ farmer_adv_paid|add:farmer_rec_paid|floatformat:0|intcomma }}</div>
-        <span class="text-[11px] text-gray-400 mt-0.5 block font-mono">Adv: ₹{{ farmer_adv_paid|floatformat:0|intcomma }} • Rec: ₹{{ farmer_rec_paid|floatformat:0|intcomma }}</span>
+      <div class="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-xl p-4 shadow-sm">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-emerald-700 dark:text-emerald-400 block font-bold">ADVANCE + PAID</span>
+        <div class="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono mt-1">₹{{ farmer_adv_paid|add:farmer_rec_paid|floatformat:0|intcomma }}</div>
+        <span class="text-[11px] text-emerald-600/90 dark:text-gray-400 mt-0.5 block font-mono">Adv: ₹{{ farmer_adv_paid|floatformat:0|intcomma }} • Rec: ₹{{ farmer_rec_paid|floatformat:0|intcomma }}</span>
       </div>
 
       <!-- 4. Balance Due (Udhar) -->
-      <div class="bg-rose-950/40 border border-rose-500/30 rounded-xl p-4">
-        <span class="text-[10px] font-mono uppercase tracking-wider text-rose-400 block">BALANCE DUE (UDHAR)</span>
-        <div class="text-xl font-black text-rose-400 font-mono mt-1">₹{{ farmer_balance_due|floatformat:0|intcomma }}</div>
-        <span class="text-[11px] text-rose-300 mt-0.5 block">Outstanding balance</span>
+      <div class="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-500/30 rounded-xl p-4 shadow-sm">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-rose-700 dark:text-rose-400 block font-bold">BALANCE DUE (UDHAR)</span>
+        <div class="text-xl font-black text-rose-700 dark:text-rose-400 font-mono mt-1">₹{{ farmer_balance_due|floatformat:0|intcomma }}</div>
+        <span class="text-[11px] text-rose-600 dark:text-rose-300 mt-0.5 block">Outstanding balance</span>
       </div>
     </div>
   </div>
