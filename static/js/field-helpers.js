@@ -50,27 +50,36 @@
   };
 
   /**
-   * Generates and sends an official Statement / Udhar Balance Reminder to the farmer.
-   * @param {Object} data - { name, phone, totalBilled, totalPaid, balanceDue, pdfUrl }
+   * Generates and sends a polite and respectful Statement / Balance update to the farmer (no URLs).
+   * @param {Object} data - { name, phone, totalBilled, totalPaid, balanceDue }
    */
   window.sendWhatsAppReminder = function (data) {
     const name = data.name || 'Farmer';
-    const totalBilled = Number(data.totalBilled || 0).toLocaleString('en-IN');
-    const totalPaid = Number(data.totalPaid || 0).toLocaleString('en-IN');
     const balanceDue = Number(data.balanceDue || 0).toLocaleString('en-IN');
-    const pdfUrl = data.pdfUrl || window.location.href;
+    const hasFullBreakdown = data.totalBilled && Number(data.totalBilled) > 0;
 
-    const message =
+    let message =
       `🌾 *SRI BASAVESHWARA HARVESTING & CO.* 🌾\n` +
-      `_Agricultural Machinery & Harvesting Services_\n` +
-      `Gangavati, Karnataka\n\n` +
-      `Dear *${name}*,\n\n` +
-      `Here is your account statement summary as of today:\n` +
-      `📋 Total Work Billed: *₹${totalBilled}*\n` +
-      `✅ Advance & Paid: *₹${totalPaid}*\n` +
-      `🔴 *Outstanding Balance Due (Udhar): ₹${balanceDue}*\n\n` +
-      `📄 View / Download Passbook PDF:\n${pdfUrl}\n\n` +
-      `Kindly arrange settlement at your earliest convenience. Thank you for your business! 🙏`;
+      `_Agricultural Machinery & Harvesting Services_\n\n` +
+      `Namaste *${name}* Ji, 🙏\n\n` +
+      `Hope you are doing well. This is a gentle update regarding your harvesting service account:\n\n`;
+
+    if (hasFullBreakdown) {
+      const totalBilled = Number(data.totalBilled || 0).toLocaleString('en-IN');
+      const totalPaid = Number(data.totalPaid || 0).toLocaleString('en-IN');
+      message +=
+        `📋 Total Work Billed: *₹${totalBilled}*\n` +
+        `✅ Amount Received: *₹${totalPaid}*\n` +
+        `🔴 *Pending Balance: ₹${balanceDue}*\n\n`;
+    } else {
+      message +=
+        `🔴 *Current Pending Balance: ₹${balanceDue}*\n\n`;
+    }
+
+    message +=
+      `Whenever convenient for you, kindly arrange the settlement.\n\n` +
+      `_If you have already made the payment, kindly ignore this message._\n\n` +
+      `Thank you very much for your valued partnership and support! 🙏🌾`;
 
     window.sendWhatsAppMessage(data.phone, message);
   };
