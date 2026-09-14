@@ -35,11 +35,11 @@
     </button>
   </div>
 
-  <!-- Role Badge / Current Context -->
-  <div class="px-5 py-3 border-b border-[#1E293B] bg-[#0B0F17]/50 flex items-center justify-between">
-    <div class="flex items-center gap-2">
-      <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-      <span class="text-xs font-semibold text-gray-300">
+  <!-- Role Badge / Current Context & Language Toggle -->
+  <div class="px-4 py-2.5 border-b border-[#1E293B] bg-[#0B0F17]/50 flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2 min-w-0">
+      <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></div>
+      <span class="text-xs font-semibold text-gray-300 truncate">
         {% if request.user.profile.role %}
           {{ request.user.profile.get_role_display }}
         {% elif request.user.is_superuser %}
@@ -49,7 +49,33 @@
         {% endif %}
       </span>
     </div>
-    <span class="text-[10px] text-gray-400 font-mono">v1.0</span>
+    <!-- Language Toggle Form -->
+    <form action="{% url 'set_language' %}" method="post" class="m-0 flex items-center">
+      {% csrf_token %}
+      <input name="next" type="hidden" value="{{ request.get_full_path }}">
+      {% get_current_language as CURRENT_LANGUAGE %}
+      {% if CURRENT_LANGUAGE == 'kn' %}
+        <input name="language" type="hidden" value="en">
+        <button
+          type="submit"
+          class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-emerald-400 hover:text-white text-[11px] font-semibold transition-colors active:scale-95"
+          title="Switch to English"
+        >
+          <i class="bi bi-translate text-xs"></i>
+          <span>English</span>
+        </button>
+      {% else %}
+        <input name="language" type="hidden" value="kn">
+        <button
+          type="submit"
+          class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-amber-400 hover:text-white text-[11px] font-semibold transition-colors active:scale-95"
+          title="ಕನ್ನಡಕ್ಕೆ ಬದಲಾಯಿಸಿ"
+        >
+          <i class="bi bi-translate text-xs"></i>
+          <span>ಕನ್ನಡ</span>
+        </button>
+      {% endif %}
+    </form>
   </div>
 
   <!-- Navigation Menu List -->
