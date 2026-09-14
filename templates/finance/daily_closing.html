@@ -52,28 +52,28 @@
 </div>
 
 <!-- Control Bar: Date & Account Selector -->
-<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm">
-  <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-center">
+<div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 mb-6 shadow-sm overflow-hidden">
+  <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-center min-w-0">
     <input type="hidden" name="scope" value="{{ scope }}">
 
-    <div class="{% if scope != 'CONSOLIDATED' %}md:col-span-2{% else %}md:col-span-3{% endif %}">
-      <div class="relative">
-        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+    <div class="min-w-0 {% if scope != 'CONSOLIDATED' %}md:col-span-2{% else %}md:col-span-3{% endif %}">
+      <div class="relative min-w-0">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 pointer-events-none">
           <i class="bi bi-calendar-event text-xs"></i>
         </span>
         <input
           type="date"
           name="date"
           value="{{ closing_date|date:'Y-m-d' }}"
-          class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none"
+          class="w-full min-w-0 max-w-full block pl-8 pr-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none"
           max="{{ today|date:'Y-m-d' }}"
         >
       </div>
     </div>
 
     {% if scope != 'CONSOLIDATED' %}
-      <div>
-        <select name="account" class="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
+      <div class="min-w-0">
+        <select name="account" class="w-full min-w-0 max-w-full block px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs font-medium focus:outline-none">
           {% if scope == 'CASH_ACCOUNT' %}
             {% for a in cash_accounts %}
               <option value="{{ a.id }}" {% if reconciliation.target_account.id == a.id %}selected{% endif %}>{{ a.account_name }} (Current: ₹{{ a.current_balance }})</option>
