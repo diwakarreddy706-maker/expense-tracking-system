@@ -63,8 +63,69 @@
   </form>
 </div>
 
-<!-- Customers Table -->
-<div class="bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden">
+<!-- Mobile Customers Card Deck (<md viewports) -->
+<div class="block md:hidden space-y-3 mb-6">
+  {% for c in customers %}
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 shadow-sm relative space-y-3">
+      <div class="flex items-start justify-between gap-2">
+        <div>
+          <span class="text-[10px] font-mono text-cyan-400 font-bold block">{{ c.customer_code }}</span>
+          <div class="font-bold text-white text-base flex items-center gap-1.5 mt-0.5">
+            <span>{{ c.name }}</span>
+          </div>
+          {% if c.location_address %}
+            <div class="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+              <i class="bi bi-geo-alt text-emerald-400"></i>
+              <span>{{ c.location_address }}</span>
+            </div>
+          {% endif %}
+        </div>
+        <div>
+          {% if c.status == 'ACTIVE' %}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
+          {% else %}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-400 border border-gray-700">Inactive</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-[#1E293B] text-xs">
+        <div>
+          {% if c.phone %}
+            <div class="flex items-center gap-2">
+              <a href="tel:{{ c.phone }}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-xs no-underline font-semibold" title="Call {{ c.name }}">
+                <i class="bi bi-telephone-fill text-[11px]"></i>
+                <span>{{ c.phone }}</span>
+              </a>
+              <button type="button" onclick="window.sendWhatsAppMessage('{{ c.phone|escapejs }}', 'Sri Basaveshwara Harvesting & Co.: Hello {{ c.name|escapejs }}, this is Sri Basaveshwara Harvesting.')" class="p-1.5 rounded-lg bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/30 cursor-pointer inline-flex items-center" title="WhatsApp {{ c.name }}">
+                <i class="bi bi-whatsapp text-sm"></i>
+              </button>
+            </div>
+          {% else %}
+            <span class="text-gray-500 font-mono text-xs">No phone recorded</span>
+          {% endif %}
+        </div>
+        <div class="flex items-center gap-1.5">
+          <a href="{% url 'machines:farmer_ledger_detail' c.id %}" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs no-underline shadow-sm" title="Open Farmer Katha Ledger">
+            <i class="bi bi-book-fill"></i>
+            <span>Ledger</span>
+          </a>
+          <a href="{% url 'finance:customer_edit' c.id %}" class="inline-flex items-center p-1.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 border border-[#28354A] text-xs no-underline" title="Edit Customer" aria-label="Edit Customer">
+            <i class="bi bi-pencil"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-8 text-center text-gray-500 text-xs">
+      <i class="bi bi-people text-3xl d-block mb-2 text-gray-600"></i>
+      No customers found. Click "Add Customer" to create a new client profile.
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Desktop Customers Table (>=md viewports) -->
+<div class="hidden md:block bg-[#131A26] border border-[#28354A] rounded-2xl shadow-sm overflow-hidden mb-6">
   <div class="overflow-x-auto">
     <table class="w-full text-left text-xs border-collapse">
       <thead>

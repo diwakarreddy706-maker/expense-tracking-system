@@ -181,7 +181,7 @@
                 <i class="bi bi-telephone-outbound-fill text-[10px]"></i>
                 <span>{{ booking.customer.phone }}</span>
               </a>
-              <button type="button" onclick="window.sendWhatsAppMessage('{{ booking.customer.phone|escapejs }}', 'Sri Basaveshwara Harvesting & Co.: Hello {{ booking.customer.name|escapejs }}, regarding your machine booking #{{ booking.id }} for {{ booking.crop_description|default:\'harvesting\'|escapejs }}.')" class="p-1 px-2 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] text-xs border border-[#25D366]/40 cursor-pointer" title="Message on WhatsApp">
+              <button type="button" onclick="window.sendWhatsAppMessage('{{ booking.customer.phone|escapejs }}', 'Sri Basaveshwara Harvesting & Co.: Hello {{ booking.customer.name|escapejs }}, regarding your machine booking #{{ booking.id }} for {{ booking.crop_description|default:"harvesting"|escapejs }}.')" class="p-1 px-2 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] text-xs border border-[#25D366]/40 cursor-pointer" title="Message on WhatsApp">
                 <i class="bi bi-whatsapp"></i>
               </button>
             </div>

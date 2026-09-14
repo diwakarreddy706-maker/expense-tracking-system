@@ -27,7 +27,7 @@ The architecture enforces single-source-of-truth calculations, ACID-compliant da
 |                   SERVICE & BUSINESS LOGIC LAYER                      |
 |  • Central Financial Calculation Service (Single Source of Truth)     |
 |  • Authoritative Account Ledger & Reconciliation Service              |
-|  • Machine Operating Cost (TCO) & Fuel Consumption Service           |
+|  • Machine Operating Cost (TCO) & Fuel Consumption Service            |
 |  • Customer Receivable & Supplier Payable Settlement Service          |
 |  • Scoped Daily Closing & Snapshot Reconciliation Service             |
 |  • Financial Reversal & Correction Engine                             |
@@ -37,7 +37,7 @@ The architecture enforces single-source-of-truth calculations, ACID-compliant da
                                     │ ORM Calls
 +-----------------------------------▼-----------------------------------+
 |                          DATA ACCESS LAYER                            |
-|  Django ORM Models (DECIMAL(15,2), Custom Managers, Soft Deletes)    |
+|  Django ORM Models (DECIMAL(15,2), Custom Managers, Soft Deletes)     |
 +-----------------------------------▲-----------------------------------+
                                     │ SQL Queries (Transactions / Row Locks)
 +-----------------------------------▼-----------------------------------+
