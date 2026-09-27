@@ -7,7 +7,19 @@ import os
 
 # Server socket
 port = os.getenv("PORT", "8000")
-bind = os.getenv("GUNICORN_BIND", f"0.0.0.0:{port}")
+raw_bind = os.getenv("GUNICORN_BIND")
+
+# On cloud platforms (Render, Railway, Fly.io), the PORT environment variable is authoritative
+if os.getenv("PORT"):
+    bind = f"0.0.0.0:{port}"
+elif raw_bind:
+    if raw_bind.startswith("127.0.0.1:"):
+        bind = f"0.0.0.0:{raw_bind.split(':')[1]}"
+    else:
+        bind = raw_bind
+else:
+    bind = f"0.0.0.0:{port}"
+
 backlog = 2048
 
 # Worker processes
