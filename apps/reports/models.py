@@ -19,7 +19,13 @@ class CompanyProfile(models.Model):
         blank=True,
         help_text="Registered legal entity name"
     )
-    phone = models.CharField(max_length=50, default='+91 98765 43210', blank=True)
+    tagline = models.CharField(
+        max_length=200,
+        default='Agricultural Harvesting & Heavy Equipment Fleet Hub',
+        blank=True,
+        help_text="Tagline or subtitle appearing under company name"
+    )
+    phone = models.CharField(max_length=50, default='+91 98801 99000', blank=True)
     email = models.EmailField(max_length=100, default='contact@basaveshwara-harvesting.com', blank=True)
     village = models.CharField(max_length=100, default='Harapanahalli Road', blank=True)
     taluk = models.CharField(max_length=100, default='Harapanahalli', blank=True)
@@ -28,6 +34,10 @@ class CompanyProfile(models.Model):
     pin_code = models.CharField(max_length=20, default='583131', blank=True)
     gst_number = models.CharField(max_length=30, blank=True, null=True, help_text="GSTIN if applicable")
     tax_id = models.CharField(max_length=30, blank=True, null=True, help_text="PAN / State Tax ID")
+    bank_name = models.CharField(max_length=100, blank=True, null=True, help_text="Bank name for invoices")
+    bank_account_no = models.CharField(max_length=50, blank=True, null=True, help_text="Bank account number for invoice payments")
+    bank_ifsc = models.CharField(max_length=20, blank=True, null=True, help_text="Bank IFSC code")
+    upi_id = models.CharField(max_length=100, blank=True, null=True, help_text="UPI VPA / QR payment ID")
     authorized_signatory_name = models.CharField(max_length=100, default='Managing Partner', blank=True)
     authorized_signatory_designation = models.CharField(max_length=100, default='Authorized Signatory', blank=True)
     is_active = models.BooleanField(default=True, db_index=True)

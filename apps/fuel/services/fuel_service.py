@@ -234,7 +234,7 @@ class FuelService:
         profile = getattr(user, 'profile', None)
         is_owner = getattr(profile, 'is_owner', False) if profile else False
         if not is_owner and not getattr(user, 'is_superuser', False):
-            raise ValidationError("Reversing fuel transactions is restricted to system Owners.")
+            raise ValidationError("Reversing fuel transactions is restricted to system Owners or Accountants.")
 
         with transaction.atomic():
             fuel_entry = FuelEntry.objects.select_for_update().get(id=fuel_entry_id, is_deleted=False)

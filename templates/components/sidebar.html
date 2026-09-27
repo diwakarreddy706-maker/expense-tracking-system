@@ -228,6 +228,11 @@
       <span>{% trans "Master Data Setup" %}</span>
     </a>
 
+    <a href="{% url 'reports:company_profile' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'reports' and request.resolver_match.url_name == 'company_profile' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
+      <i class="bi bi-patch-check w-5 text-center text-base text-teal-400"></i>
+      <span>{% trans "Business Branding & Header" %}</span>
+    </a>
+
     {% if role == 'OWNER' or role == 'ACCOUNTANT' or request.user.is_superuser %}
     <a href="{% url 'accounts:user_list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors {% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name == 'user_list' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold{% endif %}">
       <i class="bi bi-person-gear w-5 text-center text-base text-amber-400"></i>

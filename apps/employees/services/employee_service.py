@@ -521,7 +521,7 @@ class EmployeeFinancialService:
         profile = getattr(user, 'profile', None)
         is_owner = getattr(profile, 'is_owner', False) if profile else False
         if not is_owner and not getattr(user, 'is_superuser', False):
-            raise ValidationError("Reversing employee financial transactions is restricted to system Owners.")
+            raise ValidationError("Reversing employee financial transactions is restricted to system Owners or Accountants.")
 
         if not reason or len(reason.strip()) < 5:
             raise ValidationError({"reason": "A valid explanation (minimum 5 characters) is required for financial reversals."})

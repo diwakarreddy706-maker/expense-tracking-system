@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {{ company_profile.business_name|default:"Sri Basaveshwara & Co." }}{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+  <div>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Business Branding &amp; Invoicing Header</h2>
+    <p class="text-xs text-gray-400 mt-1 mb-0">Configure official company trade name, registered address, GSTIN, bank payment details, and invoice letterheads</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <a href="{% url 'finance:setup_hub' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-xs border border-[#28354A] transition-colors no-underline">
+      <i class="bi bi-arrow-left"></i>
+      <span>Setup Hub</span>
+    </a>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <!-- Left Form (7 cols) -->
+  <div class="lg:col-span-7">
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 sm:p-8 shadow-sm">
+      <form method="post" novalidate class="space-y-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium">
+            {{ form.non_field_errors.0 }}
+          </div>
+        {% endif %}
+
+        <!-- Section 1: Business Identity -->
+        <div>
+          <div class="flex items-center gap-2 pb-2 mb-3 border-b border-[#1E293B]">
+            <i class="bi bi-building text-emerald-400 text-sm"></i>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300 m-0">1. Business Identity</h3>
+          </div>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">Primary Trade Name <span class="text-rose-400">*</span></label>
+              {{ form.business_name }}
+              {% if form.business_name.errors %}<div class="text-rose-400 text-xs mt-1">{{ form.business_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">Legal Registered Entity Name</label>
+              {{ form.legal_name }}
+              {% if form.legal_name.errors %}<div class="text-rose-400 text-xs mt-1">{{ form.legal_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">Business Tagline / Subtitle</label>
+              {{ form.tagline }}
+              {% if form.tagline.errors %}<div class="text-rose-400 text-xs mt-1">{{ form.tagline.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Contact Information -->
+        <div>
+          <div class="flex items-center gap-2 pb-2 mb-3 border-b border-[#1E293B]">
+            <i class="bi bi-telephone text-sky-400 text-sm"></i>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300 m-0">2. Official Contact Information</h3>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">Office / Support Phone</label>
+              {{ form.phone }}
+              {% if form.phone.errors %}<div class="text-rose-400 text-xs mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">Official Email</label>
+              {{ form.email }}
+              {% if form.email.errors %}<div class="text-rose-400 text-xs mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Headquarters Address -->
+        <div>
+          <div class="flex items-center gap-2 pb-2 mb-3 border-b border-[#1E293B]">
+            <i class="bi bi-geo-alt text-amber-400 text-sm"></i>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300 m-0">3. Operational Address</h3>
+          </div>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">Street / Village / Industrial Area</label>
+              {{ form.village }}
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 mb-1">Taluk / City</label>
+                {{ form.taluk }}
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 mb-1">District</label>
+                {{ form.district }}
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 mb-1">State</label>
+                {{ form.state }}
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 mb-1">PIN Code</label>
+                {{ form.pin_code }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Tax & Compliance -->
+        <div>
+          <div class="flex items-center gap-2 pb-2 mb-3 border-b border-[#1E293B]">
+            <i class="bi bi-receipt-cutoff text-indigo-400 text-sm"></i>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300 m-0">4. Tax &amp; GST Identification</h3>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">GSTIN Number (Optional)</label>
+              {{ form.gst_number }}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">PAN / State Tax ID</label>
+              {{ form.tax_id }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 5: Payment Instructions -->
+        <div>
+          <div class="flex items-center gap-2 pb-2 mb-3 border-b border-[#1E293B]">
+            <i class="bi bi-bank text-emerald-400 text-sm"></i>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300 m-0">5. Invoice Bank &amp; UPI Payment Details</h3>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">Bank Name</label>
+              {{ form.bank_name }}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">Account Number</label>
+              {{ form.bank_account_no }}
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">IFSC Code</label>
+              {{ form.bank_ifsc }}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">UPI VPA / QR ID</label>
+              {{ form.upi_id }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 6: Signatory -->
+        <div>
+          <div class="flex items-center gap-2 pb-2 mb-3 border-b border-[#1E293B]">
+            <i class="bi bi-pen text-rose-400 text-sm"></i>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300 m-0">6. Authorized Signatory</h3>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">Signatory Name</label>
+              {{ form.authorized_signatory_name }}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">Designation</label>
+              {{ form.authorized_signatory_designation }}
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-[#1E293B] flex items-center justify-end gap-3">
+          <a href="{% url 'finance:setup_hub' %}" class="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold transition-colors no-underline">
+            Cancel
+          </a>
+          <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all cursor-pointer border-0">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Save Branding Settings</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Right Column: Live Letterhead & Voucher Preview (5 cols) -->
+  <div class="lg:col-span-5 space-y-4">
+    <div class="sticky top-20">
+      <div class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 flex items-center gap-1.5">
+        <i class="bi bi-eye text-emerald-400"></i>
+        <span>Live Invoice Letterhead Preview</span>
+      </div>
+
+      <!-- Preview Card -->
+      <div class="bg-white text-gray-900 rounded-2xl shadow-lg border border-gray-200 overflow-hidden text-xs">
+        <div class="bg-slate-900 text-white p-5">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h4 class="text-base font-black tracking-tight text-white uppercase m-0">{{ profile.business_name|default:"Sri Basaveshwara & Co." }}</h4>
+              <p class="text-[11px] text-gray-300 font-medium mt-0.5 mb-0">{{ profile.tagline|default:"Agricultural Harvesting & Heavy Equipment Fleet Hub" }}</p>
+              <p class="text-[10px] text-gray-400 mt-1 mb-0">{{ profile.full_address }}</p>
+              <p class="text-[10px] text-emerald-400 font-mono mt-0.5 mb-0">Phone: {{ profile.phone|default:"+91 98801 99000" }}</p>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[9px] font-bold uppercase border border-emerald-500/30">
+                TAX INVOICE
+              </span>
+              {% if profile.gst_number %}
+                <div class="text-[9px] font-mono text-gray-400 mt-1">GSTIN: {{ profile.gst_number }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 space-y-3 bg-slate-50">
+          <div class="p-2.5 rounded-lg bg-white border border-gray-200">
+            <span class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block font-mono">Payment Instructions</span>
+            <div class="grid grid-cols-2 gap-2 mt-1 text-[11px]">
+              <div>
+                <span class="text-gray-500 text-[10px]">Bank:</span>
+                <strong class="text-gray-800 block">{{ profile.bank_name|default:"State Bank of India" }}</strong>
+              </div>
+              <div>
+                <span class="text-gray-500 text-[10px]">Account No:</span>
+                <strong class="text-gray-800 font-mono block">{{ profile.bank_account_no|default:"40912345678" }}</strong>
+              </div>
+              <div>
+                <span class="text-gray-500 text-[10px]">IFSC Code:</span>
+                <strong class="text-gray-800 font-mono block">{{ profile.bank_ifsc|default:"SBIN0001234" }}</strong>
+              </div>
+              <div>
+                <span class="text-gray-500 text-[10px]">UPI VPA:</span>
+                <strong class="text-emerald-700 font-mono block">{{ profile.upi_id|default:"basaveshwara@sbi" }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-gray-200 flex items-center justify-between text-[10px] text-gray-600">
+            <span>Authorized Signatory:</span>
+            <strong class="text-gray-900">{{ profile.authorized_signatory_name }} ({{ profile.authorized_signatory_designation }})</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 rounded-xl bg-[#131A26] border border-[#28354A] mt-4 text-xs text-gray-400">
+        <i class="bi bi-info-circle text-sky-400 mr-1"></i>
+        <span>Changes saved here are instantly reflected across all printable customer invoices, PDF reports, daily closing receipts, and WhatsApp bill headers.</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

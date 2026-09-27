@@ -1359,6 +1359,36 @@ def work_entry_invoice_view(request, entry_id):
 
 
 @role_required(['OWNER', 'MANAGER', 'ACCOUNTANT', 'HARVESTER_OPERATOR', 'TRACTOR_DRIVER'])
+def work_entry_thermal_view(request, entry_id):
+    """
+    Renders 58mm / 80mm compact thermal receipt slip for field Bluetooth POS printers.
+    """
+    entry = get_object_or_404(
+        MachineWorkEntry.objects.select_related(
+            'machine', 'customer', 'operator', 'receivable'
+        ),
+        id=entry_id,
+        is_deleted=False
+    )
+    from django.db.models import Sum, F
+    farmer_outstanding_udhar = entry.customer.receivables.filter(
+        is_deleted=False
+    ).exclude(status='PAID').aggregate(
+        s=Sum(F('total_amount') - F('received_amount'))
+    )['s'] or Decimal('0.00')
+
+    from apps.reports.services.company_profile_service import CompanyProfileService
+    profile = CompanyProfileService.get_profile()
+
+    return render(request, 'machines/work_entry_thermal_receipt.html', {
+        'entry': entry,
+        'profile': profile,
+        'farmer_outstanding_udhar': farmer_outstanding_udhar,
+        'title': f"Thermal Slip: {entry.manual_bill_no or entry.work_code}",
+    })
+
+
+@role_required(['OWNER', 'MANAGER', 'ACCOUNTANT', 'HARVESTER_OPERATOR', 'TRACTOR_DRIVER'])
 def work_entry_pdf_view(request, entry_id):
     """
     Generates official A4 Work Entry / Billing Invoice PDF using WorkInvoicePDFService.

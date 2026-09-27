@@ -297,3 +297,40 @@ msgstr "ಬಳಕೆದಾರರ ನಿರ್ವಹಣೆ"
 
 msgid "Sign Out"
 msgstr "ಲಾಗ್‌ಔಟ್"
+
+# Phase 11 & Extended Modules
+msgid "Business Branding & Header"
+msgstr "ವ್ಯಾಪಾರ ಬ್ರ್ಯಾಂಡಿಂಗ್ ಮತ್ತು ಹೆಡರ್"
+
+msgid "Business Branding & Invoicing Header"
+msgstr "ವ್ಯಾಪಾರ ಬ್ರ್ಯಾಂಡಿಂಗ್ ಮತ್ತು ಇನ್‌ವಾಯ್ಸ್ ಹೆಡರ್"
+
+msgid "Inter-Account Transfer"
+msgstr "ಖಾತೆಗಳ ನಡುವೆ ಹಣ ವರ್ಗಾವಣೆ"
+
+msgid "Transfer Funds"
+msgstr "ಹಣ ವರ್ಗಾಯಿಸಿ"
+
+msgid "Source Account"
+msgstr "ಮೂಲ ಖಾತೆ"
+
+msgid "Destination Account"
+msgstr "ಸ್ವೀಕರಿಸುವ ಖಾತೆ"
+
+msgid "Transfer Amount"
+msgstr "ವರ್ಗಾವಣೆ ಮೊತ್ತ"
+
+msgid "Live Balance Preview"
+msgstr "ಲೈವ್ ಬ್ಯಾಲೆನ್ಸ್ ವೀಕ್ಷಣೆ"
+
+msgid "Download DB Backup"
+msgstr "ಡೇಟಾಬೇಸ್ ಬ್ಯಾಕಪ್ ಡೌನ್‌ಲೋಡ್"
+
+msgid "Equity Reconciliation"
+msgstr "ಬಂಡವಾಳ ಹೊಂದಾಣಿಕೆ"
+
+msgid "Thermal Slip"
+msgstr "ಥರ್ಮಲ್ ರಸೀದಿ"
+
+msgid "Thermal Print"
+msgstr "ಥರ್ಮಲ್ ಪ್ರಿಂಟ್"

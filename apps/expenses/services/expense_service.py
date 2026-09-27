@@ -201,7 +201,7 @@ class ExpenseService:
         profile = getattr(user, 'profile', None)
         is_owner = getattr(profile, 'is_owner', False) if profile else False
         if not is_owner and not getattr(user, 'is_superuser', False):
-            raise ValidationError("Financial reversals are strictly restricted to system Owners.")
+            raise ValidationError("Financial reversals are strictly restricted to system Owners or Accountants.")
 
         if not reason or len(reason.strip()) < 5:
             raise ValidationError({"reason": "A valid explanation (minimum 5 characters) is required for financial reversals."})
@@ -255,7 +255,7 @@ class ExpenseService:
         profile = getattr(user, 'profile', None)
         is_owner = getattr(profile, 'is_owner', False) if profile else False
         if not is_owner and not getattr(user, 'is_superuser', False):
-            raise ValidationError("Deleting expense records is restricted to system Owners.")
+            raise ValidationError("Deleting expense records is restricted to system Owners or Accountants.")
 
         with transaction.atomic():
             expense = Expense.objects.select_for_update().get(id=expense_id, is_deleted=False)

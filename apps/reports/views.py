@@ -185,3 +185,91 @@ def receivables_aging_pdf_view(request):
         as_of_date=as_of_date
     )
 
+
+@accountant_or_owner_required
+def company_profile_view(request):
+    """
+    View to configure Business Profile, Invoicing Headers, and Bank Payment info.
+    Accessible to Owner and Accountant.
+    """
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from apps.audit.models import AuditLog
+    from apps.audit.utils import log_audit_event
+    from apps.reports.forms import CompanyProfileForm
+    from apps.reports.services.company_profile_service import CompanyProfileService
+
+    profile = CompanyProfileService.get_profile()
+    if request.method == 'POST':
+        form = CompanyProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            saved_profile = form.save()
+            CompanyProfileService.invalidate_cache()
+            log_audit_event(
+                request.user,
+                AuditLog.ACTION_UPDATE,
+                'CompanyProfile',
+                saved_profile.id,
+                changes={'business_name': saved_profile.business_name},
+                request=request
+            )
+            messages.success(request, "Business Branding & Invoicing Header updated successfully.")
+            return redirect('reports:company_profile')
+        else:
+            messages.error(request, "Please correct the form errors below.")
+    else:
+        form = CompanyProfileForm(instance=profile)
+
+    return render(request, 'reports/company_profile_form.html', {
+        'form': form,
+        'profile': profile,
+        'title': 'Business Branding & Invoicing Header Settings',
+    })
+
+
+@accountant_or_owner_required
+def database_snapshot_export_view(request):
+    """
+    Exports an authoritative gzipped JSON database snapshot for disaster recovery.
+    Strictly restricted to Owner and Accountant.
+    """
+    import io
+    import gzip
+    from django.core.management import call_command
+    from apps.audit.models import AuditLog
+    from apps.audit.utils import log_audit_event
+
+    timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"ets_database_snapshot_{timestamp}.json.gz"
+
+    buffer = io.StringIO()
+    call_command(
+        'dumpdata',
+        natural_foreign=True,
+        natural_primary=True,
+        exclude=['contenttypes', 'auth.permission', 'sessions'],
+        stdout=buffer
+    )
+
+    json_bytes = buffer.getvalue().encode('utf-8')
+    gz_buffer = io.BytesIO()
+    with gzip.GzipFile(fileobj=gz_buffer, mode='wb') as gz:
+        gz.write(json_bytes)
+
+    gz_content = gz_buffer.getvalue()
+
+    log_audit_event(
+        request.user,
+        AuditLog.ACTION_EXPORT,
+        'DatabaseSnapshot',
+        None,
+        changes={'filename': filename, 'size_bytes': len(gz_content)},
+        request=request
+    )
+
+    response = HttpResponse(gz_content, content_type='application/gzip')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+

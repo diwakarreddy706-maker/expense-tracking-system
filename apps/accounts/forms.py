@@ -82,9 +82,11 @@ class UserCreateForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password'])
+        role = self.cleaned_data.get('role', UserProfile.ROLE_EMPLOYEE)
+        if role in (UserProfile.ROLE_OWNER, UserProfile.ROLE_ACCOUNTANT):
+            user.is_staff = True
         if commit:
             user.save()
-            role = self.cleaned_data.get('role', UserProfile.ROLE_EMPLOYEE)
             phone = self.cleaned_data.get('phone_number', '')
             profile, _ = UserProfile.objects.get_or_create(user=user)
             profile.role = role
@@ -120,9 +122,13 @@ class UserEditForm(forms.ModelForm):
         user = super().save(commit=commit)
         if commit:
             profile = user.profile
-            profile.role = self.cleaned_data.get('role')
+            new_role = self.cleaned_data.get('role')
+            profile.role = new_role
             profile.phone_number = self.cleaned_data.get('phone_number')
             profile.save()
+            if new_role in (UserProfile.ROLE_OWNER, UserProfile.ROLE_ACCOUNTANT):
+                user.is_staff = True
+                user.save(update_fields=['is_staff'])
             from django.contrib.auth.models import Group
             group, _ = Group.objects.get_or_create(name=profile.role)
             user.groups.set([group])

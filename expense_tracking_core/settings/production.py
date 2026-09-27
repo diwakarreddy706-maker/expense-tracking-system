@@ -38,12 +38,36 @@ if render_hostname:
     if render_origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(render_origin)
 
+# Custom Domain Integration (Handles CUSTOM_DOMAIN=erp.sribasaveshwara.in or CUSTOM_DOMAINS=domain1.com,domain2.in)
+custom_domains_env = os.getenv('CUSTOM_DOMAINS') or os.getenv('CUSTOM_DOMAIN') or ''
+for domain in [d.strip() for d in custom_domains_env.split(',') if d.strip()]:
+    clean_domain = domain.replace('https://', '').replace('http://', '').split('/')[0].strip()
+    if clean_domain:
+        if clean_domain not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(clean_domain)
+        www_domain = f"www.{clean_domain}" if not clean_domain.startswith('www.') else clean_domain
+        if www_domain not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(www_domain)
+        for origin in [f"https://{clean_domain}", f"https://{www_domain}"]:
+            if origin not in CSRF_TRUSTED_ORIGINS:
+                CSRF_TRUSTED_ORIGINS.append(origin)
+
 # Reverse Proxy SSL Header Configuration
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Production Static and Media Roots
 STATIC_ROOT = Path(os.getenv('STATIC_ROOT', str(BASE_DIR / 'staticfiles')))
-MEDIA_ROOT = Path(os.getenv('MEDIA_ROOT', str(BASE_DIR / 'media')))
+
+PERSISTENT_DATA_DIR = os.getenv('PERSISTENT_DATA_DIR') or os.getenv('RENDER_DISK_PATH')
+if PERSISTENT_DATA_DIR:
+    MEDIA_ROOT = Path(PERSISTENT_DATA_DIR) / 'media'
+    BACKUP_DIR = Path(PERSISTENT_DATA_DIR) / 'backups'
+else:
+    MEDIA_ROOT = Path(os.getenv('MEDIA_ROOT', str(BASE_DIR / 'media')))
+    BACKUP_DIR = Path(os.getenv('BACKUP_DIR', str(BASE_DIR / 'backups')))
+
+MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 
 # WhiteNoise production static asset storage with compression and cache headers
 WHITENOISE_MANIFEST_STRICT = False

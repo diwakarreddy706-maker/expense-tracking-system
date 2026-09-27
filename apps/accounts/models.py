@@ -43,11 +43,11 @@ class UserProfile(models.Model):
 
     @property
     def is_owner(self):
-        return self.role == self.ROLE_OWNER
+        return self.role in (self.ROLE_OWNER, self.ROLE_ACCOUNTANT)
 
     @property
     def is_accountant(self):
-        return self.role == self.ROLE_ACCOUNTANT
+        return self.role in (self.ROLE_OWNER, self.ROLE_ACCOUNTANT)
 
     @property
     def is_manager(self):

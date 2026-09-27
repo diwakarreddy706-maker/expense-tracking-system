@@ -85,7 +85,7 @@
       {% endif %}
     {% endif %}
 
-    {% if request.user.profile.is_owner and job.status != 'COMPLETED' %}
+    {% if (request.user.profile.is_owner or request.user.profile.is_accountant) and job.status != 'COMPLETED' %}
     <button type="button" class="p-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] text-xs transition-colors" data-bs-toggle="modal" data-bs-target="#deleteJobModal" title="Delete Job" aria-label="Delete Job">
       <i class="bi bi-trash"></i>
     </button>

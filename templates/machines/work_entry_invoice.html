@@ -34,8 +34,12 @@
     </a>
     <button type="button" onclick="window.print()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 font-semibold text-xs border border-gray-700 shadow-sm transition-all cursor-pointer">
       <i class="bi bi-printer-fill text-emerald-400"></i>
-      <span>Print</span>
+      <span>Print A4</span>
     </button>
+    <a href="{% url 'machines:work_thermal' entry.id %}?autoprint=1" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-sm transition-all border-0 no-underline cursor-pointer" title="Print 58mm / 80mm POS Thermal Slip">
+      <i class="bi bi-receipt"></i>
+      <span>Thermal Slip</span>
+    </a>
     <a href="{% url 'machines:work_pdf' entry.id %}" download="Harvesting_Bill_{{ entry.manual_bill_no|default:entry.work_code }}.pdf" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-sm transition-all border-0 no-underline cursor-pointer">
       <i class="bi bi-file-earmark-pdf-fill"></i>
       <span>Download PDF</span>
@@ -49,9 +53,9 @@
   <div class="voucher-header px-8 py-6 text-white">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h1 class="text-xl sm:text-2xl font-black tracking-tight m-0 uppercase text-white">SRI BASAVESHWARA &amp; CO.</h1>
-        <p class="text-xs header-subtext font-medium mt-1 mb-0">Agricultural Harvesting &amp; Heavy Equipment Fleet Hub</p>
-        <p class="text-[11px] header-subtext mt-0.5 mb-0">Gangavati • Raichur • Honnali • Karnataka | Phone: +91 9880199000</p>
+        <h1 class="text-xl sm:text-2xl font-black tracking-tight m-0 uppercase text-white">{{ company_profile.business_name|default:"SRI BASAVESHWARA & CO." }}</h1>
+        <p class="text-xs header-subtext font-medium mt-1 mb-0">{{ company_profile.tagline|default:"Agricultural Harvesting & Heavy Equipment Fleet Hub" }}</p>
+        <p class="text-[11px] header-subtext mt-0.5 mb-0">{{ company_profile.full_address }} | Phone: {{ company_profile.phone|default:"+91 9880199000" }}{% if company_profile.gst_number %} | GSTIN: {{ company_profile.gst_number }}{% endif %}</p>
       </div>
       <div class="text-left sm:text-right">
         <span class="voucher-badge inline-block px-3 py-1 rounded font-black text-xs font-mono uppercase tracking-wide">
@@ -230,6 +234,21 @@
       </div>
     {% endif %}
 
+    {% if company_profile.bank_account_no or company_profile.upi_id %}
+    <div class="p-3 rounded-xl bg-slate-50 border border-gray-200 text-xs text-gray-700 font-mono flex flex-wrap items-center justify-between gap-2">
+      <div>
+        {% if company_profile.bank_name %}<span class="text-gray-500">Bank:</span> <strong>{{ company_profile.bank_name }}</strong> &bull; {% endif %}
+        {% if company_profile.bank_account_no %}<span class="text-gray-500">A/c:</span> <strong>{{ company_profile.bank_account_no }}</strong> &bull; {% endif %}
+        {% if company_profile.bank_ifsc %}<span class="text-gray-500">IFSC:</span> <strong>{{ company_profile.bank_ifsc }}</strong>{% endif %}
+      </div>
+      {% if company_profile.upi_id %}
+      <div class="text-emerald-700 font-bold">
+        <span>UPI:</span> {{ company_profile.upi_id }}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
     <!-- Footer Signatures -->
     <div class="grid grid-cols-2 gap-8 pt-8 border-t border-gray-200 text-center text-xs text-gray-500 font-mono" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px;">
       <div>
@@ -238,7 +257,7 @@
       </div>
       <div>
         <div class="h-12 border-b border-gray-400 w-48 mx-auto"></div>
-        <span class="block mt-1 font-semibold text-gray-700">For Sri Basaveshwara &amp; Co. (Authorized)</span>
+        <span class="block mt-1 font-semibold text-gray-700">For {{ company_profile.business_name|default:"Sri Basaveshwara & Co." }} ({{ company_profile.authorized_signatory_designation|default:"Authorized" }})</span>
       </div>
     </div>
   </div>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+{% load i18n %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }}</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #f1f5f9;
+      color: #000;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12px;
+      line-height: 1.35;
+      padding: 16px;
+    }
+    .ticket-container {
+      max-width: 58mm;
+      width: 100%;
+      margin: 0 auto;
+      background: #fff;
+      padding: 8px 6px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .text-left { text-align: left; }
+    .font-bold { font-weight: bold; }
+    .uppercase { text-transform: uppercase; }
+    .dotted-line {
+      border-bottom: 1px dashed #000;
+      margin: 6px 0;
+    }
+    .double-line {
+      border-bottom: 2px double #000;
+      margin: 6px 0;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin: 2px 0;
+    }
+    .no-print {
+      max-width: 58mm;
+      margin: 0 auto 12px auto;
+      display: flex;
+      gap: 6px;
+    }
+    .btn {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+      text-align: center;
+      text-decoration: none;
+    }
+    .btn-print { background: #059669; color: #fff; }
+    .btn-back { background: #334155; color: #fff; }
+
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+        margin: 0;
+      }
+      .no-print { display: none !important; }
+      .ticket-container {
+        border: none;
+        box-shadow: none;
+        max-width: 100%;
+        width: 58mm;
+        padding: 2px 2px;
+      }
+      @page {
+        size: 58mm auto;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen Controls -->
+  <div class="no-print">
+    <button onclick="window.print()" class="btn btn-print">🖨️ Print Slip</button>
+    <a href="{% url 'machines:work_invoice' entry.id %}" class="btn btn-back">⬅ Back</a>
+  </div>
+
+  <!-- Thermal Paper Container -->
+  <div class="ticket-container">
+    <div class="text-center">
+      <div class="font-bold uppercase" style="font-size: 13px;">{{ profile.business_name|default:"SRI BASAVESHWARA & CO." }}</div>
+      <div style="font-size: 10px;">{{ profile.tagline|default:"Agricultural Harvesting & Fleet Hub" }}</div>
+      <div style="font-size: 9px;">{{ profile.full_address }}</div>
+      <div style="font-size: 10px; font-weight: bold;">Ph: {{ profile.phone|default:"+91 98801 99000" }}</div>
+      {% if profile.gst_number %}
+        <div style="font-size: 9px;">GST: {{ profile.gst_number }}</div>
+      {% endif %}
+    </div>
+
+    <div class="double-line"></div>
+
+    <div class="text-center font-bold uppercase" style="font-size: 11px; letter-spacing: 1px;">
+      HARVESTING RECEIPT
+    </div>
+
+    <div class="dotted-line"></div>
+
+    <div class="row">
+      <span>Bill No:</span>
+      <span class="font-bold">{{ entry.manual_bill_no|default:entry.work_code }}</span>
+    </div>
+    <div class="row">
+      <span>Date:</span>
+      <span>{{ entry.work_date|date:"d/m/Y" }}</span>
+    </div>
+    <div class="row">
+      <span>Farmer:</span>
+      <span class="font-bold">{{ entry.customer.name }}</span>
+    </div>
+    <div class="row">
+      <span>Village:</span>
+      <span>{{ entry.customer.location_address|default:"Field Area" }}</span>
+    </div>
+    <div class="row">
+      <span>Mobile:</span>
+      <span>{{ entry.customer.phone|default:"--" }}</span>
+    </div>
+
+    <div class="dotted-line"></div>
+
+    <div class="row">
+      <span>Machine:</span>
+      <span class="font-bold">{{ entry.machine.registration_no|default:entry.machine.name }}</span>
+    </div>
+    <div class="row">
+      <span>Operator:</span>
+      <span>{{ entry.operator.full_name|default:"Crew" }}</span>
+    </div>
+    <div class="row">
+      <span>Timing:</span>
+      <span>{{ entry.start_time|default:"" }} - {{ entry.end_time|default:"" }}</span>
+    </div>
+    <div class="row">
+      <span>Work Units:</span>
+      <span class="font-bold">{{ entry.net_working_hours }} hrs / acres</span>
+    </div>
+    <div class="row">
+      <span>Rate:</span>
+      <span>Rs. {{ entry.hourly_rate|floatformat:2 }}</span>
+    </div>
+
+    <div class="dotted-line"></div>
+
+    <div class="row font-bold" style="font-size: 13px;">
+      <span>GROSS TOTAL:</span>
+      <span>Rs. {{ entry.total_amount|floatformat:2 }}</span>
+    </div>
+    <div class="row">
+      <span>Advance Paid:</span>
+      <span>Rs. {{ entry.advance_amount|floatformat:2 }}</span>
+    </div>
+    <div class="row font-bold">
+      <span>Balance Due:</span>
+      <span>Rs. {{ entry.udhar_amount|floatformat:2 }}</span>
+    </div>
+
+    {% if farmer_outstanding_udhar > 0 %}
+    <div class="dotted-line"></div>
+    <div class="row font-bold" style="font-size: 11px;">
+      <span>TOTAL OUTSTANDING:</span>
+      <span>Rs. {{ farmer_outstanding_udhar|floatformat:2 }}</span>
+    </div>
+    {% endif %}
+
+    {% if profile.upi_id %}
+    <div class="dotted-line"></div>
+    <div class="text-center" style="font-size: 10px;">
+      <div>Pay via UPI:</div>
+      <div class="font-bold">{{ profile.upi_id }}</div>
+    </div>
+    {% endif %}
+
+    <div class="double-line"></div>
+
+    <div class="text-center" style="font-size: 9px; margin-top: 4px;">
+      <div>Thank you for choosing</div>
+      <div class="font-bold uppercase">{{ profile.business_name|default:"Sri Basaveshwara & Co." }}</div>
+      <div style="margin-top: 8px;">Signature: __________________</div>
+    </div>
+  </div>
+
+  <script>
+    // Auto-trigger print when loaded directly on mobile/pos devices
+    window.addEventListener('load', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('autoprint') === '1') {
+        window.print();
+      }
+    });
+  </script>
+</body>
+</html>

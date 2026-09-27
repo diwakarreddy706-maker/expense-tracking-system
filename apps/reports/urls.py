@@ -12,5 +12,7 @@ urlpatterns = [
     path('receivables-aging/pdf/', views.receivables_aging_pdf_view, name='receivables_aging_pdf'),
     path('financial/', views.financial_reports_view, name='financial'),
     path('export/', views.financial_export_view, name='export'),
+    path('export/database-snapshot/', views.database_snapshot_export_view, name='database_snapshot_export'),
+    path('company-profile/', views.company_profile_view, name='company_profile'),
 ]
 
