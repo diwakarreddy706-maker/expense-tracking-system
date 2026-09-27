@@ -107,6 +107,9 @@ def expense_create_view(request):
                 return redirect('expenses:list')
             except ValidationError as e:
                 form.add_error(None, str(e))
+                messages.error(request, f"Expense entry failed: {str(e)}")
+        else:
+            messages.error(request, "Please correct the highlighted errors in the expense form below.")
     else:
         form = ExpenseForm()
 
@@ -269,6 +272,8 @@ def category_create_view(request):
             return redirect('expenses:categories')
         elif request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax'):
             return JsonResponse({'success': False, 'errors': form.errors.get_json_data()})
+        else:
+            messages.error(request, "Please correct the errors in the category form below.")
     else:
         form = ExpenseCategoryForm()
 
@@ -288,6 +293,8 @@ def category_edit_view(request, category_id):
             updated = form.save()
             messages.success(request, f"Category '{updated.name}' updated.")
             return redirect('expenses:categories')
+        else:
+            messages.error(request, "Please correct the errors in the category form below.")
     else:
         form = ExpenseCategoryForm(instance=category)
 

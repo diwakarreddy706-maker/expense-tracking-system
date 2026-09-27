@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ title }} — Sri Basaveshwara & Co.{% endblock %}
+{% block title %}{{ title|default:"Business Setup & Onboarding Hub" }} | AgriBOS ERP{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto space-y-6 pb-16" x-data="{
@@ -295,7 +295,7 @@
                     </div>
                 </div>
                 <div class="mt-5 pt-3 border-t border-[#28354A] flex gap-2">
-                    <a href="{% url 'finance:customer_create' %}" class="flex-1 text-center py-1.5 px-3 rounded bg-purple-600 hover:bg-purple-500 text-xs font-semibold text-white transition-colors">
+                    <a href="{% url 'finance:customer_create' %}" class="flex-1 text-center py-1.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition-colors">
                         + Add Farmer
                     </a>
                     <a href="{% url 'finance:customers' %}" class="py-1.5 px-3 rounded bg-[#162030] hover:bg-[#28354A] text-xs font-medium text-slate-300 border border-[#28354A] transition-colors">
@@ -557,7 +557,7 @@
                                             <template x-for="(val, key) in row.data" :key="key">
                                                 <div class="text-[11px]">
                                                     <span class="text-slate-400 font-sans" x-text="key + ':'"></span>
-                                                    <span class="text-white font-mono" x-text="val ? val : '—'"></span>
+                                                    <span class="text-white font-mono" x-text="val ? val : '-'"></span>
                                                 </div>
                                             </template>
                                         </div>
@@ -592,32 +592,32 @@
 
         <div class="space-y-4">
             <div class="p-4 bg-[#162030] border border-[#28354A] rounded-lg">
-                <h3 class="text-sm font-bold text-emerald-400">Stage 1 — Financial Accounts & Opening Cash</h3>
+                <h3 class="text-sm font-bold text-emerald-400">Stage 1: Financial Accounts &amp; Opening Cash</h3>
                 <p class="text-xs text-slate-400 mt-1">Register the business cash box, bank current/savings accounts, and UPI wallets. Set the accurate opening cash and bank balances as of the cutoff date. These balances initialize the ledger without creating phantom revenue.</p>
             </div>
 
             <div class="p-4 bg-[#162030] border border-[#28354A] rounded-lg">
-                <h3 class="text-sm font-bold text-blue-400">Stage 2 — Fleet Machinery & Baseline Meter Readings</h3>
+                <h3 class="text-sm font-bold text-blue-400">Stage 2: Fleet Machinery &amp; Baseline Meter Readings</h3>
                 <p class="text-xs text-slate-400 mt-1">Register every tractor, harvester, JCB, and implement with its unique registration number and current hour/kilometer meter reading. Meter readings establish fuel efficiency baselines.</p>
             </div>
 
             <div class="p-4 bg-[#162030] border border-[#28354A] rounded-lg">
-                <h3 class="text-sm font-bold text-purple-400">Stage 3 — Farmers / Regular Customers</h3>
+                <h3 class="text-sm font-bold text-indigo-400">Stage 3: Farmers / Regular Customers</h3>
                 <p class="text-xs text-slate-400 mt-1">Onboard regular agricultural clients with village locations and contact numbers. If clients carry opening due balances from prior seasons, enter them in the opening balance field.</p>
             </div>
 
             <div class="p-4 bg-[#162030] border border-[#28354A] rounded-lg">
-                <h3 class="text-sm font-bold text-amber-400">Stage 4 — Fuel & Spare Parts Suppliers</h3>
+                <h3 class="text-sm font-bold text-amber-400">Stage 4: Fuel &amp; Spare Parts Suppliers</h3>
                 <p class="text-xs text-slate-400 mt-1">Register diesel petrol pumps, spare parts distributors, and mechanical workshops. Record any outstanding credit opening dues for accurate liability tracking.</p>
             </div>
 
             <div class="p-4 bg-[#162030] border border-[#28354A] rounded-lg">
-                <h3 class="text-sm font-bold text-teal-400">Stage 5 — Staff, Drivers & Compensation Wage Rules</h3>
+                <h3 class="text-sm font-bold text-teal-400">Stage 5: Staff, Drivers &amp; Compensation Wage Rules</h3>
                 <p class="text-xs text-slate-400 mt-1">Add drivers, harvester operators, and mechanics. Configure their wage rates (e.g. daily wage allowance, monthly salary, or per-acre harvesting commission).</p>
             </div>
 
             <div class="p-4 bg-[#162030] border border-[#28354A] rounded-lg">
-                <h3 class="text-sm font-bold text-emerald-400">Stage 6 — Opening Balance Reconciliation &amp; Verification</h3>
+                <h3 class="text-sm font-bold text-emerald-400">Stage 6: Opening Balance Reconciliation &amp; Verification</h3>
                 <p class="text-xs text-slate-400 mt-1">Navigate to the Opening Balance Reconciliation screen. Ensure that total opening funds + customer receivables - supplier payables equals the verified initial capital of the business.</p>
             </div>
 
@@ -625,7 +625,7 @@
                 <div>
                     <h3 class="text-sm font-bold text-rose-400 flex items-center gap-1.5">
                         <i class="bi bi-shield-shaded"></i>
-                        <span>Stage 7 — Data Protection, Daily Backups &amp; Disaster Recovery</span>
+                        <span>Stage 7: Data Protection, Daily Backups &amp; Disaster Recovery</span>
                     </h3>
                     <p class="text-xs text-slate-400 mt-1">Download encrypted/gzipped database snapshots for offline preservation or run automated scheduled backups via CLI (`python manage.py backup_database`).</p>
                 </div>

@@ -79,7 +79,12 @@
   </div>
 
   <!-- Navigation Menu List -->
-  <nav class="flex-1 overflow-y-auto overscroll-contain px-3 py-3 space-y-1 text-sm font-medium" style="-webkit-overflow-scrolling: touch;" aria-label="Sidebar Menu">
+  <nav
+    class="flex-1 overflow-y-auto overscroll-contain px-3 py-3 space-y-1 text-sm font-medium"
+    style="-webkit-overflow-scrolling: touch;"
+    aria-label="Sidebar Menu"
+    @click="if (window.innerWidth < 1024 && $event.target.closest('a')) sidebarOpen = false"
+  >
     {% with role=request.user.profile.role %}
 
     <!-- Section: Operations -->

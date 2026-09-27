@@ -120,6 +120,8 @@ def user_create_view(request):
             )
             messages.success(request, f"User '{new_user.username}' created successfully with role {new_user.profile.get_role_display()}.")
             return redirect('accounts:user_list')
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = UserCreateForm()
 
@@ -158,6 +160,8 @@ def user_edit_view(request, user_id):
             )
             messages.success(request, f"User '{updated_user.username}' updated successfully.")
             return redirect('accounts:user_list')
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = UserEditForm(instance=target_user)
 

@@ -56,6 +56,21 @@ def custom_server_error_view(request):
     return render(request, 'errors/500.html', status=500)
 
 
+from django.views.decorators.cache import cache_page
+
+
+@cache_page(60 * 60 * 24)
+def privacy_policy_view(request):
+    """Internal privacy policy and data governance overview (cached 24h)."""
+    return render(request, 'legal/privacy.html', {'title': 'Privacy Policy'})
+
+
+@cache_page(60 * 60 * 24)
+def terms_of_service_view(request):
+    """Internal terms of service and operator code of conduct (cached 24h)."""
+    return render(request, 'legal/terms.html', {'title': 'Terms & Conditions'})
+
+
 handler400 = 'expense_tracking_core.urls.custom_bad_request_view'
 handler403 = 'expense_tracking_core.urls.custom_permission_denied_view'
 handler404 = 'expense_tracking_core.urls.custom_page_not_found_view'
@@ -65,6 +80,8 @@ urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
     path('admin/', admin.site.urls),
     path('health/', health_check, name='health_check'),
+    path('privacy/', privacy_policy_view, name='privacy_policy'),
+    path('terms/', terms_of_service_view, name='terms_of_service'),
     path('', dashboard_index, name='root'),
     path('dashboard/', include('apps.dashboard.urls')),
     path('accounts/', include('apps.accounts.urls')),

@@ -38,6 +38,7 @@ const STATIC_SHELL_ASSETS = [
   '/static/icons/favicon-32x32.png',
   '/static/icons/favicon-16x16.png',
   '/static/icons/logo.png',
+  '/static/icons/logo.webp',
   '/static/manifest.webmanifest'
 ];
 

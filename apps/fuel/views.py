@@ -105,6 +105,9 @@ def fuel_create_view(request):
                 return redirect('fuel:list')
             except ValidationError as e:
                 form.add_error(None, str(e))
+                messages.error(request, f"Fuel entry failed: {str(e)}")
+        else:
+            messages.error(request, "Please correct the highlighted errors in the fuel form below.")
     else:
         form = FuelEntryForm()
 

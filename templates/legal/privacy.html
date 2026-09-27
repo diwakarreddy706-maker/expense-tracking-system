@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Privacy Policy | AgriBOS ERP{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-6 sm:py-8 space-y-6">
+  <div class="border-b border-[#28354A] pb-5">
+    <div class="flex items-center gap-2.5 text-xs text-emerald-400 font-semibold mb-2">
+      <i class="bi bi-shield-check"></i>
+      <span>Internal System Policy</span>
+    </div>
+    <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight m-0">
+      Privacy Policy &amp; Data Protection
+    </h1>
+    <p class="text-xs text-gray-400 mt-1.5 mb-0">
+      Last Updated: {% now "F d, Y" %} | Sri Basaveshwara &amp; Co. Enterprise Operations
+    </p>
+  </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 sm:p-8 space-y-6 text-xs text-gray-300 leading-relaxed shadow-sm">
+    <section class="space-y-2">
+      <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        1. Purpose &amp; Scope of Operations
+      </h2>
+      <p>
+        This Privacy Policy governs the processing, retention, and access protocols for operational and financial data recorded within AgriBOS ERP, operated by Sri Basaveshwara &amp; Co. This platform is a private, role-gated business ledger used exclusively by authorized management, accountants, operators, and field supervisors to record machinery telemetry, diesel dispensing, staff wages, and agricultural harvesting contracts.
+      </p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        2. Information Recorded
+      </h2>
+      <p>The system stores operational data required for farm contracting and business auditing:</p>
+      <ul class="list-disc pl-5 space-y-1 text-gray-400">
+        <li><strong>Farmer / Client Information:</strong> Name, contact phone number, billing address/village, land location, and credit ledger balance (Udhar Katha).</li>
+        <li><strong>Fleet &amp; Equipment Telemetry:</strong> Machine serials, hour meter readings, GPS acreage, diesel consumption slips, and breakdown service logs.</li>
+        <li><strong>Staff &amp; Crew Records:</strong> Driver names, phone numbers, assigned machinery, attendance, advance draws, and wage payout disbursements.</li>
+        <li><strong>Audit Logging:</strong> Timestamp, operator username, IP address, and mutation changes for all financial and master record modifications.</li>
+      </ul>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        3. Cookie &amp; Client Storage Standards
+      </h2>
+      <p>
+        AgriBOS ERP employs strictly necessary first-party cookies solely to maintain authenticated user sessions and prevent Cross-Site Request Forgery (CSRF). The application contains <strong>zero third-party advertising trackers</strong>, zero commercial analytics beacons, and zero cross-site behavioral telemetry.
+      </p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        4. Data Security &amp; Access Controls
+      </h2>
+      <p>
+        Access to financial ledgers, bank transactions, and employee compensation is strictly restricted via Role-Based Access Control (RBAC). Data in transit is encrypted using modern TLS cryptographic ciphers, and automated disaster-recovery snapshots are archived daily with AES encryption.
+      </p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        5. Contact &amp; Data Administrator
+      </h2>
+      <p>
+        For inquiries regarding record rectifications, ledger audits, or data deletion requests, contact the System Administrator at Sri Basaveshwara &amp; Co. headquarters.
+      </p>
+    </section>
+  </div>
+
+  <div class="flex items-center justify-between text-xs text-gray-400">
+    <a href="{% url 'terms_of_service' %}" class="hover:text-emerald-400 transition-colors">View Terms &amp; Conditions &rarr;</a>
+    <a href="{% url 'dashboard:index' %}" class="px-3.5 py-1.5 rounded-xl bg-[#182234] hover:bg-gray-800 text-gray-200 border border-[#28354A] transition-colors no-underline">
+      Return to Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}

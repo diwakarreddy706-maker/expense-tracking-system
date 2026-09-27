@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
-  <title>{% block title %}{{ title|default:"Sri Basaveshwara Harvesting & Co." }}{% endblock %}</title>
+  <title>{% block title %}{{ title|default:"AgriBOS ERP • Sri Basaveshwara & Co." }}{% endblock %}</title>
 
   <!-- Instant Theme Initializer (Prevents Theme Flash: Dark / Light / Sunlight) -->
   <script>
@@ -31,12 +31,13 @@
   <meta name="theme-color" content="#10B981">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Sri Basaveshwara">
+  <meta name="apple-mobile-web-app-title" content="AgriBOS ERP">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="icon" type="image/x-icon" href="{% static 'icons/favicon.ico' %}?v=3.2">
-  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}?v=3.2">
-  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'icons/favicon-16x16.png' %}?v=3.2">
-  <link rel="apple-touch-icon" sizes="192x192" href="{% static 'icons/icon-192.png' %}?v=3.2">
+  <link rel="icon" type="image/svg+xml" href="{% static 'icons/icon-192.svg' %}">
+  <link rel="alternate icon" type="image/x-icon" href="{% static 'icons/favicon.ico' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'icons/favicon-16x16.png' %}">
+  <link rel="apple-touch-icon" sizes="192x192" href="{% static 'icons/icon-192.png' %}">
 
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -68,6 +69,19 @@
   @keydown.escape.window="sidebarOpen = false; quickExpenseOpen = false; quickAddOpen = false"
   hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
 >
+  <!-- Accessibility: Skip to Main Content -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-emerald-600 focus:text-white focus:font-semibold focus:rounded-xl focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-emerald-400">
+    Skip to main content
+  </a>
+
+  <!-- Viewport Reading/Scroll Progress Bar -->
+  <div id="scrollProgressBar" class="fixed top-0 left-0 h-[2.5px] bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 z-50 transition-all duration-75 pointer-events-none" style="width: 0%"></div>
+
+  <!-- Global HTMX Async Request Loader -->
+  <div id="global-page-loader" class="fixed top-0 left-0 right-0 h-0.5 z-50 bg-emerald-500 overflow-hidden pointer-events-none" style="display: none;">
+    <div class="h-full bg-emerald-300 w-1/3 animate-pulse"></div>
+  </div>
+
   <div class="app-layout-wrapper min-h-screen">
     <!-- Mobile Sidebar Backdrop -->
     <div
@@ -99,7 +113,7 @@
       {% include 'components/pwa_banner.html' %}
 
       <!-- Page Content Viewport -->
-      <main class="app-main-content flex-1 px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 lg:pb-8 max-w-7xl w-full mx-auto" style="-webkit-overflow-scrolling: touch;">
+      <main id="main-content" tabindex="-1" class="app-main-content flex-1 px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-28 lg:pb-8 max-w-7xl w-full mx-auto focus:outline-none" style="-webkit-overflow-scrolling: touch;">
         {% block content %}{% endblock %}
       </main>
 
@@ -107,7 +121,11 @@
       <footer class="border-t border-[#28354A] bg-[#111827]/40 px-4 sm:px-6 lg:px-8 py-3 text-xs text-gray-500 hidden lg:flex justify-between items-center gap-2 print:hidden mt-auto">
         <div class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span>Sri Basaveshwara Harvesting & Co. &bull; Operational &amp; Financial Ledger</span>
+          <span>&copy; {% now "Y" %} {{ company_profile.business_name|default:"Sri Basaveshwara & Co." }} &bull; AgriBOS ERP</span>
+          <span class="text-gray-600">|</span>
+          <a href="{% url 'privacy_policy' %}" class="text-gray-400 hover:text-gray-200 transition-colors no-underline">Privacy</a>
+          <span class="text-gray-600">&bull;</span>
+          <a href="{% url 'terms_of_service' %}" class="text-gray-400 hover:text-gray-200 transition-colors no-underline">Terms</a>
         </div>
         <div class="font-mono text-[11px] text-gray-400">
           v2.0-Production &bull; Powered by Django 5.x &amp; Tailwind
@@ -125,6 +143,7 @@
   <!-- Global Modals & Command Palette -->
   {% include 'components/command_palette.html' %}
   {% include 'components/quick_expense_modal.html' %}
+  {% include 'components/faq_modal.html' %}
 
   <!-- HTMX Global CSRF Configuration Script -->
   <script>
@@ -225,6 +244,17 @@
       });
     })();
   </script>
+
+  <!-- Floating Back to Top Button (Appears on scroll > 300px) -->
+  <button
+    id="backToTopBtn"
+    type="button"
+    class="fixed bottom-20 lg:bottom-6 right-4 sm:right-6 z-30 w-11 h-11 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-950/70 border border-emerald-400/30 backdrop-blur-md transition-all duration-300 opacity-0 pointer-events-none translate-y-4 print:hidden flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-emerald-400"
+    aria-label="Scroll back to top"
+    title="Back to top"
+  >
+    <i class="bi bi-chevron-up text-base font-bold"></i>
+  </button>
 
   {% block extra_js %}{% endblock %}
 </body>

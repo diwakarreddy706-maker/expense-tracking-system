@@ -168,6 +168,7 @@ class BudgetService:
             )
 
             if items_data:
+                items_to_create = []
                 for item in items_data:
                     category = item.get('category')
                     machine = item.get('machine')
@@ -180,13 +181,15 @@ class BudgetService:
                     if allocated <= Decimal('0.00'):
                         raise ValidationError(f"Allocated amount for {category.name} must be greater than zero.")
 
-                    BudgetItem.objects.create(
+                    items_to_create.append(BudgetItem(
                         budget=budget,
                         category=category,
                         machine=machine,
                         allocated_amount=allocated.quantize(Decimal('0.01')),
                         notes=item_note
-                    )
+                    ))
+                if items_to_create:
+                    BudgetItem.objects.bulk_create(items_to_create, batch_size=500)
 
             log_audit_event(
                 user,
@@ -247,18 +250,21 @@ class BudgetService:
             if items_data is not None:
                 # Sync budget items
                 budget.items.all().delete()
+                items_to_create = []
                 for item in items_data:
                     allocated = item.get('allocated_amount')
                     if not isinstance(allocated, Decimal):
                         allocated = Decimal(str(allocated))
 
-                    BudgetItem.objects.create(
+                    items_to_create.append(BudgetItem(
                         budget=budget,
                         category=item.get('category'),
                         machine=item.get('machine'),
                         allocated_amount=allocated.quantize(Decimal('0.01')),
                         notes=item.get('notes')
-                    )
+                    ))
+                if items_to_create:
+                    BudgetItem.objects.bulk_create(items_to_create, batch_size=500)
                 changes['items_updated'] = True
 
             action = AuditLog.ACTION_UPDATE

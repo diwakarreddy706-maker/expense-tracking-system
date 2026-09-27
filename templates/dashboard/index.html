@@ -16,6 +16,10 @@
       <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#182234] border border-[#28354A] text-cyan-400 font-mono text-xs font-semibold">
         <i class="bi bi-calendar3 text-[11px]"></i> {{ kpis.today_formatted }}
       </span>
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-mono text-[11px]">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Synced {% now "H:i" %}</span>
+      </span>
     </div>
     <p class="text-xs sm:text-sm text-gray-400 mt-1.5 mb-0">Daily cash flow, machine expenses, and account balances</p>
   </div>
@@ -115,7 +119,7 @@
           </span>
         {% endif %}
       {% else %}
-        <a href="{% url 'finance:daily_closing' %}" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 no-underline transition-all hover:scale-[1.02]">
+        <a href="{% url 'finance:daily_closing' %}" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 no-underline transition-all hover:scale-[1.02]">
           <i class="bi bi-hourglass-split text-xs"></i> Daily Closing Pending &bull; Match Cash Now
         </a>
       {% endif %}
@@ -303,11 +307,11 @@
   </div>
 
   <!-- Employee Liabilities -->
-  <div class="glass-card card-hover-lift glass-card-emerald border-t-4 border-t-purple-500 p-5 sm:p-6 flex flex-col justify-between">
+  <div class="glass-card card-hover-lift glass-card-emerald border-t-4 border-t-indigo-500 p-5 sm:p-6 flex flex-col justify-between">
     <div>
       <div class="flex items-center justify-between mb-3">
         <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">3. Employee Wage Liabilities</span>
-        <span class="status-pill status-pill-purple">WAGES DUE</span>
+        <span class="status-pill status-pill-indigo">WAGES DUE</span>
       </div>
       {% if kpis.employee_wages_due == 0 %}
         <div class="flex items-center gap-2.5 mt-1">
@@ -317,7 +321,7 @@
           </span>
         </div>
       {% else %}
-        <div class="text-2xl sm:text-3xl font-black text-purple-400 num-tabular tabular-nums mt-1">₹{{ kpis.employee_wages_due|inr }}</div>
+        <div class="text-2xl sm:text-3xl font-black text-indigo-400 num-tabular tabular-nums mt-1">₹{{ kpis.employee_wages_due|inr }}</div>
       {% endif %}
       <div class="text-xs text-gray-400 mt-3 flex items-center gap-2">
         <i class="bi bi-people-fill text-cyan-400"></i>
@@ -326,7 +330,7 @@
     </div>
 
     <div class="pt-4 mt-4 border-t border-[#28354A]">
-      <a href="{% url 'employees:wages' %}" class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-purple-300 no-underline font-medium transition-colors group">
+      <a href="{% url 'employees:wages' %}" class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-indigo-300 no-underline font-medium transition-colors group">
         <span>View payroll ledger &amp; advance payouts</span> <i class="bi bi-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
       </a>
     </div>

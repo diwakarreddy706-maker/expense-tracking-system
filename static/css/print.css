@@ -10,9 +10,24 @@
   }
 
   .app-sidebar,
+  .app-sidebar-container,
+  aside[aria-label="Main Navigation"],
   .app-topbar,
+  header,
+  footer,
+  #backToTopBtn,
+  #scrollProgressBar,
+  #global-page-loader,
+  .mobile-bottom-nav,
+  .toast-container,
+  .toast,
+  .modal,
+  .modal-backdrop,
   .btn,
-  .no-print {
+  button,
+  .no-print,
+  #pwa-install-banner,
+  #sw-update-banner {
     display: none !important;
   }
 

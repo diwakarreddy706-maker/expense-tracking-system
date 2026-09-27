@@ -466,7 +466,6 @@
                       type: options.outputType,
                       lastModified: Date.now()
                     });
-                    console.log(`Image compressed: ${(file.size / 1024).toFixed(1)}KB -> ${(compressedFile.size / 1024).toFixed(1)}KB (${width}x${height} @ Q:${quality})`);
                     resolve(compressedFile);
                   } catch (err) {
                     // Fallback for older browsers without File constructor

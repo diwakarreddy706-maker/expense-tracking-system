@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Terms &amp; Conditions | AgriBOS ERP{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-6 sm:py-8 space-y-6">
+  <div class="border-b border-[#28354A] pb-5">
+    <div class="flex items-center gap-2.5 text-xs text-cyan-400 font-semibold mb-2">
+      <i class="bi bi-file-earmark-text"></i>
+      <span>Operational Terms of Use</span>
+    </div>
+    <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight m-0">
+      Terms &amp; Conditions of Service
+    </h1>
+    <p class="text-xs text-gray-400 mt-1.5 mb-0">
+      Effective Date: {% now "F d, Y" %} | Sri Basaveshwara &amp; Co. Enterprise Operations
+    </p>
+  </div>
+
+  <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 sm:p-8 space-y-6 text-xs text-gray-300 leading-relaxed shadow-sm">
+    <section class="space-y-2">
+      <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+        1. Acceptance of Internal Terms
+      </h2>
+      <p>
+        These Terms and Conditions govern authorized staff, operator, and administrative use of the AgriBOS ERP internal software platform. By logging into this system, users agree to uphold strict standards of financial accuracy, record integrity, and confidential business practices.
+      </p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+        2. Authorized Operator Accounts &amp; Security
+      </h2>
+      <ul class="list-disc pl-5 space-y-1 text-gray-400">
+        <li><strong>Credential Confidentiality:</strong> Account credentials must remain confidential. Sharing login credentials among operators or third-party contractors is strictly prohibited.</li>
+        <li><strong>Field Accuracy:</strong> Machine operators must record genuine hour meters, GPS acreage, and fuel pump slips immediately upon completion of field work.</li>
+        <li><strong>Double-Entry Ledger Integrity:</strong> Cash transactions, inter-account transfers, and farmer settlements must correspond to authentic banking receipts or physical cash counts.</li>
+      </ul>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+        3. Intellectual Property &amp; Data Ownership
+      </h2>
+      <p>
+        All operational records, client databases, harvesting schedules, rate cards, and financial statements compiled within this ERP remain the exclusive intellectual and proprietary property of Sri Basaveshwara &amp; Co. Exporting, distributing, or modifying company records without prior owner authorization constitutes a violation of company policy.
+      </p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+        4. Audit Trails &amp; Accountability
+      </h2>
+      <p>
+        All create, update, delete, and payment reversal actions trigger immutable cryptographic audit log entries detailing the authenticated user identity, timestamp, and field deltas. Unauthorized alterations are subject to disciplinary and financial review.
+      </p>
+    </section>
+  </div>
+
+  <div class="flex items-center justify-between text-xs text-gray-400">
+    <a href="{% url 'privacy_policy' %}" class="hover:text-emerald-400 transition-colors">&larr; View Privacy Policy</a>
+    <a href="{% url 'dashboard:index' %}" class="px-3.5 py-1.5 rounded-xl bg-[#182234] hover:bg-gray-800 text-gray-200 border border-[#28354A] transition-colors no-underline">
+      Return to Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}

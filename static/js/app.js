@@ -118,7 +118,120 @@ document.addEventListener('DOMContentLoaded', () => {
   initNetworkStatusMonitor();
   initPwaInstallPrompt();
   initServiceWorkerUpdates();
+
+  // Modern UI Enhancements: Scroll Progress, Back to Top, Clipboard & HTMX Loader
+  initScrollProgressAndBackToTop();
+  initGlobalClipboard();
+  initHtmxProgressIndicator();
 });
+
+/**
+ * Viewport Scroll Progress Bar & Floating Back to Top Control
+ */
+function initScrollProgressAndBackToTop() {
+  const progressBar = document.getElementById('scrollProgressBar');
+  const backToTopBtn = document.getElementById('backToTopBtn');
+
+  if (!progressBar && !backToTopBtn) return;
+
+  window.addEventListener('scroll', () => {
+    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    
+    if (progressBar) {
+      const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+      progressBar.style.width = scrolled + '%';
+    }
+
+    if (backToTopBtn) {
+      if (winScroll > 320) {
+        backToTopBtn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+        backToTopBtn.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+      } else {
+        backToTopBtn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+        backToTopBtn.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+      }
+    }
+  }, { passive: true });
+
+  if (backToTopBtn) {
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.triggerHaptic(12);
+    });
+  }
+}
+
+/**
+ * Universal Clipboard Copy Utility ([data-copy] & window.copyToClipboard)
+ */
+function initGlobalClipboard() {
+  window.copyToClipboard = function(text, triggerEl) {
+    if (!text) return;
+    const performCopy = () => {
+      window.triggerHaptic(15);
+      if (triggerEl) {
+        const origContent = triggerEl.innerHTML;
+        triggerEl.innerHTML = '<i class="bi bi-check-lg text-emerald-400"></i> Copied';
+        triggerEl.classList.add('text-emerald-400');
+        setTimeout(() => {
+          triggerEl.innerHTML = origContent;
+          triggerEl.classList.remove('text-emerald-400');
+        }, 1800);
+      }
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(performCopy).catch(() => {
+        fallbackCopy(text);
+        performCopy();
+      });
+    } else {
+      fallbackCopy(text);
+      performCopy();
+    }
+  };
+
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+
+  document.addEventListener('click', (e) => {
+    const copyTarget = e.target.closest('[data-copy]');
+    if (copyTarget) {
+      e.preventDefault();
+      const textToCopy = copyTarget.getAttribute('data-copy');
+      window.copyToClipboard(textToCopy, copyTarget);
+    }
+  });
+}
+
+/**
+ * HTMX & Async Request Progress Indicator
+ */
+function initHtmxProgressIndicator() {
+  const loader = document.getElementById('global-page-loader');
+  if (!loader) return;
+
+  document.body.addEventListener('htmx:beforeRequest', () => {
+    loader.style.display = 'block';
+  });
+
+  document.body.addEventListener('htmx:afterRequest', () => {
+    loader.style.display = 'none';
+  });
+
+  document.body.addEventListener('htmx:requestError', () => {
+    loader.style.display = 'none';
+  });
+}
 
 /**
  * Mobile Native Pull-to-Refresh Gesture Engine
@@ -700,4 +813,72 @@ function showSwUpdateBanner(worker) {
     banner.classList.add('visible');
   }, 2000);
 }
+
+/**
+ * ----------------------------------------------------------------------------
+ * OPTIMISTIC UI ENGINE & DYNAMIC FEEDBACK
+ * ----------------------------------------------------------------------------
+ */
+function createToastContainer() {
+  let c = document.getElementById('dynamicToastContainer');
+  if (!c) {
+    c = document.createElement('div');
+    c.id = 'dynamicToastContainer';
+    c.className = 'fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full px-4 sm:px-0 pointer-events-none';
+    document.body.appendChild(c);
+  }
+  return c;
+}
+
+window.showToast = function(message, type = 'info') {
+  const container = createToastContainer();
+  const toast = document.createElement('div');
+  const isErr = type === 'danger' || type === 'error';
+  const isWarn = type === 'warning';
+  const bgStyles = isErr
+    ? 'bg-rose-950/95 border-rose-600/50 text-rose-100'
+    : isWarn
+    ? 'bg-amber-950/95 border-amber-600/50 text-amber-100'
+    : 'bg-emerald-950/95 border-emerald-600/50 text-emerald-100';
+  const icon = isErr
+    ? 'bi-exclamation-octagon-fill text-rose-400'
+    : isWarn
+    ? 'bi-exclamation-triangle-fill text-amber-400'
+    : 'bi-check-circle-fill text-emerald-400';
+
+  toast.className = `p-4 rounded-xl shadow-2xl border flex items-start gap-3 text-xs font-medium backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 scale-95 pointer-events-auto ${bgStyles}`;
+  toast.innerHTML = `
+    <div class="mt-0.5 text-base flex-shrink-0"><i class="bi ${icon}"></i></div>
+    <div class="flex-1 leading-relaxed">${message}</div>
+    <button type="button" class="text-gray-400 hover:text-white p-0.5 -mr-1 -mt-1 rounded focus:outline-none" aria-label="Dismiss">&times;</button>
+  `;
+  container.appendChild(toast);
+  requestAnimationFrame(() => {
+    toast.classList.remove('translate-y-2', 'opacity-0', 'scale-95');
+    toast.classList.add('translate-y-0', 'opacity-100', 'scale-100');
+  });
+  const close = () => {
+    toast.classList.add('opacity-0', 'scale-95');
+    setTimeout(() => toast.remove(), 250);
+  };
+  toast.querySelector('button').addEventListener('click', close);
+  setTimeout(close, 5000);
+};
+
+/**
+ * Universal Optimistic Action Execution Helper
+ * Updates UI immediately, performs async operation, and rolls back cleanly on error.
+ */
+window.applyOptimisticAction = async function(element, updateFn, asyncAction, rollbackFn) {
+  let snapshot = null;
+  try {
+    if (updateFn) snapshot = updateFn(element);
+    await asyncAction();
+  } catch (err) {
+    console.error('[Optimistic UI] Action failed, executing rollback:', err);
+    if (rollbackFn) rollbackFn(element, snapshot, err);
+    window.showToast(err.message || 'Action failed to sync with server. Changes reverted.', 'danger');
+  }
+};
+
 

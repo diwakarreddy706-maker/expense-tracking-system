@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Opening Balance Reconciliation — Sri Basaveshwara & Co.{% endblock %}
+{% block title %}Opening Balance Reconciliation | AgriBOS ERP{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto space-y-6 pb-12">
@@ -104,7 +104,7 @@
                             </span>
                         </td>
                         <td class="px-5 py-3.5 text-xs text-slate-400">
-                            {% if acc.bank_name %}{{ acc.bank_name }} • {{ acc.masked_account_number }}{% else %}—{% endif %}
+                            {% if acc.bank_name %}{{ acc.bank_name }} • {{ acc.masked_account_number }}{% else %}-{% endif %}
                         </td>
                         <td class="px-5 py-3.5 text-right font-mono font-semibold text-emerald-400">
                             ₹ {{ acc.opening_balance|floatformat:2 }}

@@ -32,6 +32,11 @@
 }
 
 /* Global Reset & Typography */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   background-color: var(--theme-bg-base);
   color: var(--theme-text-main);
@@ -41,6 +46,14 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+}
+
+.app-main-content,
+.app-layout-wrapper,
+.app-main-layout {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* Strict Monetary & Numerical Tabular Fonts */
@@ -184,10 +197,11 @@ body {
   border: 1px solid rgba(59, 130, 246, 0.25);
 }
 
+.status-pill-indigo,
 .status-pill-purple {
-  background: rgba(139, 92, 246, 0.12);
-  color: #A78BFA;
-  border: 1px solid rgba(139, 92, 246, 0.25);
+  background: rgba(99, 102, 241, 0.12);
+  color: #818CF8;
+  border: 1px solid rgba(99, 102, 241, 0.25);
 }
 
 /* Table Typography & Rows */
@@ -2183,5 +2197,109 @@ html.dark .fab-icon {
   main {
     padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
   }
+}
+
+/* =========================================================================
+   7. MODERN ENTERPRISE UI ENHANCEMENTS: HOVER, STICKY HEADS, FORM ERRORS
+   ========================================================================= */
+
+/* Smooth Scrolling */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Enhanced Sticky Table Headers */
+.table-sticky-head thead th,
+.table thead th.sticky-top {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  backdrop-filter: blur(8px);
+  background-color: rgba(17, 24, 39, 0.95) !important;
+}
+
+html[data-theme="light"] .table-sticky-head thead th,
+html.light .table-sticky-head thead th {
+  background-color: rgba(248, 250, 252, 0.96) !important;
+}
+
+/* Enhanced Table Row Hover Transitions */
+.table-hover-row tbody tr,
+table.table-hover tbody tr {
+  transition: background-color 150ms ease-in-out, transform 100ms ease;
+}
+
+.table-hover-row tbody tr:hover,
+table.table-hover tbody tr:hover {
+  background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+html[data-theme="light"] .table-hover-row tbody tr:hover,
+html.light .table-hover-row tbody tr:hover {
+  background-color: rgba(241, 245, 249, 0.8) !important;
+}
+
+/* Form Error Validation States */
+.form-control.is-invalid,
+.form-select.is-invalid,
+input.is-invalid,
+select.is-invalid,
+textarea.is-invalid,
+.input-invalid {
+  border-color: #f43f5e !important;
+  box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.35) !important;
+}
+
+.form-control.is-invalid:focus,
+input.is-invalid:focus,
+select.is-invalid:focus,
+textarea.is-invalid:focus {
+  border-color: #e11d48 !important;
+  box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.4) !important;
+}
+
+.errorlist {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0.35rem 0 0 0 !important;
+  font-size: 0.75rem !important;
+  color: #fb7185 !important;
+  font-weight: 500 !important;
+}
+
+.errorlist li {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.errorlist li::before {
+  content: "⚠ ";
+  font-size: 0.75rem;
+}
+
+/* HTMX Async Request Indicator & Loading States */
+.htmx-indicator {
+  opacity: 0;
+  transition: opacity 150ms ease-in;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+  opacity: 1 !important;
+}
+
+/* Shimmer Skeleton Placeholder Effect */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(30, 41, 59, 0.4) 25%, rgba(51, 65, 85, 0.6) 50%, rgba(30, 41, 59, 0.4) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 

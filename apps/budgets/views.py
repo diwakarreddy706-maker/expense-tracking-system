@@ -90,7 +90,11 @@ def budget_create_view(request):
                 messages.success(request, f"Budget '{budget.title}' successfully created.")
                 return redirect('budgets:detail', budget_id=budget.id)
             except ValidationError as e:
-                form.add_error(None, str(e))
+                err_msg = str(e)
+                form.add_error(None, err_msg)
+                messages.error(request, err_msg)
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         now = timezone.now()
         form = BudgetForm(initial={
@@ -145,7 +149,11 @@ def budget_edit_view(request, budget_id):
                 messages.success(request, f"Budget '{budget.title}' updated.")
                 return redirect('budgets:detail', budget_id=budget.id)
             except ValidationError as e:
-                form.add_error(None, str(e))
+                err_msg = str(e)
+                form.add_error(None, err_msg)
+                messages.error(request, err_msg)
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = BudgetForm(instance=budget)
 

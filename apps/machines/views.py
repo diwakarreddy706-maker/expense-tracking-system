@@ -116,6 +116,8 @@ def machine_create_view(request):
             return redirect('machines:list')
         elif request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax'):
             return JsonResponse({'success': False, 'errors': form.errors.get_json_data()})
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = MachineForm()
 
@@ -144,6 +146,8 @@ def machine_edit_view(request, machine_id):
             )
             messages.success(request, f"Machine '{updated.name}' updated.")
             return redirect('machines:list')
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = MachineForm(instance=machine)
 
@@ -571,6 +575,8 @@ def work_entry_create_view(request):
             if entry.booking:
                 return redirect('machines:booking_detail', booking_id=entry.booking.id)
             return redirect('machines:work_invoice', entry_id=entry.id)
+        else:
+            messages.error(request, "Please correct the errors in the work entry form.")
     else:
         form = MachineWorkEntryForm(initial=initial_data)
 
@@ -612,6 +618,8 @@ def work_entry_edit_view(request, entry_id):
             )
             messages.success(request, f"Work Entry '{updated.work_code}' updated. Recalculated Total: ₹{updated.total_amount:,.2f}")
             return redirect('machines:work_list')
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = MachineWorkEntryForm(instance=entry)
 
@@ -858,6 +866,8 @@ def maintenance_job_edit_view(request, job_id):
             )
             messages.success(request, f"Maintenance Job '{job.maintenance_code}' updated.")
             return redirect('machines:maintenance_job_detail', job_id=job.id)
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = MaintenanceJobForm(instance=job)
 
@@ -1197,12 +1207,17 @@ def rented_settlement_settle_view(request, settlement_id):
     """Marks a rented owner payout settlement as paid / settled."""
     settlement = get_object_or_404(RentedHarvesterSettlement, id=settlement_id)
     if request.method == 'POST':
-        ref = request.POST.get('reference_no', '').strip()
-        settlement.status = RentedHarvesterSettlement.STATUS_SETTLED
-        settlement.settled_at = timezone.now()
-        settlement.settlement_reference = ref or f"PAID-{timezone.now().strftime('%Y%m%d%H%M')}"
-        settlement.save(update_fields=['status', 'settled_at', 'settlement_reference', 'updated_at'])
-        messages.success(request, f"Settlement of ₹{settlement.net_payable:,.2f} marked as SETTLED to {settlement.owner.name}.")
+        try:
+            ref = request.POST.get('reference_no', '').strip()
+            settlement.status = RentedHarvesterSettlement.STATUS_SETTLED
+            settlement.settled_at = timezone.now()
+            settlement.settlement_reference = ref or f"PAID-{timezone.now().strftime('%Y%m%d%H%M')}"
+            settlement.save(update_fields=['status', 'settled_at', 'settlement_reference', 'updated_at'])
+            messages.success(request, f"Settlement of ₹{settlement.net_payable:,.2f} marked as SETTLED to {settlement.owner.name}.")
+        except Exception as e:
+            messages.error(request, f"Failed to settle payout: {str(e)}")
+    else:
+        messages.error(request, "Invalid request method.")
     return redirect('machines:rented_owners')
 
 

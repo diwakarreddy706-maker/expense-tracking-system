@@ -282,3 +282,15 @@ LOGGING = {
         },
     },
 }
+
+# Production Caching (Redis support when available, falls back to LocMemCache)
+REDIS_URL = os.getenv('REDIS_URL') or os.getenv('CACHE_URL')
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+            'TIMEOUT': 300,
+        }
+    }
+

@@ -26,7 +26,8 @@
       { title: 'Financial Reports & Analytics', subtitle: 'P&L statements, machine ROI, and fuel consumption', category: 'Finance', icon: 'bi-bar-chart-fill text-cyan-400', url: '{% url "reports:index" %}' },
       { title: 'Business Setup Hub', subtitle: 'Master accounts, machines, customers, and opening balances', category: 'Settings', icon: 'bi-sliders text-cyan-400', url: '{% url "finance:setup_hub" %}' },
 
-      <!-- System Preferences -->
+      <!-- System Preferences & Help -->
+      { title: 'Field Operator Guide & FAQ', subtitle: 'Step-by-step help for billing, udhar, diesel slips, and offline use', category: 'Help', icon: 'bi-question-circle text-emerald-400', action: 'faq' },
       { title: 'Toggle Theme (Dark / Light)', subtitle: 'Switch between dark and light visual themes', category: 'Preferences', icon: 'bi-sun-fill text-amber-400', action: 'theme' },
       { title: 'Toggle Sunlight Mode', subtitle: 'High-contrast black & white outdoor field visibility', category: 'Preferences', icon: 'bi-brightness-high text-yellow-300', action: 'sunlight' }
     ],
@@ -72,6 +73,8 @@
       if (item.action === 'expense') {
         window.agriOpenModal ? window.agriOpenModal(document.getElementById('quickExpenseModal')) : (this.$root.quickExpenseOpen = true);
         if (window.loadQuickExpenseOptions) window.loadQuickExpenseOptions();
+      } else if (item.action === 'faq') {
+        window.dispatchEvent(new CustomEvent('open-faq-modal'));
       } else if (item.action === 'theme') {
         if (window.toggleTheme) window.toggleTheme();
       } else if (item.action === 'sunlight') {

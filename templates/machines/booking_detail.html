@@ -129,7 +129,7 @@
     {% elif booking.status == 'DISPATCHED' %}
       <form method="post" action="{% url 'machines:booking_start_work' booking.id %}" class="m-0 inline">
         {% csrf_token %}
-        <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-sm shadow-purple-900/30 transition-all">
+        <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-sm shadow-indigo-900/30 transition-all">
           <i class="bi bi-play-circle-fill"></i><span>Start Work</span>
         </button>
       </form>

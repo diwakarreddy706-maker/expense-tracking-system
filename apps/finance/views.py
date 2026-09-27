@@ -76,6 +76,8 @@ def account_create_view(request):
             )
             messages.success(request, f"Account '{account.account_name}' created successfully.")
             return redirect('finance:accounts')
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = AccountForm()
 
@@ -103,6 +105,8 @@ def account_edit_view(request, account_id):
             )
             messages.success(request, f"Account '{updated.account_name}' updated.")
             return redirect('finance:accounts')
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = AccountForm(instance=account)
 
@@ -166,7 +170,11 @@ def account_transfer_view(request):
                 )
                 return redirect('finance:accounts')
             except ValidationError as e:
-                form.add_error(None, e.message if hasattr(e, 'message') else str(e))
+                err_msg = e.message if hasattr(e, 'message') else str(e)
+                form.add_error(None, err_msg)
+                messages.error(request, err_msg)
+        else:
+            messages.error(request, "Please correct the errors in the transfer form.")
     else:
         initial = {}
         if request.GET.get('from'):
@@ -243,6 +251,8 @@ def customer_create_view(request):
             return redirect('finance:customers')
         elif request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax'):
             return JsonResponse({'success': False, 'errors': form.errors.get_json_data()})
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = CustomerForm()
 
@@ -270,6 +280,8 @@ def customer_edit_view(request, customer_id):
             )
             messages.success(request, f"Customer '{updated.name}' updated.")
             return redirect('finance:customers')
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = CustomerForm(instance=customer)
 
@@ -359,6 +371,8 @@ def supplier_create_view(request):
             return redirect('finance:suppliers')
         elif request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax'):
             return JsonResponse({'success': False, 'errors': form.errors.get_json_data()})
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = SupplierForm()
 
@@ -386,6 +400,8 @@ def supplier_edit_view(request, supplier_id):
             )
             messages.success(request, f"Supplier '{updated.name}' updated.")
             return redirect('finance:suppliers')
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = SupplierForm(instance=supplier)
 
@@ -479,7 +495,11 @@ def receivable_create_view(request):
                 messages.success(request, f"Receivable '{rcv.receivable_code}' of ₹{rcv.total_amount} registered for {rcv.customer.name}.")
                 return redirect('finance:receivable_detail', receivable_id=rcv.id)
             except ValidationError as e:
-                form.add_error(None, str(e))
+                err_msg = str(e)
+                form.add_error(None, err_msg)
+                messages.error(request, err_msg)
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = ReceivableForm()
 
@@ -532,7 +552,11 @@ def customer_payment_create_view(request, receivable_id):
                 messages.success(request, f"Payment '{payment.payment_code}' of ₹{payment.amount} credited to {payment.account.account_name}.")
                 return redirect('finance:receivable_detail', receivable_id=rcv.id)
             except ValidationError as e:
-                form.add_error(None, str(e))
+                err_msg = str(e)
+                form.add_error(None, err_msg)
+                messages.error(request, err_msg)
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = CustomerPaymentForm(initial={'amount': rcv.outstanding_amount})
 
@@ -628,7 +652,11 @@ def payable_create_view(request):
                 messages.success(request, f"Payable '{pay.payable_code}' of ₹{pay.total_amount} registered for {pay.supplier.name}.")
                 return redirect('finance:payable_detail', payable_id=pay.id)
             except ValidationError as e:
-                form.add_error(None, str(e))
+                err_msg = str(e)
+                form.add_error(None, err_msg)
+                messages.error(request, err_msg)
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = PayableForm()
 
@@ -681,7 +709,11 @@ def supplier_payment_create_view(request, payable_id):
                 messages.success(request, f"Disbursement '{payment.payment_code}' of ₹{payment.amount} debited from {payment.account.account_name}.")
                 return redirect('finance:payable_detail', payable_id=pay.id)
             except ValidationError as e:
-                form.add_error(None, str(e))
+                err_msg = str(e)
+                form.add_error(None, err_msg)
+                messages.error(request, err_msg)
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = SupplierPaymentForm(initial={'amount': pay.outstanding_amount})
 

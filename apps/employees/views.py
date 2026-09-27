@@ -73,6 +73,8 @@ def employee_create_view(request):
             )
             messages.success(request, f"Employee '{emp.full_name}' ({emp.employee_code}) registered.")
             return redirect('employees:list')
+        else:
+            messages.error(request, "Please correct the errors in the employee form below.")
     else:
         form = EmployeeForm()
 
@@ -100,6 +102,8 @@ def employee_edit_view(request, employee_id):
             )
             messages.success(request, f"Employee '{updated.full_name}' updated.")
             return redirect('employees:list')
+        else:
+            messages.error(request, "Please correct the errors in the employee form below.")
     else:
         form = EmployeeForm(instance=emp)
 
@@ -228,6 +232,9 @@ def employee_compensation_create_view(request, employee_id):
                 return redirect('employees:financial_profile', employee_id=emp.id)
             except ValidationError as e:
                 form.add_error(None, str(e))
+                messages.error(request, f"Failed to add compensation: {str(e)}")
+        else:
+            messages.error(request, "Please correct the errors in the compensation form below.")
     else:
         form = EmployeeCompensationForm(initial={'effective_from': timezone.now().date(), 'is_active': True})
 
@@ -261,6 +268,9 @@ def employee_compensation_edit_view(request, compensation_id):
                 return redirect('employees:financial_profile', employee_id=emp.id)
             except ValidationError as e:
                 form.add_error(None, str(e))
+                messages.error(request, f"Failed to update compensation: {str(e)}")
+        else:
+            messages.error(request, "Please correct the errors in the compensation form below.")
     else:
         form = EmployeeCompensationForm(instance=comp)
 
@@ -323,6 +333,9 @@ def employee_accrual_create_view(request):
                 return redirect('employees:financial_profile', employee_id=accrual.employee.id)
             except ValidationError as e:
                 form.add_error(None, str(e))
+                messages.error(request, f"Failed to record wage accrual: {str(e)}")
+        else:
+            messages.error(request, "Please correct the highlighted errors in the wage accrual form.")
     else:
         initial = {}
         if initial_emp_id:
@@ -366,6 +379,9 @@ def employee_payout_create_view(request):
                 return redirect('employees:financial_profile', employee_id=payout.employee.id)
             except ValidationError as e:
                 form.add_error(None, str(e))
+                messages.error(request, f"Failed to record payout: {str(e)}")
+        else:
+            messages.error(request, "Please correct the highlighted errors in the payout form.")
     else:
         form = EmployeePayoutForm(initial={'employee': initial_emp, 'payment_type': initial_type})
 

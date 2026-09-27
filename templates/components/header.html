@@ -21,14 +21,14 @@
     </a>
 
     <!-- Desktop/Tablet Brand Display (>=sm, <lg) -->
-    <div class="hidden sm:flex lg:hidden items-center gap-2.5 text-xs">
-      <div class="w-7 h-7 rounded-full bg-slate-900 border border-emerald-500/40 shadow-sm flex items-center justify-center flex-shrink-0 overflow-hidden">
+    <a href="{% url 'dashboard:index' %}" class="hidden sm:flex lg:hidden items-center gap-2.5 text-xs no-underline text-white group">
+      <div class="w-7 h-7 rounded-full bg-slate-900 border border-emerald-500/40 shadow-sm flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
         <img src="{% static 'icons/favicon-32x32.png' %}" alt="Logo" class="w-full h-full object-cover">
       </div>
-      <span class="text-white font-bold tracking-tight">Sri Basaveshwara &amp; Co</span>
+      <span class="text-white font-bold tracking-tight group-hover:text-emerald-400 transition-colors">Sri Basaveshwara &amp; Co</span>
       <span class="text-gray-600">/</span>
       <span class="text-emerald-400 font-semibold text-[11px]">Harvesting ERP</span>
-    </div>
+    </a>
   </div>
 
   <!-- Center / Context: Liquid Balance Summary (When available in context) -->
@@ -62,7 +62,7 @@
         <input name="language" type="hidden" value="en">
         <button
           type="submit"
-          class="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-emerald-400 hover:text-white text-xs font-semibold transition-colors active:scale-95 min-h-[36px] sm:min-h-[40px]"
+          class="flex items-center gap-1 px-2.5 sm:px-3 py-2 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-emerald-400 hover:text-white text-xs font-semibold transition-colors active:scale-95 min-h-[44px] min-w-[44px]"
           title="Switch to English"
         >
           <i class="bi bi-translate text-xs"></i>
@@ -73,7 +73,7 @@
         <input name="language" type="hidden" value="kn">
         <button
           type="submit"
-          class="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-amber-400 hover:text-white text-xs font-semibold transition-colors active:scale-95 min-h-[36px] sm:min-h-[40px]"
+          class="flex items-center gap-1 px-2.5 sm:px-3 py-2 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-amber-400 hover:text-white text-xs font-semibold transition-colors active:scale-95 min-h-[44px] min-w-[44px]"
           title="ಕನ್ನಡಕ್ಕೆ ಬದಲಾಯಿಸಿ"
         >
           <i class="bi bi-translate text-xs"></i>
@@ -87,8 +87,8 @@
     <button
       type="button"
       onclick="window.cycleTheme()"
-      class="flex p-2 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-300 hover:text-amber-400 text-xs transition-colors focus:outline-none active:scale-95 items-center gap-1.5 justify-center min-w-[36px] sm:min-w-[40px] min-h-[36px] sm:min-h-[40px]"
-      title="Switch Theme: Dark 🌙 &bull; Light 🌤️ &bull; Sunlight ☀️"
+      class="flex p-2.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-300 hover:text-amber-400 text-xs transition-colors focus:outline-none active:scale-95 items-center gap-1.5 justify-center min-w-[44px] min-h-[44px]"
+      title="Switch Theme: Dark | Light | Sunlight Mode"
       aria-label="Toggle Theme (Dark, Light, Outdoor Sunlight)"
     >
       <i class="bi bi-brightness-high-fill text-amber-400 text-sm theme-icon-dark"></i>
@@ -101,11 +101,22 @@
     <button
       type="button"
       onclick="window.dispatchEvent(new CustomEvent('open-command-palette'))"
-      class="flex md:hidden p-2 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-400 hover:text-white text-xs transition-colors active:scale-95 cursor-pointer"
+      class="flex md:hidden p-2.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-400 hover:text-white text-xs transition-colors active:scale-95 cursor-pointer min-w-[44px] min-h-[44px] items-center justify-center"
       title="Open Command Palette"
       aria-label="Search"
     >
       <i class="bi bi-search text-xs"></i>
+    </button>
+
+    <!-- Field Operator Guide & FAQ Trigger -->
+    <button
+      type="button"
+      onclick="window.dispatchEvent(new CustomEvent('open-faq-modal'))"
+      class="flex p-2.5 rounded-xl bg-[#182234] hover:bg-gray-800 border border-[#28354A] text-gray-400 hover:text-emerald-400 text-xs transition-colors active:scale-95 cursor-pointer min-w-[44px] min-h-[44px] items-center justify-center"
+      title="Field Operator Guide &amp; FAQ"
+      aria-label="Help and Operator Guide"
+    >
+      <i class="bi bi-question-circle text-sm"></i>
     </button>
 
     <!-- Global Quick Search Trigger (Ctrl+K, >=md) -->

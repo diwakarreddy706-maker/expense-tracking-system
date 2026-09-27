@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ title }} | Sri Basaveshwara & Co.{% endblock %}
+{% block title %}Invoice #{{ entry.manual_bill_no|default:entry.work_code }} | AgriBOS ERP{% endblock %}
 
 {% block content %}
 <!-- Top Action Bar (Hidden on print) -->
@@ -61,7 +61,12 @@
         <span class="voucher-badge inline-block px-3 py-1 rounded font-black text-xs font-mono uppercase tracking-wide">
           HARVESTING VOUCHER
         </span>
-        <div class="text-xs header-subtext font-mono mt-1.5">Bill No: <strong>{{ entry.manual_bill_no|default:entry.work_code }}</strong></div>
+        <div class="text-xs header-subtext font-mono mt-1.5 flex items-center sm:justify-end gap-1">
+          <span>Bill No: <strong>{{ entry.manual_bill_no|default:entry.work_code }}</strong></span>
+          <button type="button" data-copy="{{ entry.manual_bill_no|default:entry.work_code }}" class="text-[10px] px-1.5 py-0.5 rounded bg-white/20 hover:bg-white/30 text-white border-0 cursor-pointer no-print" title="Copy Bill Number">
+            <i class="bi bi-clipboard"></i>
+          </button>
+        </div>
         <div class="text-xs header-subtext font-mono">Date: {{ entry.work_date|date:"d-m-Y" }}</div>
       </div>
     </div>
@@ -110,8 +115,8 @@
         <span class="text-[11px] font-mono text-gray-500">Rate Model: {{ entry.get_billing_type_display|default:entry.billing_type }}</span>
       </div>
 
-      <!-- 4-Column Horizontal Timings Row (Explicit styles prevent collapsing) -->
-      <div class="grid grid-cols-4 gap-3 text-center bg-gray-50 rounded-xl p-3.5 border border-gray-200" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;">
+      <!-- 4-Column Horizontal Timings Row (Stacks to 2-columns on mobile) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-center bg-gray-50 rounded-xl p-3 sm:p-3.5 border border-gray-200">
         <div class="bg-white rounded-lg p-2.5 border border-gray-200 shadow-sm">
           <span class="text-[10px] text-gray-500 uppercase font-mono block">START TIME</span>
           <div class="text-sm font-extrabold text-gray-800 font-mono mt-1">{{ entry.start_time|default:"08:00 AM" }}</div>
@@ -144,7 +149,8 @@
     <!-- Commercial Rate & Financial Breakdown -->
     <div>
       <h4 class="text-xs font-bold uppercase tracking-wider text-gray-700 font-mono mb-2.5">BILLING &amp; PAYMENT BREAKDOWN</h4>
-      <table class="w-full text-left border border-gray-200 rounded-xl overflow-hidden">
+      <div class="overflow-x-auto -mx-1 sm:mx-0 rounded-xl border border-gray-200">
+        <table class="w-full text-left">
         <thead class="bg-gray-100 text-[11px] font-mono uppercase text-gray-600 border-b border-gray-200">
           <tr>
             <th class="py-2.5 px-4 font-semibold">Description</th>
@@ -199,26 +205,27 @@
           {% endif %}
         </tfoot>
       </table>
+      </div>
     </div>
 
     <!-- Settlement for Rented Machine (If Applicable) -->
     {% if entry.harvester_settlement %}
       <div class="bg-amber-50 rounded-xl p-4 border border-amber-200 text-xs">
         <h5 class="font-bold text-amber-900 uppercase font-mono text-[11px] mb-2">RENTED HARVESTER OWNER SETTLEMENT NOTE</h5>
-        <div class="grid grid-cols-4 gap-2 text-center text-amber-900 font-mono" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;">
-          <div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-amber-900 font-mono">
+          <div class="bg-white/70 p-2 rounded border border-amber-200">
             <span class="text-[10px] text-amber-700 block">Gross Earned</span>
             <div class="font-bold">₹{{ entry.harvester_settlement.gross_earnings|floatformat:2 }}</div>
           </div>
-          <div>
+          <div class="bg-white/70 p-2 rounded border border-amber-200">
             <span class="text-[10px] text-amber-700 block">Company Comm.</span>
             <div class="font-bold text-rose-700">-₹{{ entry.harvester_settlement.commission_amount|floatformat:2 }}</div>
           </div>
-          <div>
+          <div class="bg-white/70 p-2 rounded border border-amber-200">
             <span class="text-[10px] text-amber-700 block">Diesel Deduct</span>
             <div class="font-bold text-amber-800">-₹{{ entry.harvester_settlement.diesel_amount|floatformat:2 }}</div>
           </div>
-          <div class="bg-white p-1 rounded border border-amber-300">
+          <div class="bg-white p-2 rounded border border-amber-300">
             <span class="text-[10px] text-emerald-800 font-bold block">Net Owner Payout</span>
             <div class="font-black text-emerald-700 text-sm">₹{{ entry.harvester_settlement.net_payable|floatformat:2 }}</div>
           </div>
@@ -242,8 +249,11 @@
         {% if company_profile.bank_ifsc %}<span class="text-gray-500">IFSC:</span> <strong>{{ company_profile.bank_ifsc }}</strong>{% endif %}
       </div>
       {% if company_profile.upi_id %}
-      <div class="text-emerald-700 font-bold">
-        <span>UPI:</span> {{ company_profile.upi_id }}
+      <div class="text-emerald-700 font-bold flex items-center gap-1">
+        <span>UPI: {{ company_profile.upi_id }}</span>
+        <button type="button" data-copy="{{ company_profile.upi_id }}" class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-0 cursor-pointer no-print" title="Copy UPI ID">
+          <i class="bi bi-clipboard"></i>
+        </button>
       </div>
       {% endif %}
     </div>

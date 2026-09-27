@@ -119,7 +119,7 @@
               {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'MANAGER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
                 <form method="post" action="{% url 'machines:booking_start_work' b.id %}" class="m-0">
                   {% csrf_token %}
-                  <button type="submit" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-sm transition-colors border-0 cursor-pointer min-h-[36px]">
+                  <button type="submit" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-sm transition-colors border-0 cursor-pointer min-h-[36px]">
                     <i class="bi bi-play-circle mr-1"></i> Start Work
                   </button>
                 </form>
@@ -415,7 +415,7 @@
             {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'MANAGER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
               <form method="post" action="{% url 'machines:booking_start_work' b.id %}" class="m-0">
                 {% csrf_token %}
-                <button type="submit" class="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-[11px] font-bold shadow-sm transition-colors cursor-pointer border-0">
+                <button type="submit" class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold shadow-sm transition-colors cursor-pointer border-0">
                   Start Work
                 </button>
               </form>

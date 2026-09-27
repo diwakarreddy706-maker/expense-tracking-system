@@ -19,8 +19,8 @@
   @keydown.escape.window="quickExpenseOpen = false"
 >
   <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="modal-content relative w-full max-w-lg bg-[#131A26] border-t sm:border border-[#28354A] rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden text-gray-100 pb-6 sm:pb-0" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
-      <form id="quickExpenseForm" method="post" action="{% url 'api_expenses_quick' %}">
+    <div class="modal-content relative w-full max-w-lg bg-[#131A26] border-t sm:border border-[#28354A] rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden text-gray-100 max-h-[85vh] sm:max-h-[90vh] flex flex-col pb-6 sm:pb-0" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
+      <form id="quickExpenseForm" method="post" action="{% url 'api_expenses_quick' %}" class="flex flex-col flex-1 overflow-hidden m-0">
         {% csrf_token %}
 
         <!-- Mobile Touch Handle (Mobile Only) -->
@@ -29,7 +29,7 @@
         </div>
 
         <!-- Header -->
-        <div class="px-5 sm:px-6 py-3.5 border-b border-[#28354A] flex items-center justify-between bg-[#162030]">
+        <div class="px-5 sm:px-6 py-3.5 border-b border-[#28354A] flex items-center justify-between bg-[#162030] flex-shrink-0">
           <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
               <i class="bi bi-lightning-fill text-base"></i>
@@ -51,7 +51,7 @@
         </div>
 
         <!-- Body -->
-        <div class="p-4 sm:p-6 space-y-3.5 sm:space-y-4">
+        <div class="p-4 sm:p-6 space-y-3.5 sm:space-y-4 overflow-y-auto flex-1">
           <div id="quickExpenseAlert" class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs hidden"></div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -146,23 +146,23 @@
                 aria-pressed="false"
               >
                 <i class="bi bi-mic-fill"></i>
-                <span>🎤 Speak</span>
+                <span>Speak</span>
               </button>
             </div>
 
             <!-- Quick Chips -->
             <div class="flex items-center gap-1.5 flex-wrap mb-2">
               <button type="button" onclick="window.insertQuickChip('Grease & Oil', 'quickExpDesc')" class="quick-chip">
-                🔧 Grease &amp; Oil
+                <i class="bi bi-droplet-half text-xs"></i> Grease &amp; Oil
               </button>
               <button type="button" onclick="window.insertQuickChip('Blade Sharpening', 'quickExpDesc')" class="quick-chip quick-chip-amber">
-                🔪 Blade Sharp
+                <i class="bi bi-scissors text-xs"></i> Blade Sharp
               </button>
               <button type="button" onclick="window.insertQuickChip('Operator Tiffin', 'quickExpDesc')" class="quick-chip quick-chip-cyan">
-                🍱 Tiffin / Food
+                <i class="bi bi-cup-hot text-xs"></i> Tiffin / Food
               </button>
               <button type="button" onclick="window.insertQuickChip('Welding Work', 'quickExpDesc')" class="quick-chip quick-chip-rose">
-                👨‍🔧 Welding
+                <i class="bi bi-tools text-xs"></i> Welding
               </button>
             </div>
 
