@@ -7,6 +7,7 @@ urlpatterns = [
     # Business Accounts
     path('accounts/', views.accounts_list_view, name='accounts'),
     path('accounts/add/', views.account_create_view, name='account_create'),
+    path('accounts/transfer/', views.account_transfer_view, name='account_transfer'),
     path('accounts/<int:account_id>/edit/', views.account_edit_view, name='account_edit'),
     path('accounts/<int:account_id>/toggle/', views.account_toggle_status_view, name='account_toggle'),
 

@@ -8,7 +8,11 @@
     <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">Business Accounts</h2>
     <p class="text-xs text-gray-400 mt-1 mb-0">Manage cash boxes, bank accounts, and digital wallets</p>
   </div>
-  <div>
+  <div class="flex items-center gap-2">
+    <a href="{% url 'finance:account_transfer' %}" class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#182234] hover:bg-gray-800 text-cyan-400 hover:text-cyan-300 font-semibold text-xs border border-cyan-500/30 shadow-sm transition-all no-underline">
+      <i class="bi bi-arrow-left-right"></i>
+      <span>Transfer Funds</span>
+    </a>
     <a href="{% url 'finance:account_create' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
       <i class="bi bi-plus-lg"></i>
       <span>Add Account</span>
@@ -101,6 +105,9 @@
             </td>
             <td class="py-3.5 px-4 text-right">
               <div class="flex items-center justify-end gap-1.5">
+                <a href="{% url 'finance:account_transfer' %}?from={{ acc.id }}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-cyan-400 hover:text-cyan-300 border border-[#28354A] transition-colors no-underline text-xs" title="Transfer from this Account">
+                  <i class="bi bi-arrow-left-right"></i>
+                </a>
                 <a href="{% url 'finance:account_edit' acc.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="Edit Account">
                   <i class="bi bi-pencil-square"></i>
                 </a>

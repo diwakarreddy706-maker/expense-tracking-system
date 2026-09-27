@@ -1,4 +1,5 @@
 from django import forms
+from django.utils import timezone
 from decimal import Decimal
 from .models import (
     Account, Customer, Supplier,
@@ -248,5 +249,59 @@ class DailyClosingForm(forms.Form):
 
         if scope != DailyClosing.SCOPE_CONSOLIDATED and not account:
             self.add_error('account', "A specific account is required for account-level closings.")
+
+        return cleaned_data
+
+
+class AccountTransferForm(forms.Form):
+    """Form for executing Inter-Account Fund Transfers between Cash, Bank, and UPI."""
+    from_account = forms.ModelChoiceField(
+        queryset=Account.objects.filter(is_deleted=False, is_active=True),
+        label="Source Account",
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary', 'id': 'fromAccountSelect'})
+    )
+    to_account = forms.ModelChoiceField(
+        queryset=Account.objects.filter(is_deleted=False, is_active=True),
+        label="Destination Account",
+        widget=forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary', 'id': 'toAccountSelect'})
+    )
+    amount = forms.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        label="Transfer Amount (₹)",
+        widget=forms.NumberInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'step': '0.01', 'placeholder': '₹ 0.00', 'id': 'transferAmountInput'})
+    )
+    transfer_date = forms.DateField(
+        initial=timezone.now,
+        label="Transfer Date",
+        widget=forms.DateInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'type': 'date'})
+    )
+    reference_no = forms.CharField(
+        max_length=100,
+        required=False,
+        label="Reference / UTR / Cheque No.",
+        widget=forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Optional transaction reference'})
+    )
+    notes = forms.CharField(
+        max_length=255,
+        required=False,
+        label="Transfer Purpose / Notes",
+        widget=forms.Textarea(attrs={'class': 'form-control bg-dark text-white border-secondary', 'rows': 2, 'placeholder': 'e.g. Cash deposit to SBI Current / Daily counter sweep'})
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        from_acc = cleaned_data.get('from_account')
+        to_acc = cleaned_data.get('to_account')
+        amount = cleaned_data.get('amount')
+
+        if from_acc and to_acc and from_acc.id == to_acc.id:
+            self.add_error('to_account', "Source and destination accounts must be different.")
+
+        if amount is not None and amount <= Decimal('0.00'):
+            self.add_error('amount', "Transfer amount must be strictly greater than zero.")
+
+        if from_acc and amount and from_acc.current_balance < amount:
+            self.add_error('amount', f"Insufficient funds in '{from_acc.account_name}' (Current balance: ₹{from_acc.current_balance}).")
 
         return cleaned_data

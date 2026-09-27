@@ -26,11 +26,12 @@ from .forms import (
     AccountForm, CustomerForm, SupplierForm,
     ReceivableForm, CustomerPaymentForm,
     PayableForm, SupplierPaymentForm,
-    DailyClosingForm
+    DailyClosingForm, AccountTransferForm
 )
 from .services.settlement_service import (
     CustomerReceivableService,
-    SupplierPayableService
+    SupplierPayableService,
+    AccountTransferService
 )
 
 
@@ -129,6 +130,57 @@ def account_toggle_status_view(request, account_id):
     status_str = "activated" if account.is_active else "deactivated"
     messages.info(request, f"Account '{account.account_name}' {status_str}.")
     return redirect('finance:accounts')
+
+
+@accountant_or_owner_required
+def account_transfer_view(request):
+    """
+    Executes Inter-Account Fund Transfer (Cash <-> Bank <-> UPI).
+    Enforces atomic double-entry bookkeeping, deadlock-free account locking,
+    insufficient funds validation, and audit trail logging.
+    """
+    if request.method == 'POST':
+        form = AccountTransferForm(request.POST)
+        if form.is_valid():
+            try:
+                from_acc = form.cleaned_data['from_account']
+                to_acc = form.cleaned_data['to_account']
+                amount = form.cleaned_data['amount']
+                transfer_date = form.cleaned_data['transfer_date']
+                reference_no = form.cleaned_data['reference_no']
+                notes = form.cleaned_data['notes']
+
+                AccountTransferService.transfer_funds(
+                    from_account_id=from_acc.id,
+                    to_account_id=to_acc.id,
+                    amount=amount,
+                    transfer_date=transfer_date,
+                    reference_no=reference_no,
+                    notes=notes,
+                    user=request.user,
+                    request=request
+                )
+                messages.success(
+                    request,
+                    f"Successfully transferred ₹{amount} from {from_acc.account_name} to {to_acc.account_name}."
+                )
+                return redirect('finance:accounts')
+            except ValidationError as e:
+                form.add_error(None, e.message if hasattr(e, 'message') else str(e))
+    else:
+        initial = {}
+        if request.GET.get('from'):
+            initial['from_account'] = request.GET.get('from')
+        if request.GET.get('to'):
+            initial['to_account'] = request.GET.get('to')
+        form = AccountTransferForm(initial=initial)
+
+    accounts = Account.objects.filter(is_deleted=False, is_active=True).order_by('account_name')
+    return render(request, 'finance/account_transfer.html', {
+        'form': form,
+        'title': 'Inter-Account Fund Transfer',
+        'accounts': accounts,
+    })
 
 
 # ============================================================================

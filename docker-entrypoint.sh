@@ -9,7 +9,7 @@ echo "==> 1. Running Pre-Migrate State Verification..."
 python scripts/pre_migrate_cleanup.py || echo "Pre-migrate warning ignored"
 
 echo "==> 2. Running Database Migrations..."
-python manage.py migrate --noinput || echo "Migrate warning ignored"
+python manage.py migrate --noinput
 
 echo "==> 3. Collecting Static Assets..."
 python manage.py collectstatic --noinput || echo "Collectstatic warning ignored"

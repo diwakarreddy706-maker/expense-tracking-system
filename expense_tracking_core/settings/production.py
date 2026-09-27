@@ -61,9 +61,12 @@ STORAGES = {
 from typing import Any
 import urllib.parse
 
+DB_CONNECT_TIMEOUT = int(os.getenv('DB_CONNECT_TIMEOUT', '5'))
+
 DB_OPTIONS: dict[str, Any] = {
     'charset': 'utf8mb4',
     'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION'",
+    'connect_timeout': DB_CONNECT_TIMEOUT,
 }
 
 # Cloud MySQL (TiDB Cloud, AWS RDS, Render, etc.) SSL support
@@ -96,6 +99,9 @@ if database_url:
                 'PASSWORD': urllib.parse.unquote(parsed_db.password or ''),
                 'HOST': parsed_db.hostname or '127.0.0.1',
                 'PORT': str(parsed_db.port or 5432),
+                'OPTIONS': {
+                    'connect_timeout': DB_CONNECT_TIMEOUT,
+                },
                 'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
             }
         }

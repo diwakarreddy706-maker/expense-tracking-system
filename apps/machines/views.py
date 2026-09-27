@@ -4,6 +4,7 @@ from django.db.models import Q, Sum, Count, F
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from decimal import Decimal
+import datetime
 import re
 from django.http import JsonResponse
 from apps.accounts.decorators import role_required, owner_required
@@ -646,8 +647,8 @@ def maintenance_dashboard_view(request):
     open_jobs_count = MaintenanceJob.objects.filter(is_deleted=False).exclude(status__in=[MaintenanceJob.STATUS_COMPLETED, MaintenanceJob.STATUS_CANCELLED]).count()
     breakdowns_count = MaintenanceJob.objects.filter(is_deleted=False, maintenance_type=MaintenanceJob.TYPE_BREAKDOWN_REPAIR).count()
 
-    today = timezone.now().date()
-    month_start = today.replace(day=1)
+    now = timezone.now()
+    month_start = timezone.make_aware(datetime.datetime(now.year, now.month, 1, 0, 0, 0))
     cost_this_month = MaintenanceJob.objects.filter(
         is_deleted=False,
         status=MaintenanceJob.STATUS_COMPLETED,

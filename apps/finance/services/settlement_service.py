@@ -6,7 +6,7 @@ Overpayment protection, concurrency safety with select_for_update, atomic settle
 
 from decimal import Decimal
 from typing import Optional, Dict, Any, Tuple
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.db.models import Sum, Q
 from django.utils import timezone
 from django.core.exceptions import ValidationError
@@ -61,7 +61,12 @@ class CustomerReceivableService:
                 seq = 1
         else:
             seq = 1
-        return f"{prefix}{seq:04d}"
+
+        candidate = f"{prefix}{seq:04d}"
+        while CustomerPayment.objects.filter(payment_code=candidate).exists():
+            seq += 1
+            candidate = f"{prefix}{seq:04d}"
+        return candidate
 
     @classmethod
     def create_receivable(
@@ -208,19 +213,30 @@ class CustomerReceivableService:
             # 2. Recalculate authoritative account balance
             FinancialCalculationService.recalculate_account_balance(locked_account.id)
 
-            # 3. Create CustomerPayment record
-            payment = CustomerPayment.objects.create(
-                payment_code=code,
-                receivable=receivable,
-                account=locked_account,
-                payment_date=entry_date,
-                amount=amount,
-                payment_method=payment_method,
-                linked_ledger_transaction=ledger_tx,
-                reference_no=reference_no,
-                notes=notes,
-                created_by=user
-            )
+            # 3. Create CustomerPayment record with collision-retry protection
+            payment = None
+            max_attempts = 5
+            for attempt in range(max_attempts):
+                code = cls.generate_payment_code(entry_date)
+                try:
+                    with transaction.atomic():
+                        payment = CustomerPayment.objects.create(
+                            payment_code=code,
+                            receivable=receivable,
+                            account=locked_account,
+                            payment_date=entry_date,
+                            amount=amount,
+                            payment_method=payment_method,
+                            linked_ledger_transaction=ledger_tx,
+                            reference_no=reference_no,
+                            notes=notes,
+                            created_by=user
+                        )
+                        break
+                except IntegrityError:
+                    if attempt < max_attempts - 1:
+                        continue
+                    raise
 
             # Link reference_id on ledger transaction
             ledger_tx.reference_id = payment.id
@@ -377,7 +393,12 @@ class SupplierPayableService:
                 seq = 1
         else:
             seq = 1
-        return f"{prefix}{seq:04d}"
+
+        candidate = f"{prefix}{seq:04d}"
+        while SupplierPayment.objects.filter(payment_code=candidate).exists():
+            seq += 1
+            candidate = f"{prefix}{seq:04d}"
+        return candidate
 
     @classmethod
     def create_payable(
@@ -528,19 +549,30 @@ class SupplierPayableService:
             # 2. Recalculate authoritative account balance
             FinancialCalculationService.recalculate_account_balance(locked_account.id)
 
-            # 3. Create SupplierPayment record
-            payment = SupplierPayment.objects.create(
-                payment_code=code,
-                payable=payable,
-                account=locked_account,
-                payment_date=entry_date,
-                amount=amount,
-                payment_method=payment_method,
-                linked_ledger_transaction=ledger_tx,
-                reference_no=reference_no,
-                notes=notes,
-                created_by=user
-            )
+            # 3. Create SupplierPayment record with collision-retry protection
+            payment = None
+            max_attempts = 5
+            for attempt in range(max_attempts):
+                code = cls.generate_payment_code(entry_date)
+                try:
+                    with transaction.atomic():
+                        payment = SupplierPayment.objects.create(
+                            payment_code=code,
+                            payable=payable,
+                            account=locked_account,
+                            payment_date=entry_date,
+                            amount=amount,
+                            payment_method=payment_method,
+                            linked_ledger_transaction=ledger_tx,
+                            reference_no=reference_no,
+                            notes=notes,
+                            created_by=user
+                        )
+                        break
+                except IntegrityError:
+                    if attempt < max_attempts - 1:
+                        continue
+                    raise
 
             # Link reference_id on ledger transaction
             ledger_tx.reference_id = payment.id
@@ -657,3 +689,124 @@ class SupplierPayableService:
             'outstanding_payables': outstanding,
             'overdue_payables': overdue_outstanding,
         }
+
+
+class AccountTransferService:
+    """
+    Authoritative Inter-Account Fund Transfer Service.
+    Enforces atomic double-entry bookkeeping, deadlock-free account locking,
+    positive amount validation, active account verification, and audit logging.
+    """
+
+    @classmethod
+    def transfer_funds(
+        cls,
+        from_account_id: int,
+        to_account_id: int,
+        amount: Decimal,
+        transfer_date=None,
+        reference_no: str = "",
+        notes: str = "",
+        user: Optional[User] = None,
+        request=None
+    ) -> Tuple[AccountTransaction, AccountTransaction]:
+        """
+        Transfers funds from from_account to to_account atomically:
+        - Creates TYPE_TRANSFER_OUT (Debit) on from_account
+        - Creates TYPE_TRANSFER_IN (Credit) on to_account
+        - Recalculates both balances authoritatively
+        - Writes an immutable AuditLog
+        """
+        if from_account_id == to_account_id:
+            raise ValidationError("Source and destination accounts must be different.")
+
+        amount = Decimal(str(amount)).quantize(Decimal('0.01'))
+        if amount <= Decimal('0.00'):
+            raise ValidationError("Transfer amount must be strictly greater than zero.")
+
+        target_date = transfer_date or timezone.now().date()
+
+        # To prevent database deadlocks, lock accounts in order of primary key
+        first_id, second_id = sorted([from_account_id, to_account_id])
+
+        with transaction.atomic():
+            locked_first = Account.objects.select_for_update().get(id=first_id, is_deleted=False)
+            locked_second = Account.objects.select_for_update().get(id=second_id, is_deleted=False)
+
+            src_account = locked_first if locked_first.id == from_account_id else locked_second
+            dst_account = locked_first if locked_first.id == to_account_id else locked_second
+
+            if not src_account.is_active:
+                raise ValidationError(f"Source account '{src_account.account_name}' is inactive.")
+            if not dst_account.is_active:
+                raise ValidationError(f"Destination account '{dst_account.account_name}' is inactive.")
+
+            # Calculate current real balance for source account
+            src_balance = FinancialCalculationService.recalculate_account_balance(src_account.id)
+            if src_balance < amount:
+                raise ValidationError(
+                    f"Insufficient funds in source account '{src_account.account_name}'. "
+                    f"Available: ₹{src_balance}, Requested: ₹{amount}."
+                )
+
+            creator = user if (user and user.is_authenticated) else User.objects.filter(is_superuser=True).first()
+
+            # 1. Create TRANSFER_OUT (Debit from source)
+            desc_out = f"Transfer to {dst_account.account_name}"
+            if reference_no:
+                desc_out += f" (Ref: {reference_no})"
+            if notes:
+                desc_out += f" - {notes}"
+
+            tx_out = AccountTransaction.objects.create(
+                account=src_account,
+                transaction_date=target_date,
+                transaction_type=AccountTransaction.TYPE_TRANSFER_OUT,
+                direction=AccountTransaction.DIRECTION_DEBIT,
+                amount=amount,
+                reference_type='AccountTransfer',
+                reference_id=dst_account.id,
+                description=desc_out,
+                created_by=creator
+            )
+
+            # 2. Create TRANSFER_IN (Credit into destination)
+            desc_in = f"Transfer from {src_account.account_name}"
+            if reference_no:
+                desc_in += f" (Ref: {reference_no})"
+            if notes:
+                desc_in += f" - {notes}"
+
+            tx_in = AccountTransaction.objects.create(
+                account=dst_account,
+                transaction_date=target_date,
+                transaction_type=AccountTransaction.TYPE_TRANSFER_IN,
+                direction=AccountTransaction.DIRECTION_CREDIT,
+                amount=amount,
+                reference_type='AccountTransfer',
+                reference_id=src_account.id,
+                description=desc_in,
+                created_by=creator
+            )
+
+            # 3. Recalculate both balances authoritatively
+            FinancialCalculationService.recalculate_account_balance(src_account.id)
+            FinancialCalculationService.recalculate_account_balance(dst_account.id)
+
+            # 4. Audit Log
+            log_audit_event(
+                creator,
+                AuditLog.ACTION_CREATE,
+                'AccountTransfer',
+                tx_out.id,
+                changes={
+                    'from_account': src_account.account_name,
+                    'to_account': dst_account.account_name,
+                    'amount': str(amount),
+                    'reference_no': reference_no,
+                    'notes': notes
+                },
+                request=request
+            )
+
+            return tx_out, tx_in

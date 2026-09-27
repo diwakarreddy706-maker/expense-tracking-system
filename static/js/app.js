@@ -262,8 +262,12 @@ async function loadQuickExpenseOptions() {
   // Don't re-fetch if already populated
   if (catSelect.options.length > 2 && accSelect.options.length > 2) return;
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
   try {
-    const res = await fetch('/expenses/api/options/');
+    const res = await fetch('/expenses/api/options/', { signal: controller.signal });
+    clearTimeout(timeoutId);
     if (!res.ok) return;
     const data = await res.json();
 
@@ -305,18 +309,32 @@ async function handleQuickExpenseSubmit(e) {
 
   const formData = new FormData(form);
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+
   try {
     const res = await fetch(form.action, {
       method: 'POST',
       body: formData,
       headers: {
         'X-CSRFToken': getCsrfToken()
-      }
+      },
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
 
-    const result = await res.json();
+    let result = null;
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      result = await res.json();
+    } else {
+      if (!res.ok) {
+        throw new Error(`Server error (${res.status}). Please try again or check logs.`);
+      }
+      throw new Error('Received unexpected non-JSON response from server.');
+    }
 
-    if (result.success) {
+    if (result && result.success) {
       window.triggerHaptic(20);
       // Close modal in Alpine.js state
       const modalEl = document.getElementById('quickExpenseModal');
@@ -338,14 +356,19 @@ async function handleQuickExpenseSubmit(e) {
       window.location.reload();
     } else {
       if (alertBox) {
-        alertBox.textContent = result.error || 'Failed to post quick expense.';
+        alertBox.textContent = (result && result.error) ? result.error : 'Failed to post quick expense.';
         alertBox.classList.remove('hidden');
         alertBox.classList.remove('d-none');
       }
     }
   } catch (err) {
+    clearTimeout(timeoutId);
     if (alertBox) {
-      alertBox.textContent = 'A network error occurred while posting quick expense.';
+      if (err.name === 'AbortError' || err.name === 'TimeoutError') {
+        alertBox.textContent = 'Request timed out after 10 seconds. Please check your network and try again.';
+      } else {
+        alertBox.textContent = err.message || 'A network error occurred while posting quick expense.';
+      }
       alertBox.classList.remove('hidden');
       alertBox.classList.remove('d-none');
     }

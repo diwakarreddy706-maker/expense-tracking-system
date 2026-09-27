@@ -13,16 +13,31 @@ from apps.dashboard.views import dashboard_index
 from apps.expenses.views import expense_quick_api_view
 
 
+from django.db import connection
+
+
 def health_check(request):
     """
-    Standard health check endpoint to verify system status.
+    Authoritative health check verifying both WSGI runtime and Database connectivity.
+    Returns HTTP 200 when operational; HTTP 503 if the database is unreachable.
     """
-    return JsonResponse({
-        'status': 'healthy',
-        'application': 'Expense Tracking & Management System',
-        'version': '1.0.0-production',
-        'phase': 'Phase 11 - Production Hardening & QA'
-    })
+    try:
+        connection.ensure_connection()
+        return JsonResponse({
+            'status': 'healthy',
+            'database': 'connected',
+            'application': 'Expense Tracking & Management System',
+            'version': '1.0.0-production',
+            'phase': 'Phase 11 - Production Hardening & QA'
+        }, status=200)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'unhealthy',
+            'database': 'disconnected',
+            'error': str(e),
+            'application': 'Expense Tracking & Management System',
+            'version': '1.0.0-production'
+        }, status=503)
 
 
 def custom_bad_request_view(request, exception=None):

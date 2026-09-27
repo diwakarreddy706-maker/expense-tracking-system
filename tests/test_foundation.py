@@ -77,7 +77,19 @@ class FoundationRoutingAndViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         json_data = response.json()
         self.assertEqual(json_data.get('status'), 'healthy')
+        self.assertEqual(json_data.get('database'), 'connected')
         self.assertIn('Expense Tracking & Management System', json_data.get('application', ''))
+
+    def test_health_check_database_down_returns_503(self):
+        """Verifies /health/ returns HTTP 503 and unhealthy status when database is unreachable."""
+        from unittest.mock import patch
+        from django.db import OperationalError
+        with patch('django.db.connection.ensure_connection', side_effect=OperationalError("Can't connect to MySQL")):
+            response = self.client.get(reverse('health_check'))
+            self.assertEqual(response.status_code, 503)
+            json_data = response.json()
+            self.assertEqual(json_data.get('status'), 'unhealthy')
+            self.assertEqual(json_data.get('database'), 'disconnected')
 
     def test_dashboard_root_view(self):
         """Verifies root / renders executive dashboard template when authenticated."""

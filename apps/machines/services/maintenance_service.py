@@ -563,6 +563,8 @@ class MaintenanceService:
         comp_dt = completed_date or timezone.now()
         if isinstance(comp_dt, datetime.date) and not isinstance(comp_dt, datetime.datetime):
             comp_dt = timezone.make_aware(datetime.datetime.combine(comp_dt, datetime.time.min))
+        elif isinstance(comp_dt, datetime.datetime) and timezone.is_naive(comp_dt):
+            comp_dt = timezone.make_aware(comp_dt)
 
         if job.started_date and comp_dt < job.started_date:
             raise ValidationError("Completion date/time cannot be earlier than started date/time.")
