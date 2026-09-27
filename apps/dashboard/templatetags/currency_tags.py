@@ -62,3 +62,20 @@ def inr_curr(value, show_decimals=True):
     if formatted.startswith("-"):
         return f"-₹{formatted[1:]}"
     return f"₹{formatted}"
+
+
+from django.utils.safestring import mark_safe
+
+
+@register.filter(name='inr_parts', is_safe=True)
+def inr_parts(value):
+    """
+    Renders integer part and wraps decimals in smaller font with opacity:
+    284326.50 -> 2,84,326<span class="text-[0.75em] font-semibold opacity-75">.50</span>
+    """
+    formatted = inr_format(value, show_decimals=True)
+    if '.' in formatted:
+        integer_part, decimal_part = formatted.rsplit('.', 1)
+        return mark_safe(f'{integer_part}<span class="text-[0.75em] font-semibold opacity-75">.{decimal_part}</span>')
+    return mark_safe(formatted)
+

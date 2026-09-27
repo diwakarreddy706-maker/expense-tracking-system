@@ -133,21 +133,7 @@
       </button>
     </div>
 
-    <!-- Quick Add Expense Trigger (Desktop/Tablet Only - Mobile uses Bottom FAB) -->
     {% if request.user.is_authenticated %}
-      {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.profile.role == 'MANAGER' or request.user.is_superuser %}
-        <button
-          type="button"
-          @click="quickExpenseOpen = true"
-          class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400"
-          title="Record New Expense (Alt+N)"
-          aria-label="Quick Add Expense"
-        >
-          <i class="bi bi-plus-lg text-xs"></i>
-          <span>Expense</span>
-        </button>
-      {% endif %}
-
       <!-- User Profile Dropdown (Alpine.js powered) -->
       <div class="relative" x-data="{ userMenuOpen: false }">
         <button
