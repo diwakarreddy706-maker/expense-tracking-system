@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load currency_tags %}
 
 {% block title %}Financial Audits &amp; Statements | Sri Basaveshwara & Co.{% endblock %}
 
@@ -47,28 +48,28 @@
           <tr class="hover:bg-gray-800/40 transition-colors">
             <td class="py-3.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">{{ c.closing_date|date:"d M Y" }}</td>
             <td class="py-3.5 px-4">
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-300 border border-gray-700">
+              <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-gray-800 text-gray-300 border border-gray-700">
                 {{ c.get_scope_display }}
               </span>
             </td>
             <td class="py-3.5 px-4 text-white font-medium">{{ c.account.account_name|default:"Consolidated Liquid" }}</td>
-            <td class="py-3.5 px-4 text-right font-mono text-gray-400">₹{{ c.opening_balance }}</td>
-            <td class="py-3.5 px-4 text-right font-mono text-white">₹{{ c.expected_closing }}</td>
-            <td class="py-3.5 px-4 text-right font-mono font-bold text-emerald-400">₹{{ c.actual_closing }}</td>
+            <td class="py-3.5 px-4 text-right font-mono text-gray-400 whitespace-nowrap">₹{{ c.opening_balance|inr_parts }}</td>
+            <td class="py-3.5 px-4 text-right font-mono text-white whitespace-nowrap">₹{{ c.expected_closing|inr_parts }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-emerald-400 whitespace-nowrap">₹{{ c.actual_closing|inr_parts }}</td>
             {% if c.discrepancy == 0 %}
-              <td class="py-3.5 px-4 text-right font-mono font-bold text-gray-500">₹{{ c.discrepancy }}</td>
+              <td class="py-3.5 px-4 text-right font-mono font-bold text-gray-500 whitespace-nowrap">₹{{ c.discrepancy|inr_parts }}</td>
             {% elif c.discrepancy > 0 %}
-              <td class="py-3.5 px-4 text-right font-mono font-bold text-amber-400">₹{{ c.discrepancy }}</td>
+              <td class="py-3.5 px-4 text-right font-mono font-bold text-amber-400 whitespace-nowrap">+₹{{ c.discrepancy|inr_parts }}</td>
             {% else %}
-              <td class="py-3.5 px-4 text-right font-mono font-bold text-rose-400">₹{{ c.discrepancy }}</td>
+              <td class="py-3.5 px-4 text-right font-mono font-bold text-rose-400 whitespace-nowrap">₹{{ c.discrepancy|inr_parts }}</td>
             {% endif %}
             <td class="py-3.5 px-4 text-center">
               {% if c.status == 'BALANCED' %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Balanced</span>
+                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Balanced</span>
               {% elif c.status == 'SURPLUS' %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Surplus</span>
+                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Surplus</span>
               {% else %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Deficit</span>
+                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Deficit</span>
               {% endif %}
             </td>
             <td class="py-3.5 px-4 text-gray-400 text-[11px]">{{ c.closed_by.username }}</td>
@@ -111,22 +112,22 @@
             <td class="py-3.5 px-4 text-gray-400 font-mono text-[11px] whitespace-nowrap">{{ tx.transaction_date|date:"d M Y" }}</td>
             <td class="py-3.5 px-4 font-medium text-white">{{ tx.account.account_name }}</td>
             <td class="py-3.5 px-4">
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-cyan-400 border border-[#28354A]">
+              <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-gray-800 text-cyan-400 border border-[#28354A]">
                 {{ tx.get_transaction_type_display }}
               </span>
             </td>
             <td class="py-3.5 px-4">
               {% if tx.direction == 'CREDIT' %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">CREDIT (In)</span>
+                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">CREDIT (In)</span>
               {% else %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">DEBIT (Out)</span>
+                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">DEBIT (Out)</span>
               {% endif %}
             </td>
-            <td class="py-3.5 px-4 text-right font-mono font-bold text-white">
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-white whitespace-nowrap">
               {% if tx.direction == 'CREDIT' %}
-                <span class="text-emerald-400">+₹{{ tx.amount }}</span>
+                <span class="text-emerald-400">+₹{{ tx.amount|inr_parts }}</span>
               {% else %}
-                <span class="text-rose-400">-₹{{ tx.amount }}</span>
+                <span class="text-rose-400">-₹{{ tx.amount|inr_parts }}</span>
               {% endif %}
             </td>
             <td class="py-3.5 px-4 text-gray-300 font-mono">{{ tx.reference_number|default:"--" }}</td>

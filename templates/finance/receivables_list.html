@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load currency_tags %}
 
 {% block title %}Customer Receivables | Sri Basaveshwara & Co.{% endblock %}
 
@@ -20,23 +21,23 @@
 <div class="mobile-kpi-scroll grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
   <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 sm:p-5 shadow-sm">
     <span class="text-xs text-gray-400 block font-medium">Total Billed Receivables</span>
-    <div class="text-xl sm:text-2xl font-extrabold text-white font-mono mt-1">₹{{ metrics.total_receivables }}</div>
+    <div class="text-xl sm:text-2xl font-extrabold text-white font-mono mt-1 whitespace-nowrap">₹{{ metrics.total_receivables|inr_parts }}</div>
   </div>
 
   <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 sm:p-5 shadow-sm">
     <span class="text-xs text-gray-400 block font-medium">Total Collected</span>
-    <div class="text-xl sm:text-2xl font-extrabold text-emerald-400 font-mono mt-1">+₹{{ metrics.total_received }}</div>
+    <div class="text-xl sm:text-2xl font-extrabold text-emerald-400 font-mono mt-1 whitespace-nowrap">+₹{{ metrics.total_received|inr_parts }}</div>
   </div>
 
   <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 sm:p-5 shadow-sm">
     <span class="text-xs text-gray-400 block font-medium">Outstanding Balance</span>
-    <div class="text-xl sm:text-2xl font-extrabold text-amber-400 font-mono mt-1">₹{{ metrics.outstanding_receivables }}</div>
+    <div class="text-xl sm:text-2xl font-extrabold text-amber-400 font-mono mt-1 whitespace-nowrap">₹{{ metrics.outstanding_receivables|inr_parts }}</div>
   </div>
 
   <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-4 sm:p-5 shadow-sm">
     <span class="text-xs text-gray-400 block font-medium">Overdue Receivables</span>
-    <div class="text-xl sm:text-2xl font-extrabold font-mono mt-1 {% if metrics.overdue_receivables > 0 %}text-rose-400{% else %}text-gray-500{% endif %}">
-      ₹{{ metrics.overdue_receivables }}
+    <div class="text-xl sm:text-2xl font-extrabold font-mono mt-1 whitespace-nowrap {% if metrics.overdue_receivables > 0 %}text-rose-400{% else %}text-gray-500{% endif %}">
+      ₹{{ metrics.overdue_receivables|inr_parts }}
     </div>
   </div>
 </div>
@@ -105,11 +106,11 @@
           </a>
           <div class="mt-1">
             {% if rcv.status == 'PAID' %}
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Settled</span>
+              <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Settled</span>
             {% elif rcv.status == 'PARTIAL' %}
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Partial</span>
+              <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Partial</span>
             {% else %}
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Unpaid</span>
+              <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Unpaid</span>
             {% endif %}
           </div>
         </div>
@@ -118,15 +119,15 @@
       <div class="grid grid-cols-3 gap-2 bg-[#0B0F17] rounded-xl p-2.5 text-center border border-[#28354A]/60">
         <div>
           <span class="text-[9px] font-medium text-gray-400 uppercase block">Billed</span>
-          <span class="text-xs font-bold text-white font-mono">₹{{ rcv.total_amount }}</span>
+          <span class="text-xs font-bold text-white font-mono whitespace-nowrap">₹{{ rcv.total_amount|inr_parts }}</span>
         </div>
         <div>
           <span class="text-[9px] font-medium text-gray-400 uppercase block">Received</span>
-          <span class="text-xs font-bold text-emerald-400 font-mono">₹{{ rcv.received_amount }}</span>
+          <span class="text-xs font-bold text-emerald-400 font-mono whitespace-nowrap">₹{{ rcv.received_amount|inr_parts }}</span>
         </div>
         <div>
           <span class="text-[9px] font-medium text-gray-400 uppercase block">Balance</span>
-          <span class="text-xs font-black font-mono {% if rcv.outstanding_amount > 0 %}text-amber-400{% else %}text-gray-500{% endif %}">₹{{ rcv.outstanding_amount }}</span>
+          <span class="text-xs font-black font-mono whitespace-nowrap {% if rcv.outstanding_amount > 0 %}text-amber-400{% else %}text-gray-500{% endif %}">₹{{ rcv.outstanding_amount|inr_parts }}</span>
         </div>
       </div>
 
@@ -140,6 +141,11 @@
           {% endif %}
         </div>
         <div class="flex items-center gap-1.5">
+          {% if rcv.customer.phone and rcv.outstanding_amount > 0 %}
+            <a href="https://wa.me/91{{ rcv.customer.phone }}?text=Namaskara%20{{ rcv.customer.name|urlencode }},%20Sri%20Basaveshwara%20%26%20Co%20bill%20#{{ rcv.receivable_code }}%20balance%20due%20is%20Rs.{{ rcv.outstanding_amount }}." target="_blank" class="p-1.5 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] border border-[#25D366]/40 transition-colors no-underline text-xs" title="Send WhatsApp Payment Reminder">
+              <i class="bi bi-whatsapp"></i>
+            </a>
+          {% endif %}
           {% if rcv.status != 'PAID' %}
             <a href="{% url 'finance:customer_payment_create' rcv.id %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs no-underline shadow-sm">
               <i class="bi bi-cash"></i>
@@ -191,22 +197,27 @@
             <td class="py-3.5 px-4 font-semibold text-white">{{ rcv.customer.name }}</td>
             <td class="py-3.5 px-4 font-mono text-gray-400">{{ rcv.invoice_no|default:"--" }}</td>
             <td class="py-3.5 px-4 text-gray-400 font-mono text-[11px]">{{ rcv.due_date|date:"d M Y"|default:"--" }}</td>
-            <td class="py-3.5 px-4 text-right font-mono font-bold text-white">₹{{ rcv.total_amount }}</td>
-            <td class="py-3.5 px-4 text-right font-mono text-emerald-400">₹{{ rcv.received_amount }}</td>
-            <td class="py-3.5 px-4 text-right font-mono font-bold {% if rcv.outstanding_amount > 0 %}text-amber-400{% else %}text-gray-500{% endif %}">
-              ₹{{ rcv.outstanding_amount }}
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-white whitespace-nowrap">₹{{ rcv.total_amount|inr_parts }}</td>
+            <td class="py-3.5 px-4 text-right font-mono text-emerald-400 whitespace-nowrap">₹{{ rcv.received_amount|inr_parts }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold whitespace-nowrap {% if rcv.outstanding_amount > 0 %}text-amber-400{% else %}text-gray-500{% endif %}">
+              ₹{{ rcv.outstanding_amount|inr_parts }}
             </td>
             <td class="py-3.5 px-4 text-center">
               {% if rcv.status == 'PAID' %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Settled</span>
+                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Settled</span>
               {% elif rcv.status == 'PARTIAL' %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Partial</span>
+                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Partial</span>
               {% else %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Unpaid</span>
+                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Unpaid</span>
               {% endif %}
             </td>
             <td class="py-3.5 px-4 text-right">
               <div class="flex items-center justify-end gap-1.5">
+                {% if rcv.customer.phone and rcv.outstanding_amount > 0 %}
+                  <a href="https://wa.me/91{{ rcv.customer.phone }}?text=Namaskara%20{{ rcv.customer.name|urlencode }},%20Sri%20Basaveshwara%20%26%20Co%20bill%20#{{ rcv.receivable_code }}%20balance%20due%20is%20Rs.{{ rcv.outstanding_amount }}." target="_blank" class="p-1.5 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] border border-[#25D366]/40 transition-colors no-underline text-xs" title="Send WhatsApp Payment Reminder">
+                    <i class="bi bi-whatsapp"></i>
+                  </a>
+                {% endif %}
                 {% if rcv.status != 'PAID' %}
                   <a href="{% url 'finance:customer_payment_create' rcv.id %}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 font-semibold border border-emerald-500/30 transition-colors no-underline text-xs" title="Record Payment Receipt">
                     <i class="bi bi-cash"></i>

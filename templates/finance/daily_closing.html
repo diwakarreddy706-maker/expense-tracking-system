@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load currency_tags %}
 
 {% block title %}{{ title }} | Sri Basaveshwara & Co.{% endblock %}
 
@@ -118,31 +119,31 @@
             </div>
             <h3 class="text-sm font-bold text-white tracking-tight m-0">Calculated System Balance</h3>
           </div>
-          <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">{{ closing_date|date:"d M Y" }}</span>
+          <span class="px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">{{ closing_date|date:"d M Y" }}</span>
         </div>
 
         <div class="p-4 bg-[#0B0F17] rounded-xl border border-[#28354A] space-y-3 mb-4 text-xs">
           <div class="flex justify-between items-center text-gray-400">
             <span>1. Opening Balance (as of 00:00:00)</span>
-            <span class="text-white font-mono font-semibold">₹{{ reconciliation.opening_balance }}</span>
+            <span class="text-white font-mono font-semibold whitespace-nowrap">₹{{ reconciliation.opening_balance|inr_parts }}</span>
           </div>
           <div class="flex justify-between items-center text-gray-400">
             <span>2. Total Daily Inflows / Receipts (+)</span>
-            <span class="text-emerald-400 font-mono font-semibold">+₹{{ reconciliation.total_inflow }}</span>
+            <span class="text-emerald-400 font-mono font-semibold whitespace-nowrap">+₹{{ reconciliation.total_inflow|inr_parts }}</span>
           </div>
           <div class="flex justify-between items-center text-gray-400">
             <span>3. Total Daily Outflows / Payments (-)</span>
-            <span class="text-rose-400 font-mono font-semibold">-₹{{ reconciliation.total_outflow }}</span>
+            <span class="text-rose-400 font-mono font-semibold whitespace-nowrap">-₹{{ reconciliation.total_outflow|inr_parts }}</span>
           </div>
           {% if scope != 'CONSOLIDATED' %}
             <div class="flex justify-between items-center text-gray-400">
               <span>4. Inter-Account Transfers (+/-)</span>
-              <span class="text-cyan-400 font-mono font-semibold">+₹{{ reconciliation.transfer_in }} / -₹{{ reconciliation.transfer_out }}</span>
+              <span class="text-cyan-400 font-mono font-semibold whitespace-nowrap">+₹{{ reconciliation.transfer_in|inr_parts }} / -₹{{ reconciliation.transfer_out|inr_parts }}</span>
             </div>
           {% endif %}
           <div class="flex justify-between items-center border-t border-[#28354A] pt-3 text-sm">
             <span class="text-white font-bold">Expected Closing Balance:</span>
-            <span class="text-xl font-extrabold text-emerald-400 font-mono">₹{{ reconciliation.expected_closing }}</span>
+            <span class="text-xl font-extrabold text-emerald-400 font-mono whitespace-nowrap">₹{{ reconciliation.expected_closing|inr_parts }}</span>
           </div>
         </div>
       </div>
@@ -153,15 +154,15 @@
         <div class="grid grid-cols-3 gap-2 text-[11px]">
           <div class="p-2 rounded-lg bg-[#0B0F17] border border-[#1E293B]">
             <span class="text-gray-400 block">Receivables:</span>
-            <strong class="text-white font-mono">₹{{ reconciliation.receivables_outstanding }}</strong>
+            <strong class="text-white font-mono whitespace-nowrap">₹{{ reconciliation.receivables_outstanding|inr_parts }}</strong>
           </div>
           <div class="p-2 rounded-lg bg-[#0B0F17] border border-[#1E293B]">
             <span class="text-gray-400 block">Payables:</span>
-            <strong class="text-white font-mono">₹{{ reconciliation.payables_outstanding }}</strong>
+            <strong class="text-white font-mono whitespace-nowrap">₹{{ reconciliation.payables_outstanding|inr_parts }}</strong>
           </div>
           <div class="p-2 rounded-lg bg-[#0B0F17] border border-[#1E293B]">
             <span class="text-gray-400 block">Wages Owed:</span>
-            <strong class="text-white font-mono">₹{{ reconciliation.employee_wages_outstanding }}</strong>
+            <strong class="text-white font-mono whitespace-nowrap">₹{{ reconciliation.employee_wages_outstanding|inr_parts }}</strong>
           </div>
         </div>
       </div>
@@ -182,16 +183,16 @@
           <div class="p-4 bg-[#0B0F17] rounded-xl border border-[#28354A] text-left space-y-2 text-xs mb-4">
             <div class="flex justify-between text-gray-400">
               <span>Expected Closing:</span>
-              <span class="text-white font-mono">₹{{ existing_closing.expected_closing }}</span>
+              <span class="text-white font-mono whitespace-nowrap">₹{{ existing_closing.expected_closing|inr_parts }}</span>
             </div>
             <div class="flex justify-between text-gray-400">
               <span>Actual Verified Closing:</span>
-              <span class="text-white font-mono font-bold">₹{{ existing_closing.actual_closing }}</span>
+              <span class="text-white font-mono font-bold whitespace-nowrap">₹{{ existing_closing.actual_closing|inr_parts }}</span>
             </div>
             <div class="flex justify-between border-t border-[#1E293B] pt-2">
               <span class="text-gray-300">Discrepancy:</span>
-              <span class="font-mono font-bold {% if existing_closing.status == 'BALANCED' %}text-emerald-400{% elif existing_closing.status == 'SURPLUS' %}text-amber-400{% else %}text-rose-400{% endif %}">
-                ₹{{ existing_closing.discrepancy }} ({{ existing_closing.get_status_display }})
+              <span class="font-mono font-bold whitespace-nowrap {% if existing_closing.status == 'BALANCED' %}text-emerald-400{% elif existing_closing.status == 'SURPLUS' %}text-amber-400{% else %}text-rose-400{% endif %}">
+                ₹{{ existing_closing.discrepancy|inr_parts }} ({{ existing_closing.get_status_display }})
               </span>
             </div>
             {% if existing_closing.notes %}
@@ -201,7 +202,7 @@
               </div>
             {% endif %}
           </div>
-          <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Immutably Locked</span>
+          <span class="px-3 py-1 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Immutably Locked</span>
         </div>
       {% else %}
         <div>
@@ -220,6 +221,60 @@
               <input type="hidden" name="account" value="{{ reconciliation.target_account.id }}">
             {% endif %}
 
+            {% if scope == 'CASH_ACCOUNT' or scope == 'CONSOLIDATED' %}
+              <!-- Physical Cash Denomination Calculator Accordion -->
+              <div class="bg-[#0B0F17] rounded-xl border border-[#28354A] p-3 mb-2" x-data="{ open: false }">
+                <button type="button" @click="open = !open" class="w-full flex items-center justify-between text-left text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors focus:outline-none bg-transparent border-0 p-0 cursor-pointer">
+                  <span class="inline-flex items-center gap-2">
+                    <i class="bi bi-cash-coin text-amber-400"></i>
+                    <span>Physical Note Counter (ನೋಟು ಎಣಿಕೆ)</span>
+                  </span>
+                  <span class="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold text-gray-300">
+                    <span id="denomTotalBadge">₹0</span>
+                    <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                  </span>
+                </button>
+                <div x-show="open" x-cloak class="mt-3 pt-3 border-t border-[#1E293B] space-y-2">
+                  <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="flex items-center gap-1.5 bg-[#131A26] px-2 py-1.5 rounded-lg border border-[#28354A]">
+                      <span class="w-12 text-gray-400 font-mono font-bold">₹500 &times;</span>
+                      <input type="number" min="0" placeholder="0" class="denom-input w-full bg-transparent text-white font-mono text-right focus:outline-none" data-multiplier="500">
+                    </div>
+                    <div class="flex items-center gap-1.5 bg-[#131A26] px-2 py-1.5 rounded-lg border border-[#28354A]">
+                      <span class="w-12 text-gray-400 font-mono font-bold">₹200 &times;</span>
+                      <input type="number" min="0" placeholder="0" class="denom-input w-full bg-transparent text-white font-mono text-right focus:outline-none" data-multiplier="200">
+                    </div>
+                    <div class="flex items-center gap-1.5 bg-[#131A26] px-2 py-1.5 rounded-lg border border-[#28354A]">
+                      <span class="w-12 text-gray-400 font-mono font-bold">₹100 &times;</span>
+                      <input type="number" min="0" placeholder="0" class="denom-input w-full bg-transparent text-white font-mono text-right focus:outline-none" data-multiplier="100">
+                    </div>
+                    <div class="flex items-center gap-1.5 bg-[#131A26] px-2 py-1.5 rounded-lg border border-[#28354A]">
+                      <span class="w-12 text-gray-400 font-mono font-bold">₹50 &times;</span>
+                      <input type="number" min="0" placeholder="0" class="denom-input w-full bg-transparent text-white font-mono text-right focus:outline-none" data-multiplier="50">
+                    </div>
+                    <div class="flex items-center gap-1.5 bg-[#131A26] px-2 py-1.5 rounded-lg border border-[#28354A]">
+                      <span class="w-12 text-gray-400 font-mono font-bold">₹20 &times;</span>
+                      <input type="number" min="0" placeholder="0" class="denom-input w-full bg-transparent text-white font-mono text-right focus:outline-none" data-multiplier="20">
+                    </div>
+                    <div class="flex items-center gap-1.5 bg-[#131A26] px-2 py-1.5 rounded-lg border border-[#28354A]">
+                      <span class="w-12 text-gray-400 font-mono font-bold">₹10 &times;</span>
+                      <input type="number" min="0" placeholder="0" class="denom-input w-full bg-transparent text-white font-mono text-right focus:outline-none" data-multiplier="10">
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 bg-[#131A26] px-2.5 py-1.5 rounded-lg border border-[#28354A] text-xs">
+                    <span class="text-gray-400 font-medium">Coins / Small Cash: ₹</span>
+                    <input type="number" step="0.01" min="0" placeholder="0.00" class="denom-input w-full bg-transparent text-white font-mono text-right focus:outline-none" data-multiplier="1">
+                  </div>
+                  <div class="flex items-center justify-between pt-1">
+                    <span class="text-[11px] text-gray-400">Total Counted: <strong class="text-emerald-400 font-mono" id="denomTotalSummary">₹0.00</strong></span>
+                    <button type="button" id="applyDenomTotalBtn" class="px-3 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 font-semibold border border-emerald-500/30 text-xs transition-colors cursor-pointer">
+                      Apply to Form &darr;
+                    </button>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+
             <div>
               <label class="block text-xs font-semibold text-gray-300 mb-1.5">
                 {% if scope == 'CASH_ACCOUNT' %}Physical Cash Counted in Drawer (₹) *
@@ -234,7 +289,7 @@
             <div class="p-3.5 bg-[#0B0F17] rounded-xl border border-[#28354A]">
               <div class="flex justify-between items-center">
                 <span class="text-xs text-gray-400">Calculated Discrepancy:</span>
-                <span class="text-lg font-mono font-bold text-emerald-400" id="discrepancyDisplay">₹0.00</span>
+                <span class="text-lg font-mono font-bold text-emerald-400 whitespace-nowrap" id="discrepancyDisplay">₹0.00</span>
               </div>
               <div class="text-[11px] text-gray-400 mt-1" id="statusHelperText">Actual matches Expected Balance exactly.</div>
             </div>
@@ -244,7 +299,7 @@
               {{ form.notes }}
             </div>
 
-            <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 flex items-center justify-center gap-2 mt-4">
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm shadow-emerald-900/30 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 flex items-center justify-center gap-2 mt-4 cursor-pointer">
               <i class="bi bi-lock-fill"></i>
               <span>Lock &amp; Complete Daily Closing</span>
             </button>
@@ -287,24 +342,24 @@
           <tr class="hover:bg-gray-800/40 transition-colors">
             <td class="py-3.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">{{ c.closing_date|date:"d M Y" }}</td>
             <td class="py-3.5 px-4">
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-300 border border-gray-700">
+              <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-gray-800 text-gray-300 border border-gray-700">
                 {{ c.get_scope_display }}
               </span>
             </td>
             <td class="py-3.5 px-4 text-white font-medium">{{ c.account.account_name|default:"Consolidated Liquid" }}</td>
-            <td class="py-3.5 px-4 text-right font-mono text-gray-400">₹{{ c.opening_balance }}</td>
-            <td class="py-3.5 px-4 text-right font-mono text-white">₹{{ c.expected_closing }}</td>
-            <td class="py-3.5 px-4 text-right font-mono font-bold text-emerald-400">₹{{ c.actual_closing }}</td>
-            <td class="py-3.5 px-4 text-right font-mono font-bold {% if c.discrepancy == 0 %}text-gray-500{% elif c.discrepancy > 0 %}text-amber-400{% else %}text-rose-400{% endif %}">
-              ₹{{ c.discrepancy }}
+            <td class="py-3.5 px-4 text-right font-mono text-gray-400 whitespace-nowrap">₹{{ c.opening_balance|inr_parts }}</td>
+            <td class="py-3.5 px-4 text-right font-mono text-white whitespace-nowrap">₹{{ c.expected_closing|inr_parts }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-emerald-400 whitespace-nowrap">₹{{ c.actual_closing|inr_parts }}</td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold whitespace-nowrap {% if c.discrepancy == 0 %}text-gray-500{% elif c.discrepancy > 0 %}text-amber-400{% else %}text-rose-400{% endif %}">
+              ₹{{ c.discrepancy|inr_parts }}
             </td>
             <td class="py-3.5 px-4 text-center">
               {% if c.status == 'BALANCED' %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Balanced</span>
+                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Balanced</span>
               {% elif c.status == 'SURPLUS' %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Surplus</span>
+                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Surplus</span>
               {% else %}
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Deficit</span>
+                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Deficit</span>
               {% endif %}
             </td>
             <td class="py-3.5 px-4 text-gray-400 text-[11px]">{{ c.closed_by.username }} ({{ c.closed_at|date:"H:i" }})</td>
@@ -336,17 +391,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (isNaN(diff) || Math.abs(diff) < 0.001) {
       discrepancyDisplay.textContent = "₹0.00";
-      discrepancyDisplay.className = "text-lg font-mono font-bold text-emerald-400";
+      discrepancyDisplay.className = "text-lg font-mono font-bold text-emerald-400 whitespace-nowrap";
       if (statusHelper) statusHelper.textContent = "Actual matches Expected Balance exactly (Balanced).";
       if (notesField) notesField.required = false;
     } else if (diff > 0) {
       discrepancyDisplay.textContent = "+₹" + diff.toFixed(2);
-      discrepancyDisplay.className = "text-lg font-mono font-bold text-amber-400";
+      discrepancyDisplay.className = "text-lg font-mono font-bold text-amber-400 whitespace-nowrap";
       if (statusHelper) statusHelper.textContent = "Surplus detected (Excess funds). Mandatory note required.";
       if (notesField) notesField.required = true;
     } else {
       discrepancyDisplay.textContent = "-₹" + Math.abs(diff).toFixed(2);
-      discrepancyDisplay.className = "text-lg font-mono font-bold text-rose-400";
+      discrepancyDisplay.className = "text-lg font-mono font-bold text-rose-400 whitespace-nowrap";
       if (statusHelper) statusHelper.textContent = "Deficit detected (Shortage of funds). Mandatory note required.";
       if (notesField) notesField.required = true;
     }
@@ -354,6 +409,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
   actualInput?.addEventListener('input', updateLiveDiscrepancy);
   updateLiveDiscrepancy();
+
+  // Physical Cash Denomination Calculator
+  const denomInputs = document.querySelectorAll('.denom-input');
+  const denomTotalBadge = document.getElementById('denomTotalBadge');
+  const denomTotalSummary = document.getElementById('denomTotalSummary');
+  const applyDenomTotalBtn = document.getElementById('applyDenomTotalBtn');
+
+  function calculateDenominationTotal() {
+    let total = 0;
+    denomInputs.forEach(input => {
+      const multiplier = parseFloat(input.dataset.multiplier) || 1;
+      const count = parseFloat(input.value) || 0;
+      total += count * multiplier;
+    });
+    const formatted = '₹' + total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (denomTotalBadge) denomTotalBadge.textContent = '₹' + Math.round(total).toLocaleString('en-IN');
+    if (denomTotalSummary) denomTotalSummary.textContent = formatted;
+    return total;
+  }
+
+  denomInputs.forEach(input => {
+    input.addEventListener('input', calculateDenominationTotal);
+  });
+
+  applyDenomTotalBtn?.addEventListener('click', () => {
+    const total = calculateDenominationTotal();
+    if (actualInput) {
+      actualInput.value = total.toFixed(2);
+      actualInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  });
 });
 </script>
 {% endblock %}
