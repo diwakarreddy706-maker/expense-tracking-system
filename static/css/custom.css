@@ -79,12 +79,47 @@ body {
   top: 0;
   bottom: 0;
   left: 0;
-  z-index: 40;
+  z-index: 50;
   width: 18rem;
   height: 100vh;
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateX(-100%);
+  will-change: transform;
+}
+
+.app-sidebar-container.sidebar-open,
+.app-sidebar-container.translate-x-0 {
+  transform: translateX(0) !important;
+}
+
+.app-sidebar-container nav {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(55, 71, 97, 0.5) transparent;
+}
+
+.app-sidebar-container nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+.app-sidebar-container nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app-sidebar-container nav::-webkit-scrollbar-thumb {
+  background: rgba(55, 71, 97, 0.5);
+  border-radius: 9999px;
+}
+
+.app-sidebar-container nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(55, 71, 97, 0.8);
 }
 
 .app-main-layout {
@@ -106,13 +141,15 @@ body {
     position: sticky !important;
     top: 0 !important;
     height: 100vh !important;
+    max-height: 100vh !important;
     width: 16rem !important;
     min-width: 16rem !important;
     max-width: 16rem !important;
     flex-shrink: 0 !important;
-    transform: none !important;
+    transform: translateX(0) !important;
     z-index: 30 !important;
     box-shadow: none !important;
+    overflow: hidden !important;
   }
 
   .app-main-layout {

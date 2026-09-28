@@ -5,6 +5,7 @@ Development settings for Expense Tracking & Management System.
 from .base import *
 
 DEBUG = True
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver', '[::1]']
 
 # MySQL 8.x Database Configuration
 DATABASES = {

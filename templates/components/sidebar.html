@@ -1,9 +1,8 @@
 {% load static i18n %}
 <aside
   class="app-sidebar-container bg-[#0F172A] border-r border-[#1E293B] shadow-2xl lg:shadow-none"
-  :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+  :class="sidebarOpen ? 'sidebar-open translate-x-0' : '-translate-x-full lg:translate-x-0'"
   style="will-change: transform;"
-  @click.away="sidebarOpen = false"
   @keydown.escape.window="sidebarOpen = false"
   aria-label="Main Navigation"
 >
