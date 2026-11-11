@@ -131,9 +131,21 @@ def machinery_pnl_pdf_view(request):
     """
     Renders the official Machinery Operational P&L Landscape A4 PDF document.
     """
-    start_date = request.GET.get('start_date', '').strip() or None
-    end_date = request.GET.get('end_date', '').strip() or None
+    import datetime
+    start_str = request.GET.get('start_date', '').strip() or None
+    end_str = request.GET.get('end_date', '').strip() or None
     machine_id = request.GET.get('machine', '').strip() or None
+
+    start_date = None
+    end_date = None
+    try:
+        if start_str:
+            start_date = datetime.date.fromisoformat(start_str)
+        if end_str:
+            end_date = datetime.date.fromisoformat(end_str)
+    except ValueError:
+        messages.error(request, "Invalid date format provided for Machinery P&L PDF.")
+        return redirect('reports:operational')
 
     from apps.reports.services.machinery_pnl_service import MachineryPnLPDFService
     return MachineryPnLPDFService.generate_pdf(
@@ -149,11 +161,23 @@ def expense_analysis_pdf_view(request):
     """
     Renders the official Comprehensive Expense Analysis A4 PDF document.
     """
-    start_date = request.GET.get('start_date', '').strip() or None
-    end_date = request.GET.get('end_date', '').strip() or None
+    import datetime
+    start_str = request.GET.get('start_date', '').strip() or None
+    end_str = request.GET.get('end_date', '').strip() or None
     category_id = request.GET.get('category', '').strip() or None
     machine_id = request.GET.get('machine', '').strip() or None
     payment_method = request.GET.get('payment_method', '').strip() or None
+
+    start_date = None
+    end_date = None
+    try:
+        if start_str:
+            start_date = datetime.date.fromisoformat(start_str)
+        if end_str:
+            end_date = datetime.date.fromisoformat(end_str)
+    except ValueError:
+        messages.error(request, "Invalid date format provided for Expense Analysis PDF.")
+        return redirect('reports:expenses')
 
     from apps.reports.services.expense_report_service import ExpenseReportPDFService
     return ExpenseReportPDFService.generate_pdf(

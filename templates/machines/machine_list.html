@@ -167,9 +167,9 @@
             <i class="bi bi-pencil-square"></i>
           </a>
           {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
-            <a href="{% url 'machines:delete' m.id %}" class="p-2 rounded-lg bg-[#182234] hover:bg-gray-800 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors no-underline" title="Delete Machine" onclick="return confirm('Soft delete machine {{ m.name }}?');">
+            <button type="button" @click="$dispatch('open-confirm-modal', { url: '{% url 'machines:delete' m.id %}', title: 'Delete Machine?', message: 'Are you sure you want to soft delete machine {{ m.name|escapejs }}? Existing work and maintenance logs remain preserved.', confirmLabel: 'Delete Machine' })" class="p-2 rounded-lg bg-[#182234] hover:bg-gray-800 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors cursor-pointer" title="Delete Machine" aria-label="Delete Machine">
               <i class="bi bi-trash"></i>
-            </a>
+            </button>
           {% endif %}
         </div>
 
@@ -182,9 +182,9 @@
       </div>
     </div>
   {% empty %}
-    <div class="col-span-full py-12 text-center text-gray-500 glass-panel">
-      <i class="bi bi-truck text-4xl block mb-2 text-gray-600"></i>
-      No agricultural machinery found matching your criteria.
+    <div class="col-span-full glass-panel">
+      {% url 'machines:create' as add_machine_url %}
+      {% include 'components/empty_state.html' with icon='bi bi-truck' title='No Machinery Registered Yet' message='Add your combine harvesters, tractors, or transport trucks to begin dispatching and billing.' action_url=add_machine_url action_text='Add First Machine' %}
     </div>
   {% endfor %}
 </div>
@@ -247,18 +247,18 @@
                   <i class="bi bi-pencil-square"></i>
                 </a>
                 {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'ACCOUNTANT' or request.user.is_superuser %}
-                  <a href="{% url 'machines:delete' m.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors no-underline text-xs" title="Delete" aria-label="Delete Machine" onclick="return confirm('Soft delete machine {{ m.name }}?');">
+                  <button type="button" @click="$dispatch('open-confirm-modal', { url: '{% url 'machines:delete' m.id %}', title: 'Delete Machine?', message: 'Are you sure you want to soft delete machine {{ m.name|escapejs }}? Existing work and maintenance logs remain preserved.', confirmLabel: 'Delete Machine' })" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors cursor-pointer text-xs" title="Delete" aria-label="Delete Machine">
                     <i class="bi bi-trash"></i>
-                  </a>
+                  </button>
                 {% endif %}
               </div>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="8" class="py-12 text-center text-gray-500">
-              <i class="bi bi-truck text-3xl block mb-2 text-gray-600"></i>
-              No agricultural machines found. Click "Add Machine" to register your equipment.
+            <td colspan="8" class="p-0">
+              {% url 'machines:create' as add_machine_url %}
+              {% include 'components/empty_state.html' with icon='bi bi-truck' title='No Machinery Registered Yet' message='Add your combine harvesters, tractors, or transport trucks to begin dispatching and billing.' action_url=add_machine_url action_text='Add First Machine' %}
             </td>
           </tr>
         {% endfor %}

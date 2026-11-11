@@ -1,7 +1,6 @@
 {% load i18n %}
 {% comment %}
   Mobile-First Quick Add Action Sheet Modal
-  Allows field workers, drivers, accountants & managers to quickly jump to frequent operational recording actions.
 {% endcomment %}
 
 <div
@@ -36,46 +35,44 @@
       x-transition:leave="ease-in duration-200"
       x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
       x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
-      class="relative w-full max-w-lg bg-[#131A26] border-t sm:border border-[#28354A] rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl text-left overflow-y-auto max-h-[85vh] sm:max-h-[90vh] pb-8 sm:pb-6"
+      class="relative w-full max-w-lg bg-[#131A26] border-t sm:border border-[#28354A] rounded-t-xl sm:rounded-lg p-5 shadow-2xl text-left overflow-y-auto max-h-[85vh] sm:max-h-[90vh] pb-8 sm:pb-6"
       style="padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px));"
     >
       <!-- Top Handle Bar (Mobile Touch Pull Indicator) -->
       <div class="sm:hidden flex justify-center -mt-1 mb-3">
-        <div class="w-12 h-1.5 rounded-full bg-gray-600"></div>
+        <div class="w-10 h-1 rounded-full bg-gray-400"></div>
       </div>
 
       <!-- Header -->
-      <div class="flex items-center justify-between pb-3.5 border-b border-[#28354A] mb-4">
+      <div class="flex items-center justify-between pb-3 border-b border-[#28354A] mb-4">
         <div>
-          <h3 class="text-base font-bold text-white tracking-tight m-0 flex items-center gap-2" id="quickAddModalTitle">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-            <span>{% trans "Quick Field Operations" %}</span>
+          <h3 class="text-sm font-semibold text-white tracking-tight m-0" id="quickAddModalTitle">
+            {% trans "Quick Field Operations" %}
           </h3>
           <p class="text-xs text-gray-400 mt-0.5 mb-0">{% trans "Select an entry to record in the field" %} &bull; ತ್ವರಿತ ದಾಖಲಾತಿ</p>
         </div>
         <button
           type="button"
           @click="quickAddOpen = false"
-          class="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-gray-400 hover:text-white bg-gray-800/60 hover:bg-gray-800 border border-[#28354A] transition-colors focus:outline-none"
+          class="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md text-gray-400 hover:text-white bg-gray-800/60 hover:bg-gray-800 border border-[#28354A] transition-colors focus:outline-none"
           aria-label="Close Quick Operations menu"
         >
           <i class="bi bi-x-lg text-xs"></i>
         </button>
       </div>
 
-      <!-- Action Grid (Optimized 2-Column Touch Grid) -->
+      <!-- Action Grid (Monochromatic + Classic Navy active accents) -->
       <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
-        
         <!-- 1. Quick Expense Modal Trigger -->
         <button
           type="button"
           @click="quickAddOpen = false; quickExpenseOpen = true"
-          class="flex flex-col p-3 rounded-xl bg-[#0B0F17] hover:bg-gray-800/80 border border-[#28354A] hover:border-emerald-500/60 transition-all text-left group focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[76px] cursor-pointer"
+          class="flex flex-col p-3 rounded-md bg-[#0B0F17] hover:bg-gray-800/80 border border-[#28354A] hover:border-[#1E3A8A] transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] min-h-[72px] cursor-pointer"
         >
-          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-1.5 group-hover:scale-105 transition-transform">
-            <i class="bi bi-lightning-fill text-sm"></i>
+          <div class="w-7 h-7 rounded-md bg-gray-800 border border-[#28354A] flex items-center justify-center text-gray-300 mb-1.5">
+            <i class="bi bi-lightning text-sm"></i>
           </div>
-          <span class="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">{% trans "Quick Expense" %}</span>
+          <span class="text-xs font-semibold text-white">{% trans "Quick Expense" %}</span>
           <span class="text-[10px] text-gray-400 mt-0.5">20s field expense (ವೆಚ್ಚ)</span>
         </button>
 
@@ -83,12 +80,12 @@
         <a
           href="{% url 'fuel:create' %}"
           @click="quickAddOpen = false"
-          class="flex flex-col p-3 rounded-xl bg-[#0B0F17] hover:bg-gray-800/80 border border-[#28354A] hover:border-amber-500/60 transition-all text-left group no-underline focus:outline-none focus:ring-2 focus:ring-amber-500 min-h-[76px]"
+          class="flex flex-col p-3 rounded-md bg-[#0B0F17] hover:bg-gray-800/80 border border-[#28354A] hover:border-[#1E3A8A] transition-colors text-left no-underline focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] min-h-[72px]"
         >
-          <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-1.5 group-hover:scale-105 transition-transform">
-            <i class="bi bi-fuel-pump-fill text-sm"></i>
+          <div class="w-7 h-7 rounded-md bg-gray-800 border border-[#28354A] flex items-center justify-center text-gray-300 mb-1.5">
+            <i class="bi bi-fuel-pump text-sm"></i>
           </div>
-          <span class="text-xs font-bold text-white group-hover:text-amber-400 transition-colors">{% trans "Fuel Refill" %}</span>
+          <span class="text-xs font-semibold text-white">{% trans "Fuel Refill" %}</span>
           <span class="text-[10px] text-gray-400 mt-0.5">Diesel / oil intake (ಇಂಧನ)</span>
         </a>
 
@@ -96,12 +93,12 @@
         <a
           href="{% url 'machines:work_create' %}"
           @click="quickAddOpen = false"
-          class="flex flex-col p-3 rounded-xl bg-[#0B0F17] hover:bg-gray-800/80 border border-[#28354A] hover:border-cyan-500/60 transition-all text-left group no-underline focus:outline-none focus:ring-2 focus:ring-cyan-500 min-h-[76px]"
+          class="flex flex-col p-3 rounded-md bg-[#0B0F17] hover:bg-gray-800/80 border border-[#28354A] hover:border-[#1E3A8A] transition-colors text-left no-underline focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] min-h-[72px]"
         >
-          <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-1.5 group-hover:scale-105 transition-transform">
+          <div class="w-7 h-7 rounded-md bg-gray-800 border border-[#28354A] flex items-center justify-center text-gray-300 mb-1.5">
             <i class="bi bi-clock-history text-sm"></i>
           </div>
-          <span class="text-xs font-bold text-white group-hover:text-cyan-400 transition-colors">{% trans "Work Entry" %}</span>
+          <span class="text-xs font-semibold text-white">{% trans "Work Entry" %}</span>
           <span class="text-[10px] text-gray-400 mt-0.5">Hours / Acre bill (ಕೆಲಸ)</span>
         </a>
 
@@ -109,12 +106,12 @@
         <a
           href="{% url 'machines:farmer_ledger' %}"
           @click="quickAddOpen = false"
-          class="flex flex-col p-3 rounded-xl bg-[#0B0F17] hover:bg-gray-800/80 border border-[#28354A] hover:border-teal-500/60 transition-all text-left group no-underline focus:outline-none focus:ring-2 focus:ring-teal-500 min-h-[76px]"
+          class="flex flex-col p-3 rounded-md bg-[#0B0F17] hover:bg-gray-800/80 border border-[#28354A] hover:border-[#1E3A8A] transition-colors text-left no-underline focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] min-h-[72px]"
         >
-          <div class="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 mb-1.5 group-hover:scale-105 transition-transform">
-            <i class="bi bi-book-fill text-sm"></i>
+          <div class="w-7 h-7 rounded-md bg-gray-800 border border-[#28354A] flex items-center justify-center text-gray-300 mb-1.5">
+            <i class="bi bi-book text-sm"></i>
           </div>
-          <span class="text-xs font-bold text-white group-hover:text-teal-400 transition-colors">{% trans "Farmer Passbook" %}</span>
+          <span class="text-xs font-semibold text-white">{% trans "Farmer Passbook" %}</span>
           <span class="text-[10px] text-gray-400 mt-0.5">Udhar Katha &amp; PDF (ಖಾತೆ)</span>
         </a>
 
@@ -123,12 +120,12 @@
         <a
           href="{% url 'finance:receivables' %}"
           @click="quickAddOpen = false"
-          class="flex flex-col p-3 rounded-xl bg-[#0B0F17] hover:bg-gray-800/80 border border-[#28354A] hover:border-emerald-500/60 transition-all text-left group no-underline focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[76px]"
+          class="flex flex-col p-3 rounded-md bg-[#0B0F17] hover:bg-gray-800/80 border border-[#28354A] hover:border-[#1E3A8A] transition-colors text-left no-underline focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] min-h-[72px]"
         >
-          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-1.5 group-hover:scale-105 transition-transform">
+          <div class="w-7 h-7 rounded-md bg-gray-800 border border-[#28354A] flex items-center justify-center text-gray-300 mb-1.5">
             <i class="bi bi-cash-stack text-sm"></i>
           </div>
-          <span class="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">{% trans "Receive Payment" %}</span>
+          <span class="text-xs font-semibold text-white">{% trans "Receive Payment" %}</span>
           <span class="text-[10px] text-gray-400 mt-0.5">Farmer cash/UPI settlement</span>
         </a>
         {% endif %}
@@ -138,12 +135,12 @@
         <a
           href="{% url 'machines:maintenance_job_create' %}"
           @click="quickAddOpen = false"
-          class="flex flex-col p-3 rounded-xl bg-[#0B0F17] hover:bg-gray-800/80 border border-[#28354A] hover:border-rose-500/60 transition-all text-left group no-underline focus:outline-none focus:ring-2 focus:ring-rose-500 min-h-[76px]"
+          class="flex flex-col p-3 rounded-md bg-[#0B0F17] hover:bg-gray-800/80 border border-[#28354A] hover:border-[#1E3A8A] transition-colors text-left no-underline focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] min-h-[72px]"
         >
-          <div class="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 mb-1.5 group-hover:scale-105 transition-transform">
+          <div class="w-7 h-7 rounded-md bg-gray-800 border border-[#28354A] flex items-center justify-center text-gray-300 mb-1.5">
             <i class="bi bi-tools text-sm"></i>
           </div>
-          <span class="text-xs font-bold text-white group-hover:text-rose-400 transition-colors">{% trans "Maintenance" %}</span>
+          <span class="text-xs font-semibold text-white">{% trans "Maintenance" %}</span>
           <span class="text-[10px] text-gray-400 mt-0.5">Machine service &amp; repair</span>
         </a>
         {% endif %}
@@ -153,31 +150,29 @@
         <a
           href="{% url 'employees:payout_create' %}"
           @click="quickAddOpen = false"
-          class="flex flex-col p-3 rounded-xl bg-[#0B0F17] hover:bg-gray-800/80 border border-[#28354A] hover:border-purple-500/60 transition-all text-left group no-underline focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[76px]"
+          class="flex flex-col p-3 rounded-md bg-[#0B0F17] hover:bg-gray-800/80 border border-[#28354A] hover:border-[#1E3A8A] transition-colors text-left no-underline focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] min-h-[72px]"
         >
-          <div class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 mb-1.5 group-hover:scale-105 transition-transform">
-            <i class="bi bi-person-badge-fill text-sm"></i>
+          <div class="w-7 h-7 rounded-md bg-gray-800 border border-[#28354A] flex items-center justify-center text-gray-300 mb-1.5">
+            <i class="bi bi-person-badge text-sm"></i>
           </div>
-          <span class="text-xs font-bold text-white group-hover:text-purple-400 transition-colors">{% trans "Wage Payout" %}</span>
+          <span class="text-xs font-semibold text-white">{% trans "Wage Payout" %}</span>
           <span class="text-[10px] text-gray-400 mt-0.5">Driver salary &amp; advance</span>
         </a>
         {% endif %}
 
-        <!-- 8. Install Sri Basaveshwara App to Phone -->
+        <!-- 8. Install App to Phone -->
         <button
           type="button"
           @click="quickAddOpen = false; window.triggerPwaInstall()"
-          class="pwa-install-trigger flex flex-col p-3 rounded-xl bg-[#0B0F17] hover:bg-gray-800/80 border border-emerald-500/40 hover:border-emerald-400 transition-all text-left group focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[76px] cursor-pointer"
+          class="pwa-install-trigger flex flex-col p-3 rounded-md bg-[#EFF6FF] hover:bg-gray-800/80 border border-[#BFDBFE] transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] min-h-[72px] cursor-pointer"
         >
-          <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mb-1.5 group-hover:scale-105 transition-transform">
-            <i class="bi bi-phone-fill text-sm"></i>
+          <div class="w-7 h-7 rounded-md bg-[#1E3A8A] text-white flex items-center justify-center mb-1.5">
+            <i class="bi bi-phone text-sm" style="color: #FFFFFF !important;"></i>
           </div>
-          <span class="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">{% trans "Install App" %}</span>
-          <span class="text-[10px] text-emerald-400 mt-0.5">Add to Home Screen (ಆ್ಯಪ್)</span>
+          <span class="text-xs font-semibold text-[#1E3A8A]">{% trans "Install App" %}</span>
+          <span class="text-[10px] text-gray-500 mt-0.5">Add to Home Screen (ಆ್ಯಪ್)</span>
         </button>
-
       </div>
     </div>
   </div>
 </div>
-

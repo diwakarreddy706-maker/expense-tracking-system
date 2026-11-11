@@ -421,6 +421,8 @@ class MachineWorkEntryForm(forms.ModelForm):
         elif adv > total_amt:
             self.add_error('advance_amount', f"Advance amount (₹{adv}) cannot exceed total bill (₹{total_amt}).")
         else:
+            if adv > Decimal('0.00') and not cleaned_data.get('payment_account'):
+                self.add_error('payment_account', 'Please select the receiving Cash/Bank/UPI account for the advance payment.')
             cleaned_data['udhar_amount'] = (total_amt - adv).quantize(Decimal('0.01'))
 
         return cleaned_data

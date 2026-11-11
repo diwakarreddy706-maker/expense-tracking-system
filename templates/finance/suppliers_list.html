@@ -111,17 +111,17 @@
             <i class="bi bi-pencil"></i>
           </a>
           {% if request.user.profile.role in 'OWNER,ACCOUNTANT' or request.user.is_superuser %}
-            <a href="{% url 'finance:supplier_delete' s.id %}" class="inline-flex items-center p-1.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] text-xs no-underline" title="Delete" onclick="return confirm('Soft delete supplier {{ s.name }}?');">
+            <button type="button" @click="$dispatch('open-confirm-modal', { url: '{% url 'finance:supplier_delete' s.id %}', title: 'Delete Supplier?', message: 'Are you sure you want to soft delete supplier {{ s.name|escapejs }}?', confirmLabel: 'Delete Supplier' })" class="inline-flex items-center p-1.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] text-xs cursor-pointer" title="Delete">
               <i class="bi bi-trash"></i>
-            </a>
+            </button>
           {% endif %}
         </div>
       </div>
     </div>
   {% empty %}
-    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-8 text-center text-gray-500 text-xs">
-      <i class="bi bi-shop text-3xl d-block mb-2 text-gray-600"></i>
-      No suppliers found. Click "Add Supplier" to register a fuel pump or vendor.
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl">
+      {% url 'finance:supplier_create' as add_supp_url %}
+      {% include 'components/empty_state.html' with icon='bi bi-shop' title='No Suppliers Registered Yet' message='Register diesel bunks, spare parts dealers, and service vendors.' action_url=add_supp_url action_text='Add First Supplier' %}
     </div>
   {% endfor %}
 </div>
@@ -166,18 +166,18 @@
                   <i class="bi bi-pencil-square"></i>
                 </a>
                 {% if request.user.profile.role in 'OWNER,ACCOUNTANT' or request.user.is_superuser %}
-                  <a href="{% url 'finance:supplier_delete' s.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors no-underline text-xs" title="Delete" onclick="return confirm('Soft delete supplier {{ s.name }}?');">
+                  <button type="button" @click="$dispatch('open-confirm-modal', { url: '{% url 'finance:supplier_delete' s.id %}', title: 'Delete Supplier?', message: 'Are you sure you want to soft delete supplier {{ s.name|escapejs }}?', confirmLabel: 'Delete Supplier' })" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors cursor-pointer text-xs" title="Delete">
                     <i class="bi bi-trash"></i>
-                  </a>
+                  </button>
                 {% endif %}
               </div>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="7" class="py-12 text-center text-gray-500">
-              <i class="bi bi-shop text-3xl d-block mb-2 text-gray-600"></i>
-              No suppliers found. Click "Add Supplier" to register a fuel pump or vendor.
+            <td colspan="7" class="p-0">
+              {% url 'finance:supplier_create' as add_supp_url %}
+              {% include 'components/empty_state.html' with icon='bi bi-shop' title='No Suppliers Registered Yet' message='Register diesel bunks, spare parts dealers, and service vendors.' action_url=add_supp_url action_text='Add First Supplier' %}
             </td>
           </tr>
         {% endfor %}

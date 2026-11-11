@@ -287,21 +287,24 @@ def employee_compensation_toggle_view(request, compensation_id):
     """Toggles active/inactive status of a compensation structure."""
     comp = get_object_or_404(EmployeeCompensation, id=compensation_id)
     emp = comp.employee
-    if comp.is_active:
-        EmployeeFinancialService.deactivate_compensation(user=request.user, compensation_id=comp.id, request=request)
-        messages.warning(request, f"Deactivated {comp.get_wage_type_display()} for {emp.full_name}.")
-    else:
-        EmployeeFinancialService.update_compensation(
-            user=request.user,
-            compensation_id=comp.id,
-            rate=comp.rate,
-            effective_from=comp.effective_from,
-            effective_to=None,
-            is_active=True,
-            notes=comp.notes,
-            request=request
-        )
-        messages.success(request, f"Activated {comp.get_wage_type_display()} for {emp.full_name}.")
+    try:
+        if comp.is_active:
+            EmployeeFinancialService.deactivate_compensation(user=request.user, compensation_id=comp.id, request=request)
+            messages.warning(request, f"Deactivated {comp.get_wage_type_display()} for {emp.full_name}.")
+        else:
+            EmployeeFinancialService.update_compensation(
+                user=request.user,
+                compensation_id=comp.id,
+                rate=comp.rate,
+                effective_from=comp.effective_from,
+                effective_to=None,
+                is_active=True,
+                notes=comp.notes,
+                request=request
+            )
+            messages.success(request, f"Activated {comp.get_wage_type_display()} for {emp.full_name}.")
+    except ValidationError as e:
+        messages.error(request, e.message if hasattr(e, 'message') else str(e))
 
     return redirect('employees:financial_profile', employee_id=emp.id)
 

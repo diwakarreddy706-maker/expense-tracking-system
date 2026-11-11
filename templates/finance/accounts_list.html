@@ -111,17 +111,17 @@
                 <a href="{% url 'finance:account_edit' acc.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="Edit Account">
                   <i class="bi bi-pencil-square"></i>
                 </a>
-                <a href="{% url 'finance:account_toggle' acc.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-amber-400 hover:text-amber-300 border border-[#28354A] transition-colors no-underline text-xs" title="Toggle Active Status">
+                <button type="button" @click="$dispatch('open-confirm-modal', { url: '{% url 'finance:account_toggle' acc.id %}', title: '{% if acc.is_active %}Deactivate{% else %}Activate{% endif %} Account?', message: 'Toggle active status for {{ acc.account_name|escapejs }}?', confirmLabel: '{% if acc.is_active %}Deactivate{% else %}Activate{% endif %}', variant: 'warning' })" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-amber-400 hover:text-amber-300 border border-[#28354A] transition-colors cursor-pointer text-xs" title="Toggle Active Status">
                   <i class="bi bi-power"></i>
-                </a>
+                </button>
               </div>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="7" class="py-12 text-center text-gray-500">
-              <i class="bi bi-bank text-3xl d-block mb-2 text-gray-600"></i>
-              No business accounts found. Click "Add Account" to create your first money location.
+            <td colspan="7" class="p-0">
+              {% url 'finance:account_create' as add_acc_url %}
+              {% include 'components/empty_state.html' with icon='bi bi-bank' title='No Business Accounts Added' message='Create your Cash Drawer, Bank Account, or UPI Wallet to record transactions and opening balances.' action_url=add_acc_url action_text='Add First Account' %}
             </td>
           </tr>
         {% endfor %}

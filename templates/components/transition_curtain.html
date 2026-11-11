@@ -1,0 +1,334 @@
+{% load static %}
+<!-- Early Anti-Flash Controller (Runs immediately as DOM fragment loads) -->
+<script>
+  (function () {
+    try {
+      var flow = sessionStorage.getItem('sbh_nav_flow');
+      if (flow === 'login' || flow === 'logout') {
+        document.documentElement.setAttribute('data-sbh-flow', flow);
+      }
+    } catch (e) {}
+  })();
+</script>
+
+<style>
+  /* Top Viewport Progress Bar */
+  #sbh-top-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 99999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms ease;
+  }
+  #sbh-top-loader.is-active {
+    opacity: 1;
+  }
+  #sbh-top-loader-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #1E3A8A 0%, #CA8A04 55%, #15803D 100%);
+    transition: width 450ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Branded Logo Transition Curtain (Immune to Light/Sunlight Text Overrides) */
+  #sbh-brand-curtain {
+    position: fixed;
+    inset: 0;
+    z-index: 99990;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    background: linear-gradient(170deg, #0A1628 0%, #152A5E 50%, #1E3A8A 100%) !important;
+    color: #FFFFFF !important;
+    opacity: 0;
+    transform: scale(1.02);
+    pointer-events: none;
+    transition: opacity 360ms cubic-bezier(0.16, 1, 0.3, 1), transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #sbh-brand-curtain.is-visible,
+  html[data-sbh-flow] #sbh-brand-curtain {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  /* Instant initial visibility for transitions without animated fade-in gap */
+  html[data-sbh-flow] #sbh-brand-curtain {
+    transition: none;
+  }
+
+  #sbh-brand-curtain * {
+    box-sizing: border-box;
+  }
+  #sbh-curtain-seal-ring {
+    position: relative;
+    width: 144px;
+    height: 144px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+  }
+  #sbh-curtain-orbit {
+    position: absolute;
+    inset: -10px;
+    width: 164px;
+    height: 164px;
+    pointer-events: none;
+  }
+  @keyframes sbhOrbitCw {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes sbhOrbitCcw {
+    to { transform: rotate(-360deg); }
+  }
+  .sbh-arc-cw {
+    transform-origin: 50% 50%;
+    animation: sbhOrbitCw 1.6s linear infinite;
+  }
+  .sbh-arc-ccw {
+    transform-origin: 50% 50%;
+    animation: sbhOrbitCcw 2.4s linear infinite;
+  }
+  #sbh-curtain-logo-frame {
+    width: 132px;
+    height: 132px;
+    border-radius: 50%;
+    padding: 3px;
+    background: linear-gradient(to bottom, #EAB308, #CA8A04, #854D0E);
+    box-shadow: 0 0 42px rgba(202, 138, 4, 0.3);
+  }
+  #sbh-curtain-logo-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #1A1F14;
+  }
+  #sbh-curtain-logo-inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  #sbh-curtain-kicker {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #EAB308 !important;
+  }
+  #sbh-curtain-brand {
+    margin-top: 4px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #FFFFFF !important;
+    letter-spacing: -0.01em;
+  }
+  #sbh-curtain-msg {
+    margin-top: 8px;
+    font-size: 12px;
+    color: rgba(219, 234, 254, 0.88) !important;
+  }
+  #sbh-curtain-track {
+    margin-top: 16px;
+    width: 210px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    overflow: hidden;
+  }
+  #sbh-curtain-bar {
+    height: 100%;
+    width: 28%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #CA8A04, #22C55E);
+    transition: width 460ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #sbh-curtain-step {
+    margin-top: 8px;
+    font-size: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: rgba(255, 255, 255, 0.55) !important;
+  }
+  @media print {
+    #sbh-top-loader,
+    #sbh-brand-curtain {
+      display: none !important;
+    }
+  }
+</style>
+
+<!-- Global Top Navigation Progress Bar -->
+<div id="sbh-top-loader" aria-hidden="true">
+  <div id="sbh-top-loader-fill"></div>
+</div>
+
+<!-- Branded Fullscreen Logo Transition Curtain -->
+<div id="sbh-brand-curtain" role="status" aria-live="polite" aria-hidden="true">
+  <div id="sbh-curtain-seal-ring">
+    <svg id="sbh-curtain-orbit" viewBox="0 0 164 164" fill="none">
+      <circle cx="82" cy="82" r="77" stroke="rgba(255,255,255,0.10)" stroke-width="1"></circle>
+      <path class="sbh-arc-cw" d="M82 5 A77 77 0 0 1 159 82" stroke="#EAB308" stroke-width="3" stroke-linecap="round"></path>
+      <path class="sbh-arc-ccw" d="M82 149 A67 67 0 0 1 15 82" stroke="#93C5FD" stroke-width="2" stroke-linecap="round" opacity="0.7"></path>
+    </svg>
+    <div id="sbh-curtain-logo-frame">
+      <div id="sbh-curtain-logo-inner">
+        <img src="{% static 'icons/icon-512.png' %}" alt="Sri Basaveshwara &amp; Co." width="128" height="128" />
+      </div>
+    </div>
+  </div>
+  <div id="sbh-curtain-kicker">Harvesting Machines</div>
+  <div id="sbh-curtain-brand">{{ company_profile.business_name|default:"Sri Basaveshwara &amp; Co." }}</div>
+  <div id="sbh-curtain-msg">Preparing workspace...</div>
+  <div id="sbh-curtain-track">
+    <div id="sbh-curtain-bar"></div>
+  </div>
+  <div id="sbh-curtain-step">Initializing...</div>
+</div>
+
+<script>
+  (function () {
+    var curtain = document.getElementById('sbh-brand-curtain');
+    var msgEl = document.getElementById('sbh-curtain-msg');
+    var stepEl = document.getElementById('sbh-curtain-step');
+    var barEl = document.getElementById('sbh-curtain-bar');
+    var topWrap = document.getElementById('sbh-top-loader');
+    var topFill = document.getElementById('sbh-top-loader-fill');
+
+    window.SbhMotion = {
+      showTopBar: function (pct) {
+        if (!topWrap || !topFill) return;
+        topWrap.classList.add('is-active');
+        topFill.style.width = (pct || 45) + '%';
+      },
+      hideTopBar: function () {
+        if (!topWrap || !topFill) return;
+        topFill.style.width = '100%';
+        setTimeout(function () {
+          topWrap.classList.remove('is-active');
+          setTimeout(function () { topFill.style.width = '0%'; }, 220);
+        }, 200);
+      },
+      showCurtain: function (msg, step, pct) {
+        if (!curtain) return;
+        if (msgEl && msg) msgEl.textContent = msg;
+        if (stepEl && step) stepEl.textContent = step;
+        if (barEl && typeof pct === 'number') barEl.style.width = pct + '%';
+        curtain.setAttribute('aria-hidden', 'false');
+        curtain.classList.add('is-visible');
+      },
+      updateCurtain: function (msg, step, pct) {
+        if (msgEl && msg) msgEl.textContent = msg;
+        if (stepEl && step) stepEl.textContent = step;
+        if (barEl && typeof pct === 'number') barEl.style.width = pct + '%';
+      },
+      hideCurtain: function () {
+        if (!curtain) return;
+        document.documentElement.removeAttribute('data-sbh-flow');
+        curtain.classList.remove('is-visible');
+        curtain.setAttribute('aria-hidden', 'true');
+        setTimeout(function () {
+          if (barEl) barEl.style.width = '0%';
+        }, 380);
+      }
+    };
+
+    // Handle active cross-page flows (Login -> Website or Website -> Logout)
+    var activeFlow = document.documentElement.getAttribute('data-sbh-flow');
+    if (activeFlow === 'login') {
+      window.SbhMotion.showCurtain('Welcome back!', 'Loading Fleet, Cash & Udhar Ledgers...', 55);
+      window.SbhMotion.showTopBar(70);
+      window.addEventListener('DOMContentLoaded', function () {
+        setTimeout(function () {
+          window.SbhMotion.updateCurtain('Workspace Ready', 'Dashboard Ready \u2713', 100);
+          window.SbhMotion.hideTopBar();
+          try { sessionStorage.removeItem('sbh_nav_flow'); } catch (e) {}
+          setTimeout(window.SbhMotion.hideCurtain, 320);
+        }, 300);
+      });
+    } else if (activeFlow === 'logout') {
+      window.SbhMotion.showCurtain('Signing out safely...', 'Session Closed \u2713', 75);
+      window.SbhMotion.showTopBar(85);
+      window.addEventListener('DOMContentLoaded', function () {
+        setTimeout(function () {
+          window.SbhMotion.updateCurtain('Signed Out Safely', 'Session Closed \u2713', 100);
+          window.SbhMotion.hideTopBar();
+          try { sessionStorage.removeItem('sbh_nav_flow'); } catch (e) {}
+          setTimeout(window.SbhMotion.hideCurtain, 280);
+        }, 260);
+      });
+    }
+
+    // Intercept Logout form submission for smooth Branded Sign-Out Curtain
+    document.addEventListener('DOMContentLoaded', function () {
+      var logoutForms = document.querySelectorAll('form[action*="logout"]');
+      logoutForms.forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+          if (form.dataset.sbhLogoutSubmitted === 'true') return;
+          e.preventDefault();
+          form.dataset.sbhLogoutSubmitted = 'true';
+          try { sessionStorage.setItem('sbh_nav_flow', 'logout'); } catch (err) {}
+          window.SbhMotion.showTopBar(45);
+          window.SbhMotion.showCurtain('Signing out safely...', 'Saving ledger state & clearing session...', 35);
+          setTimeout(function () {
+            window.SbhMotion.updateCurtain('Signing out safely...', 'Closing active session...', 75);
+            window.SbhMotion.showTopBar(85);
+            setTimeout(function () {
+              HTMLFormElement.prototype.submit.call(form);
+            }, 260);
+          }, 260);
+        });
+      });
+
+      // Top viewport loader for internal page navigation links & HTMX requests
+      document.addEventListener('click', function (e) {
+        var link = e.target.closest('a[href]');
+        if (!link) return;
+        var href = link.getAttribute('href') || '';
+        if (
+          href.startsWith('#') ||
+          href.startsWith('javascript:') ||
+          link.target === '_blank' ||
+          link.hasAttribute('download') ||
+          e.ctrlKey || e.metaKey || e.shiftKey
+        ) return;
+        if (link.origin && link.origin === window.location.origin) {
+          window.SbhMotion.showTopBar(55);
+        }
+      });
+
+      if (document.body) {
+        document.body.addEventListener('htmx:beforeRequest', function () {
+          window.SbhMotion.showTopBar(50);
+        });
+        document.body.addEventListener('htmx:afterRequest', function () {
+          window.SbhMotion.hideTopBar();
+        });
+      }
+    });
+
+    // Clear transition curtain if user navigates via Back/Forward bfcache
+    window.addEventListener('pageshow', function (evt) {
+      if (evt.persisted) {
+        try { sessionStorage.removeItem('sbh_nav_flow'); } catch (e) {}
+        window.SbhMotion.hideCurtain();
+        window.SbhMotion.hideTopBar();
+        document.querySelectorAll('form').forEach(function (f) {
+          delete f.dataset.sbhLogoutSubmitted;
+          delete f.dataset.submitting;
+        });
+        document.querySelectorAll('button[type="submit"][disabled]').forEach(function (b) {
+          b.disabled = false;
+        });
+      }
+    });
+  })();
+</script>

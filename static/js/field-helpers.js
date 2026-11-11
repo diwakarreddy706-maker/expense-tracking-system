@@ -327,18 +327,13 @@
   };
 
   /**
-   * Cycles theme in order: Dark -> Light -> Sunlight -> Dark
+   * Cycles theme cleanly: light -> sunlight -> dark -> light
    */
   window.cycleTheme = function () {
-    const current = localStorage.getItem('sbh_theme') || localStorage.getItem('agribos_theme') || 'dark';
-    let nextTheme = 'dark';
-    if (current === 'dark') {
-      nextTheme = 'light';
-    } else if (current === 'light') {
-      nextTheme = 'sunlight';
-    } else {
-      nextTheme = 'dark';
-    }
+    const current = localStorage.getItem('sbh_theme') || localStorage.getItem('agribos_theme') || 'light';
+    const order = ['light', 'sunlight', 'dark'];
+    const idx = order.indexOf(current);
+    const nextTheme = order[(idx + 1) % order.length];
     window.setTheme(nextTheme);
   };
 
@@ -346,15 +341,11 @@
   window.toggleTheme = window.cycleTheme;
 
   function updateThemeIcons(mode) {
-    const sunIcons = document.querySelectorAll('.theme-icon-sun');
-    const moonIcons = document.querySelectorAll('.theme-icon-moon');
-    const sunlightIcons = document.querySelectorAll('.theme-icon-sunlight');
     const badge = document.getElementById('currentThemeLabel');
-
     if (badge) {
-      if (mode === 'sunlight') badge.textContent = '☀️ Sunlight';
-      else if (mode === 'light') badge.textContent = '🌤️ Light';
-      else badge.textContent = '🌙 Dark';
+      if (mode === 'sunlight') badge.textContent = 'Sunlight Mode';
+      else if (mode === 'light') badge.textContent = 'Light Mode';
+      else badge.textContent = 'Dark Mode';
     }
   }
 

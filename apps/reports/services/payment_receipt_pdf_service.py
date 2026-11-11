@@ -35,7 +35,7 @@ class PaymentReceiptPDFService:
     ) -> HttpResponse:
         payment = CustomerPayment.objects.select_related(
             'receivable', 'receivable__customer', 'account', 'linked_ledger_transaction'
-        ).get(id=payment_id)
+        ).get(id=payment_id, is_deleted=False, is_reversed=False)
 
         customer = payment.receivable.customer
         styles = PDFReportBuilder.get_styles()
@@ -117,7 +117,7 @@ class PaymentReceiptPDFService:
         amount_str = PDFReportBuilder.format_inr(amount_val)
 
         # Current total balance due
-        unpaid_recs = customer.receivables.filter(is_deleted=False).exclude(status='PAID')
+        unpaid_recs = customer.receivables.filter(is_deleted=False, is_reversed=False).exclude(status='PAID')
         current_balance = sum((r.total_amount - r.received_amount for r in unpaid_recs), Decimal('0.00'))
 
         summary_kpis = PDFReportBuilder.create_kpi_summary_box([

@@ -31,13 +31,17 @@
     display: none !important;
   }
 
-  .app-main {
+  .app-main,
+  .app-main-layout {
     margin-left: 0 !important;
     padding: 0 !important;
   }
 
-  .content-canvas {
+  .content-canvas,
+  .app-main-content {
     padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
   }
 
   .theme-card,

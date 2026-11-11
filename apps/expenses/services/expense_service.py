@@ -212,6 +212,19 @@ class ExpenseService:
             if expense.is_reversed:
                 raise ValidationError("This expense has already been reversed.")
 
+            # Check and reverse any linked supplier payable (from credit expenses)
+            from apps.finance.models import Payable
+            linked_payables = list(expense.linked_payables.select_for_update().filter(is_deleted=False, is_reversed=False))
+            for payable in linked_payables:
+                if payable.paid_amount > Decimal('0.00') or payable.payments.filter(is_deleted=False, is_reversed=False).exists():
+                    raise ValidationError(
+                        f"Cannot reverse credit expense '{expense.expense_code}' because linked payable "
+                        f"'{payable.payable_code}' already has supplier payment(s). Reverse those payments first."
+                    )
+            for payable in linked_payables:
+                payable.is_reversed = True
+                payable.save(update_fields=['is_reversed', 'updated_at'])
+
             expense.is_reversed = True
             expense.save(update_fields=['is_reversed', 'updated_at'])
 

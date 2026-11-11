@@ -193,6 +193,9 @@ def expense_quick_api_view(request):
             request=request
         )
 
+        if account:
+            account.refresh_from_db()
+
         return JsonResponse({
             'success': True,
             'expense_id': expense.id,
@@ -221,7 +224,10 @@ def expense_reverse_view(request, expense_id):
             reason=reason,
             request=request
         )
-        messages.success(request, f"Expense '{expense.expense_code}' reversed. Reversal ledger entry #{reversal_tx.id} recorded.")
+        if reversal_tx:
+            messages.success(request, f"Expense '{expense.expense_code}' reversed. Reversal ledger entry #{reversal_tx.id} recorded.")
+        else:
+            messages.success(request, f"Credit expense '{expense.expense_code}' and its linked payable have been reversed.")
     except (ValidationError, Exception) as e:
         messages.error(request, f"Reversal failed: {str(e)}")
 

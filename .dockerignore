@@ -16,6 +16,11 @@ node_modules/
 staticfiles/
 media/
 logs/*.log
+backups/
+scratch/
+*.bat
+*.sql.gz
+*.sql.zip
 .vscode/
 .idea/
 .coverage

@@ -183,9 +183,9 @@
       </div>
     </div>
   {% empty %}
-    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-8 text-center text-gray-500 text-xs">
-      <i class="bi bi-fuel-pump text-3xl d-block mb-2 text-gray-600"></i>
-      No fuel or lubricant logs found. Click "Log Fuel Entry" to record equipment refueling.
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl">
+      {% url 'fuel:create' as add_fuel_url %}
+      {% include 'components/empty_state.html' with icon='bi bi-fuel-pump' title='No Fuel Logs Yet' message='Record diesel fills, petrol pump credit slips, and machine meter readings.' action_url=add_fuel_url action_text='Log First Fuel Entry' %}
     </div>
   {% endfor %}
 </div>
@@ -254,9 +254,9 @@
           </tr>
         {% empty %}
           <tr>
-            <td colspan="10" class="py-12 text-center text-gray-500">
-              <i class="bi bi-fuel-pump text-3xl d-block mb-2 text-gray-600"></i>
-              No fuel or lubricant logs found. Click "Log Fuel Entry" to record equipment refueling.
+            <td colspan="10" class="p-0">
+              {% url 'fuel:create' as add_fuel_url %}
+              {% include 'components/empty_state.html' with icon='bi bi-fuel-pump' title='No Fuel Logs Yet' message='Record diesel fills, petrol pump credit slips, and machine meter readings.' action_url=add_fuel_url action_text='Log First Fuel Entry' %}
             </td>
           </tr>
         {% endfor %}

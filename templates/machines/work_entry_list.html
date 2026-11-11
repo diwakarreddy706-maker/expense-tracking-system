@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load currency_tags %}
 
-{% block title %}{{ title|default:"Machinery Work Logs & Bills" }} | AgriBOS ERP{% endblock %}
+{% block title %}{{ title|default:"Machinery Work Logs & Bills" }} | Sri Basaveshwara & Co.{% endblock %}
 
 {% block content %}
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -181,9 +181,9 @@
       </div>
     </div>
   {% empty %}
-    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-8 text-center text-gray-500 text-xs">
-      <i class="bi bi-clipboard-x text-3xl d-block mb-2 text-gray-600"></i>
-      No machine work entries found matching your criteria.
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl">
+      {% url 'machines:work_create' as add_work_url %}
+      {% include 'components/empty_state.html' with icon='bi bi-clipboard-check' title='No Work Bills Recorded Yet' message='Log harvester hours or tractor acres worked to generate farmer bills and thermal receipts.' action_url=add_work_url action_text='Record First Work Bill' %}
     </div>
   {% endfor %}
 </div>

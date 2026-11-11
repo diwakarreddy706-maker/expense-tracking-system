@@ -98,7 +98,10 @@ class FarmerStatementPDFService:
 
         payment_qs = CustomerPayment.objects.filter(
             receivable__customer=customer,
-            receivable__is_deleted=False
+            receivable__is_deleted=False,
+            receivable__is_reversed=False,
+            is_deleted=False,
+            is_reversed=False,
         ).select_related('account', 'receivable').order_by('payment_date', 'id')
 
         if start_date:
@@ -108,13 +111,28 @@ class FarmerStatementPDFService:
             work_qs = work_qs.filter(work_date__lte=end_date)
             payment_qs = payment_qs.filter(payment_date__lte=end_date)
 
-        total_billed = work_qs.aggregate(s=Sum('total_amount'))['s'] or Decimal('0.00')
-        total_advances = work_qs.aggregate(s=Sum('advance_amount'))['s'] or Decimal('0.00')
-        total_direct_payments = payment_qs.aggregate(s=Sum('amount'))['s'] or Decimal('0.00')
+        # Avoid double-counting on-site advances already recorded as ADV-<work_code> CustomerPayments
+        payments_list = list(payment_qs)
+        recorded_adv_codes = set()
+        total_advances = Decimal('0.00')
+        total_direct_payments = Decimal('0.00')
+        for p in payments_list:
+            if p.reference_no and p.reference_no.startswith('ADV-'):
+                recorded_adv_codes.add(p.reference_no[4:])
+                total_advances += p.amount
+            else:
+                total_direct_payments += p.amount
+
+        work_list = list(work_qs)
+        total_billed = sum((w.total_amount for w in work_list), Decimal('0.00'))
+        for w in work_list:
+            if w.advance_amount and w.advance_amount > Decimal('0.00') and w.work_code not in recorded_adv_codes:
+                total_advances += w.advance_amount
+
         total_paid = total_advances + total_direct_payments
 
         # Total outstanding Udhar from customer receivables
-        unpaid_recs = customer.receivables.filter(is_deleted=False).exclude(status='PAID')
+        unpaid_recs = customer.receivables.filter(is_deleted=False, is_reversed=False).exclude(status='PAID')
         outstanding_udhar = sum((r.total_amount - r.received_amount for r in unpaid_recs), Decimal('0.00'))
 
         # 4. Financial Summary Cards
@@ -131,8 +149,8 @@ class FarmerStatementPDFService:
         # 5. Build Chronological Combined Ledger Statement
         statement_events = []
 
-        # Ingest Work Entries (Debits)
-        for w in work_qs:
+        # Ingest Work Entries (Debits) & unlinked legacy on-site advances
+        for w in work_list:
             usage_str = f"{w.net_working_hours} hrs" if w.billing_type == MachineWorkEntry.BILLING_TIME_HOURLY else f"{w.quantity} {w.get_billing_type_display()}"
             desc = f"Work: {w.machine.name} ({usage_str})"
             if w.manual_bill_no:
@@ -149,8 +167,8 @@ class FarmerStatementPDFService:
                 'credit': Decimal('0.00'),
             })
 
-            # If advance was collected on the field for this work entry
-            if w.advance_amount and w.advance_amount > Decimal('0.00'):
+            # Only emit synthetic advance row if no CustomerPayment(ADV-<work_code>) exists
+            if w.advance_amount and w.advance_amount > Decimal('0.00') and w.work_code not in recorded_adv_codes:
                 statement_events.append({
                     'date': w.work_date,
                     'id': w.id,
@@ -162,15 +180,16 @@ class FarmerStatementPDFService:
                     'credit': w.advance_amount,
                 })
 
-        # Ingest Direct Payments (Credits)
-        for p in payment_qs:
+        # Ingest Recorded Customer Payments (Credits, including ADV-* advances)
+        for p in payments_list:
             ref_str = f" [Ref: {p.reference_no}]" if p.reference_no else ""
+            is_adv = bool(p.reference_no and p.reference_no.startswith('ADV-'))
             statement_events.append({
                 'date': p.payment_date,
                 'id': p.id,
-                'type': 'PAYMENT',
+                'type': 'ADVANCE' if is_adv else 'PAYMENT',
                 'code': p.payment_code,
-                'description': f"Settlement via {p.get_payment_method_display()}{ref_str}",
+                'description': f"{'On-Site Advance' if is_adv else 'Settlement'} via {p.get_payment_method_display()}{ref_str}",
                 'machine': "--",
                 'debit': Decimal('0.00'),
                 'credit': p.amount,

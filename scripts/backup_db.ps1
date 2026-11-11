@@ -1,25 +1,39 @@
-<#
-.SYNOPSIS
-    Expense Tracking System - Automated MySQL Database Backup Script for Windows
-.DESCRIPTION
-    Performs transactional mysqldump, compression, integrity validation, and 30-day retention pruning.
-#>
-
 param (
-    [string]$BackupDir = "C:\backups\expense_tracking",
+    [string]$BackupDir = "",
     [int]$RetentionDays = 30,
-    [string]$DbName = $env:DB_NAME,
-    [string]$DbUser = $env:DB_USER,
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '')]
-    [string]$DbPassword = $env:DB_PASSWORD,
-    [string]$DbHost = $(if ($env:DB_HOST) { $env:DB_HOST } else { "127.0.0.1" }),
-    [string]$DbPort = $(if ($env:DB_PORT) { $env:DB_PORT } else { "3306" })
+    [string]$DbName = "",
+    [string]$DbUser = "",
+    [string]$DbPassword = "",
+    [string]$DbHost = "",
+    [string]$DbPort = ""
 )
 
 $ErrorActionPreference = "Stop"
 
-if (-not $DbName) { $DbName = "expense_tracking_db" }
-if (-not $DbUser) { $DbUser = "expense_user" }
+# Resolve Project Root and load .env configuration
+$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+$EnvFile = Join-Path $ProjectRoot ".env"
+
+if (Test-Path $EnvFile) {
+    foreach ($entry in (Get-Content $EnvFile)) {
+        $trimmed = $entry.Trim()
+        if ($trimmed -and -not $trimmed.StartsWith("#") -and $trimmed.Contains("=")) {
+            $kv = $trimmed.Split("=", 2)
+            $k = $kv[0].Trim()
+            $v = $kv[1].Trim()
+            if (-not [System.Environment]::GetEnvironmentVariable($k)) {
+                [System.Environment]::SetEnvironmentVariable($k, $v)
+            }
+        }
+    }
+}
+
+if (-not $BackupDir) { $BackupDir = Join-Path $ProjectRoot "backups" }
+if (-not $DbName) { $DbName = if ($env:DB_NAME) { $env:DB_NAME } else { "expense_tracking_db" } }
+if (-not $DbUser) { $DbUser = if ($env:DB_USER) { $env:DB_USER } else { "root" } }
+if (-not $DbPassword) { $DbPassword = $env:DB_PASSWORD }
+if (-not $DbHost) { $DbHost = if ($env:DB_HOST) { $env:DB_HOST } else { "127.0.0.1" } }
+if (-not $DbPort) { $DbPort = if ($env:DB_PORT) { $env:DB_PORT } else { "3306" } }
 
 if (-not (Test-Path $BackupDir)) {
     New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null
@@ -39,15 +53,36 @@ function Write-Log {
 
 Write-Log "Starting automated backup for database '$DbName' on ${DbHost}:${DbPort}..."
 
-# Check mysqldump existence
+# Check mysqldump existence in PATH or common Windows installation paths
+$MysqldumpPath = $null
 $MysqldumpCmd = Get-Command "mysqldump" -ErrorAction SilentlyContinue
-if (-not $MysqldumpCmd) {
-    Write-Log "ERROR: 'mysqldump' not found in PATH. Please verify MySQL client tools are installed."
+if ($MysqldumpCmd) {
+    $MysqldumpPath = $MysqldumpCmd.Source
+} else {
+    $CommonPaths = @(
+        "C:\Program Files\MySQL\MySQL Server *\bin\mysqldump.exe",
+        "C:\Program Files\MySQL\MySQL Workbench *\mysqldump.exe",
+        "C:\Program Files (x86)\MySQL\*\bin\mysqldump.exe",
+        "C:\xampp\mysql\bin\mysqldump.exe",
+        "C:\laragon\bin\mysql\*\bin\mysqldump.exe"
+    )
+    foreach ($pattern in $CommonPaths) {
+        $found = Resolve-Path $pattern -ErrorAction SilentlyContinue
+        if ($found) {
+            $MysqldumpPath = $found[-1].Path
+            break
+        }
+    }
+}
+
+if (-not $MysqldumpPath -or -not (Test-Path $MysqldumpPath)) {
+    Write-Log "ERROR: 'mysqldump' not found in PATH or standard MySQL directories. Please verify MySQL client tools are installed."
     exit 1
 }
 
+Write-Log "Using mysqldump binary: $MysqldumpPath"
+
 try {
-    # Set password in environment securely for child process
     if ($DbPassword) {
         $env:MYSQL_PWD = $DbPassword
     }
@@ -65,7 +100,7 @@ try {
         $DbName
     )
 
-    & mysqldump @DumpArgs
+    & $MysqldumpPath @DumpArgs
 
     if (-not (Test-Path $DumpFile) -or (Get-Item $DumpFile).Length -eq 0) {
         throw "Dump file is missing or empty."
@@ -78,7 +113,6 @@ try {
     $FileSizeMB = [math]::Round(((Get-Item $ZipFile).Length / 1MB), 2)
     Write-Log "SUCCESS: Backup completed successfully: $ZipFile (Size: $FileSizeMB MB)"
 
-    # Prune old backups
     Write-Log "Pruning backup archives older than $RetentionDays days..."
     $CutoffDate = (Get-Date).AddDays(-$RetentionDays)
     $OldBackups = Get-ChildItem -Path $BackupDir -Filter "ets_backup_*.zip" | Where-Object { $_.LastWriteTime -lt $CutoffDate }

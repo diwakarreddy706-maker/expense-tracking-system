@@ -790,6 +790,7 @@ class MaintenanceService:
         Explicit action by Owner / Accountant to post a completed MaintenanceJob to Expenses.
         Guarantees single posting (prevents duplicate expense creation).
         """
+        job = MaintenanceJob.objects.select_for_update().get(id=job.id)
         if job.status != MaintenanceJob.STATUS_COMPLETED:
             raise ValidationError("Only COMPLETED maintenance jobs can be posted to expenses.")
 

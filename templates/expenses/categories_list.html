@@ -80,15 +80,18 @@
                 <a href="{% url 'expenses:category_edit' cat.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-[#28354A] transition-colors no-underline text-xs" title="Edit Category" aria-label="Edit Category">
                   <i class="bi bi-pencil-square"></i>
                 </a>
-                <a href="{% url 'expenses:category_toggle' cat.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-amber-400 hover:text-amber-300 border border-[#28354A] transition-colors no-underline text-xs" title="Toggle Active" aria-label="Toggle Category Status">
+                <button type="button" @click="$dispatch('open-confirm-modal', { url: '{% url 'expenses:category_toggle' cat.id %}', title: '{% if cat.is_active %}Deactivate{% else %}Activate{% endif %} Category?', message: 'Toggle active status for expense category {{ cat.name|escapejs }}?', confirmLabel: '{% if cat.is_active %}Deactivate{% else %}Activate{% endif %}', variant: 'warning' })" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-amber-400 hover:text-amber-300 border border-[#28354A] transition-colors cursor-pointer text-xs" title="Toggle Active" aria-label="Toggle Category Status">
                   <i class="bi bi-power"></i>
-                </a>
+                </button>
               </div>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="6" class="py-10 text-center text-gray-500">No expense categories found.</td>
+            <td colspan="6" class="p-0">
+              {% url 'expenses:category_create' as add_cat_url %}
+              {% include 'components/empty_state.html' with icon='bi bi-tags' title='No Expense Categories Found' message='Create categories such as Diesel, Spare Parts, Workshop, and Tiffin to organize expenses.' action_url=add_cat_url action_text='Add First Category' %}
+            </td>
           </tr>
         {% endfor %}
       </tbody>

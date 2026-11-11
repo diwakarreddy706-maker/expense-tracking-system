@@ -127,7 +127,11 @@ class UserEditForm(forms.ModelForm):
             profile.phone_number = self.cleaned_data.get('phone_number')
             profile.save()
             if new_role in (UserProfile.ROLE_OWNER, UserProfile.ROLE_ACCOUNTANT):
-                user.is_staff = True
+                if not user.is_staff:
+                    user.is_staff = True
+                    user.save(update_fields=['is_staff'])
+            elif user.is_staff and not user.is_superuser:
+                user.is_staff = False
                 user.save(update_fields=['is_staff'])
             from django.contrib.auth.models import Group
             group, _ = Group.objects.get_or_create(name=profile.role)

@@ -2,7 +2,6 @@
 {% comment %}
 Mobile Bottom Navigation Bar Optimized for 320px–1023px viewports.
 5-Tab Navigation: Home | Operations | Center FAB | Ledger | Menu
-Fixed to bottom with safe-area support. Minimum 48px touch targets, active state indication.
 {% endcomment %}
 
 <nav
@@ -14,14 +13,14 @@ Fixed to bottom with safe-area support. Minimum 48px touch targets, active state
     <!-- 1. Home / Dashboard -->
     <a
       href="{% url 'dashboard:index' %}"
-      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none {% if request.resolver_match.app_name == 'dashboard' or request.path == '/' %}text-emerald-400 font-semibold{% else %}text-gray-400 hover:text-gray-200{% endif %}"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline focus:outline-none {% if request.resolver_match.app_name == 'dashboard' or request.path == '/' %}mobile-nav-active text-blue-400 font-semibold{% else %}text-gray-400 hover:text-gray-200{% endif %}"
       {% if request.resolver_match.app_name == 'dashboard' or request.path == '/' %}aria-current="page"{% endif %}
-      title="Executive Dashboard"
+      title="Dashboard"
     >
       <div class="relative flex items-center justify-center">
-        <i class="bi bi-grid-1x2-fill text-lg"></i>
+        <i class="bi bi-grid-1x2 text-lg"></i>
         {% if request.resolver_match.app_name == 'dashboard' or request.path == '/' %}
-        <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        <span class="absolute -top-1 -right-1.5 w-1.5 h-1.5 rounded-full bg-[#1E3A8A]"></span>
         {% endif %}
       </div>
       <span class="text-[10px] mt-0.5 tracking-tight truncate">{% trans "Home" %}</span>
@@ -30,43 +29,44 @@ Fixed to bottom with safe-area support. Minimum 48px touch targets, active state
     <!-- 2. Operations / Work -->
     <a
       href="{% url 'machines:work_list' %}"
-      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none {% if request.resolver_match.app_name == 'machines' and 'work' in request.resolver_match.url_name %}text-cyan-400 font-semibold{% else %}text-gray-400 hover:text-cyan-300{% endif %}"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline focus:outline-none {% if request.resolver_match.app_name == 'machines' and 'work' in request.resolver_match.url_name %}mobile-nav-active text-blue-400 font-semibold{% else %}text-gray-400 hover:text-gray-200{% endif %}"
       {% if request.resolver_match.app_name == 'machines' and 'work' in request.resolver_match.url_name %}aria-current="page"{% endif %}
       title="Machinery Work Logs"
     >
       <div class="relative flex items-center justify-center">
         <i class="bi bi-clock-history text-lg"></i>
         {% if request.resolver_match.app_name == 'machines' and 'work' in request.resolver_match.url_name %}
-        <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+        <span class="absolute -top-1 -right-1.5 w-1.5 h-1.5 rounded-full bg-[#1E3A8A]"></span>
         {% endif %}
       </div>
       <span class="text-[10px] mt-0.5 tracking-tight truncate">{% trans "Operations" %}</span>
     </a>
 
-    <!-- 3. Center Quick Action FAB -->
+    <!-- 3. Center Quick Action FAB (Classic Navy) -->
     <div class="flex items-center justify-center relative -top-2">
       <button
         type="button"
         @click="quickAddOpen = true"
-        class="w-[52px] h-[52px] rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 hover:from-emerald-500 hover:to-teal-300 text-white shadow-xl shadow-emerald-950/80 border-2 border-[#111827] flex items-center justify-center transition-all active:scale-90 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+        class="w-12 h-12 rounded-lg bg-[#1E3A8A] hover:bg-[#1E40AF] text-white shadow-md border-2 border-white flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]"
+        style="color: #FFFFFF !important;"
         aria-label="Open Quick Operations Menu"
-        title="Quick Operations Hub"
+        title="Quick Actions"
       >
-        <i class="bi bi-plus-lg text-2xl font-black text-white fab-icon" style="color: #FFFFFF !important; font-weight: 900 !important; -webkit-text-stroke: 1px #FFFFFF;"></i>
+        <i class="bi bi-plus-lg text-xl font-bold text-white fab-icon" style="color: #FFFFFF !important;"></i>
       </button>
     </div>
 
     <!-- 4. Farmer Ledger -->
     <a
       href="{% url 'machines:farmer_ledger' %}"
-      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline group focus:outline-none {% if request.resolver_match.app_name == 'machines' and 'farmer_ledger' in request.resolver_match.url_name %}text-emerald-400 font-semibold{% else %}text-gray-400 hover:text-emerald-300{% endif %}"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center transition-colors no-underline focus:outline-none {% if request.resolver_match.app_name == 'machines' and 'farmer_ledger' in request.resolver_match.url_name %}mobile-nav-active text-blue-400 font-semibold{% else %}text-gray-400 hover:text-gray-200{% endif %}"
       {% if request.resolver_match.app_name == 'machines' and 'farmer_ledger' in request.resolver_match.url_name %}aria-current="page"{% endif %}
       title="Farmer Credit Ledger"
     >
       <div class="relative flex items-center justify-center">
         <i class="bi bi-journal-text text-lg"></i>
         {% if request.resolver_match.app_name == 'machines' and 'farmer_ledger' in request.resolver_match.url_name %}
-        <span class="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        <span class="absolute -top-1 -right-1.5 w-1.5 h-1.5 rounded-full bg-[#1E3A8A]"></span>
         {% endif %}
       </div>
       <span class="text-[10px] mt-0.5 tracking-tight truncate">{% trans "Ledger" %}</span>
@@ -76,7 +76,7 @@ Fixed to bottom with safe-area support. Minimum 48px touch targets, active state
     <button
       type="button"
       @click.stop="sidebarOpen = !sidebarOpen"
-      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center text-gray-400 hover:text-white transition-colors bg-transparent border-0 focus:outline-none active:scale-95"
+      class="flex flex-col items-center justify-center min-h-[48px] py-1 text-center text-gray-400 hover:text-white transition-colors bg-transparent border-0 focus:outline-none"
       aria-label="Toggle Full Menu"
       title="Open All Modules"
     >

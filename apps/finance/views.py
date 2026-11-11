@@ -1,8 +1,10 @@
 import json
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Q, Sum
 from django.views.decorators.http import require_POST
 from django.core.exceptions import ValidationError
@@ -65,7 +67,9 @@ def account_create_view(request):
     if request.method == 'POST':
         form = AccountForm(request.POST)
         if form.is_valid():
+            from .services.balance_service import FinancialCalculationService
             account = form.save()
+            FinancialCalculationService.recalculate_account_balance(account.id)
             log_audit_event(
                 request.user,
                 AuditLog.ACTION_CREATE,
@@ -94,7 +98,9 @@ def account_edit_view(request, account_id):
     if request.method == 'POST':
         form = AccountForm(request.POST, instance=account)
         if form.is_valid():
+            from .services.balance_service import FinancialCalculationService
             updated = form.save()
+            FinancialCalculationService.recalculate_account_balance(updated.id)
             log_audit_event(
                 request.user,
                 AuditLog.ACTION_UPDATE,
@@ -817,6 +823,7 @@ def daily_closing_view(request):
 
     return render(request, 'finance/daily_closing.html', {
         'closing_date': closing_date,
+        'today': timezone.now().date(),
         'scope': scope,
         'acc_id': acc_id,
         'reconciliation': reconciliation,
@@ -851,7 +858,8 @@ def daily_closing_submit_view(request):
                 request=request
             )
             messages.success(request, f"Daily closing for {closing.closing_date} ({closing.get_scope_display()}) successfully locked [{closing.status}].")
-            return redirect(f"{request.path_info.replace('submit/', '')}?date={closing.closing_date}&scope={closing.scope}" + (f"&account={closing.account_id}" if closing.account_id else ""))
+            closing_url = reverse('finance:daily_closing')
+            return redirect(f"{closing_url}?date={closing.closing_date}&scope={closing.scope}" + (f"&account={closing.account_id}" if closing.account_id else ""))
         except ValidationError as e:
             messages.error(request, f"Closing failed: {str(e)}")
     else:
@@ -863,7 +871,11 @@ def daily_closing_submit_view(request):
 
 @owner_required
 def transaction_reversal_view(request, transaction_id):
-    return JsonResponse({'status': 'reversed', 'id': transaction_id})
+    return JsonResponse({
+        'status': 'info',
+        'message': 'Use entity-specific reversal endpoint (Expense, Customer/Supplier Payment, or Employee Wage).',
+        'id': transaction_id
+    })
 
 
 # ============================================================================
@@ -1176,7 +1188,7 @@ def customer_payment_receipt_pdf_view(request, payment_id):
     """
     Generates official Payment / Advance Receipt A4 PDF using PaymentReceiptPDFService.
     """
-    payment = get_object_or_404(CustomerPayment, id=payment_id)
+    payment = get_object_or_404(CustomerPayment, id=payment_id, is_deleted=False, is_reversed=False)
     from apps.reports.services.payment_receipt_pdf_service import PaymentReceiptPDFService
     return PaymentReceiptPDFService.generate_pdf(payment_id=payment.id, user=request.user)
 

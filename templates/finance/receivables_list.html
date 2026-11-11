@@ -142,9 +142,9 @@
         </div>
         <div class="flex items-center gap-1.5">
           {% if rcv.customer.phone and rcv.outstanding_amount > 0 %}
-            <a href="https://wa.me/91{{ rcv.customer.phone }}?text=Namaskara%20{{ rcv.customer.name|urlencode }},%20Sri%20Basaveshwara%20%26%20Co%20bill%20#{{ rcv.receivable_code }}%20balance%20due%20is%20Rs.{{ rcv.outstanding_amount }}." target="_blank" class="p-1.5 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] border border-[#25D366]/40 transition-colors no-underline text-xs" title="Send WhatsApp Payment Reminder">
+            <button type="button" onclick="window.sendWhatsAppMessage('{{ rcv.customer.phone|escapejs }}', 'Namaskara {{ rcv.customer.name|escapejs }}, Sri Basaveshwara & Co bill #{{ rcv.receivable_code|escapejs }} balance due is Rs. {{ rcv.outstanding_amount }}.')" class="p-1.5 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] border border-[#25D366]/40 transition-colors cursor-pointer text-xs" title="Send WhatsApp Payment Reminder">
               <i class="bi bi-whatsapp"></i>
-            </a>
+            </button>
           {% endif %}
           {% if rcv.status != 'PAID' %}
             <a href="{% url 'finance:customer_payment_create' rcv.id %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs no-underline shadow-sm">
@@ -160,9 +160,9 @@
       </div>
     </div>
   {% empty %}
-    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-8 text-center text-gray-500 text-xs">
-      <i class="bi bi-receipt-cutoff text-3xl d-block mb-2 text-gray-600"></i>
-      No customer receivables found. Click "New Receivable" to bill a customer obligation.
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl">
+      {% url 'finance:receivable_create' as add_rcv_url %}
+      {% include 'components/empty_state.html' with icon='bi bi-receipt-cutoff' title='No Customer Receivables' message='Record a customer receivable or create a harvesting work bill to track Udhar.' action_url=add_rcv_url action_text='New Receivable' %}
     </div>
   {% endfor %}
 </div>
@@ -214,9 +214,9 @@
             <td class="py-3.5 px-4 text-right">
               <div class="flex items-center justify-end gap-1.5">
                 {% if rcv.customer.phone and rcv.outstanding_amount > 0 %}
-                  <a href="https://wa.me/91{{ rcv.customer.phone }}?text=Namaskara%20{{ rcv.customer.name|urlencode }},%20Sri%20Basaveshwara%20%26%20Co%20bill%20#{{ rcv.receivable_code }}%20balance%20due%20is%20Rs.{{ rcv.outstanding_amount }}." target="_blank" class="p-1.5 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] border border-[#25D366]/40 transition-colors no-underline text-xs" title="Send WhatsApp Payment Reminder">
+                  <button type="button" onclick="window.sendWhatsAppMessage('{{ rcv.customer.phone|escapejs }}', 'Namaskara {{ rcv.customer.name|escapejs }}, Sri Basaveshwara & Co bill #{{ rcv.receivable_code|escapejs }} balance due is Rs. {{ rcv.outstanding_amount }}.')" class="p-1.5 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] border border-[#25D366]/40 transition-colors cursor-pointer text-xs" title="Send WhatsApp Payment Reminder">
                     <i class="bi bi-whatsapp"></i>
-                  </a>
+                  </button>
                 {% endif %}
                 {% if rcv.status != 'PAID' %}
                   <a href="{% url 'finance:customer_payment_create' rcv.id %}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 font-semibold border border-emerald-500/30 transition-colors no-underline text-xs" title="Record Payment Receipt">
@@ -232,9 +232,9 @@
           </tr>
         {% empty %}
           <tr>
-            <td colspan="10" class="py-12 text-center text-gray-500">
-              <i class="bi bi-receipt-cutoff text-3xl d-block mb-2 text-gray-600"></i>
-              No customer receivables found. Click "New Receivable" to bill a customer obligation.
+            <td colspan="10" class="p-0">
+              {% url 'finance:receivable_create' as add_rcv_url %}
+              {% include 'components/empty_state.html' with icon='bi bi-receipt-cutoff' title='No Customer Receivables' message='Record a customer receivable or create a harvesting work bill to track Udhar.' action_url=add_rcv_url action_text='New Receivable' %}
             </td>
           </tr>
         {% endfor %}

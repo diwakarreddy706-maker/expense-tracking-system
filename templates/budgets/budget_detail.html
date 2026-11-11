@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Budget Detail: {{ budget.budget_code }} | Sri Basaveshwara & Co.{% endblock %}
+{% block title %}Budget Detail: {{ budget.title }} | Sri Basaveshwara & Co.{% endblock %}
 
 {% block content %}
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -8,11 +8,11 @@
     <div class="flex items-center gap-2 mb-1">
       <a href="{% url 'budgets:list' %}" class="text-xs text-gray-400 hover:text-white no-underline">Budgets</a>
       <span class="text-xs text-gray-600">/</span>
-      <span class="text-xs font-mono text-cyan-400 font-bold">{{ budget.budget_code }}</span>
+      <span class="text-xs font-mono text-cyan-400 font-bold">{{ budget.period_month }}/{{ budget.period_year }}</span>
     </div>
-    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">{{ budget.name }}</h2>
+    <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0">{{ budget.title }}</h2>
     <p class="text-xs text-gray-400 mt-1 mb-0 font-mono">
-      Period: {{ budget.start_date|date:"d M Y" }} &rarr; {{ budget.end_date|date:"d M Y" }}
+      Segment: {{ budget.get_business_segment_display }} &bull; Status: {{ budget.get_status_display }}
     </p>
   </div>
   <div class="flex items-center gap-2">

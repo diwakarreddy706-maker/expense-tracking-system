@@ -5,6 +5,7 @@ Validates all UI views, authentication flows, PWA assets, and financial invarian
 """
 
 import os
+import secrets
 import sys
 from decimal import Decimal
 from pathlib import Path
@@ -31,9 +32,9 @@ def run_staging_smoke_tests():
     client = Client()
     host_kwargs = {'HTTP_HOST': '127.0.0.1'}
 
-    # 1. Ensure a staging test user exists
+    # 1. Ensure a staging test user exists with a runtime-generated credential
     username = 'staging_smoke_user'
-    password = 'StagingTestPassword123!'
+    password = os.getenv('STAGING_TEST_PASSWORD') or secrets.token_urlsafe(16)
     user, _ = User.objects.get_or_create(username=username, defaults={'email': 'staging@example.com'})
     user.set_password(password)
     user.save()

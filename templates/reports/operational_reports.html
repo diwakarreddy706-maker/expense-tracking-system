@@ -105,7 +105,7 @@
             <td class="py-3.5 px-4 text-right font-mono font-bold text-cyan-400">{{ f.quantity }} L</td>
             <td class="py-3.5 px-4 text-right font-mono text-gray-400">₹{{ f.unit_price }}</td>
             <td class="py-3.5 px-4 text-right font-mono font-bold text-rose-400">-₹{{ f.total_amount }}</td>
-            <td class="py-3.5 px-4 text-gray-300">{{ f.operator.name|default:"--" }}</td>
+            <td class="py-3.5 px-4 text-gray-300">{{ f.operator.full_name|default:"--" }}</td>
           </tr>
         {% empty %}
           <tr><td colspan="7" class="py-10 text-center text-gray-500">No fuel logs found.</td></tr>

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static humanize %}
 
-{% block title %}{{ title|default:"Farmer Credit Ledger (Udhar Katha)" }} | AgriBOS ERP{% endblock %}
+{% block title %}{{ title|default:"Farmer Credit Ledger (Udhar Katha)" }} | Sri Basaveshwara & Co.{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
@@ -108,9 +108,9 @@
     </div>
   </div>
 
-  <!-- Search Filter Bar with Clear and Quick Action Indicator -->
-  <div class="relative print:hidden flex items-center gap-2">
-    <div class="relative flex-1">
+  <!-- Search Filter Bar with Clear and Pending Udhar Toggle -->
+  <div class="relative print:hidden flex flex-wrap sm:flex-nowrap items-center gap-2">
+    <div class="relative flex-1 min-w-[200px]">
       <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 z-10">
         <i class="bi bi-search"></i>
       </div>
@@ -119,6 +119,10 @@
         <i class="bi bi-x-circle-fill text-sm"></i>
       </button>
     </div>
+    <button type="button" id="udharOnlyFilterBtn" class="px-3.5 py-3 rounded-xl bg-[#131A26] hover:bg-gray-800 border border-[#28354A] text-gray-300 text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors">
+      <i class="bi bi-funnel-fill text-rose-400"></i>
+      <span>Pending Udhar Only</span>
+    </button>
     <div id="searchCounterBadge" class="hidden px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold whitespace-nowrap">
       0 found
     </div>
@@ -130,7 +134,7 @@
       {% for fd in farmers_data %}
         {% if selected_customer.id == fd.id %}
           <!-- Selected Farmer Card (Solid Emerald Accent) -->
-          <div class="farmer-card block p-4 rounded-xl border no-underline transition-all bg-emerald-600 border-emerald-500 shadow-md ring-2 ring-emerald-400 text-white relative group" data-search="{{ fd.name|lower }} {{ fd.phone|lower }} {{ fd.village|lower }} {{ fd.customer_code|lower }}">
+          <div class="farmer-card block p-4 rounded-xl border no-underline transition-all bg-emerald-600 border-emerald-500 shadow-md ring-2 ring-emerald-400 text-white relative group" data-search="{{ fd.name|lower }} {{ fd.phone|lower }} {{ fd.village|lower }} {{ fd.customer_code|lower }}" data-has-udhar="{% if fd.outstanding_udhar > 0 %}1{% else %}0{% endif %}">
             <div class="flex items-center justify-between mb-2">
               <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-emerald-800/80 text-white border border-emerald-400/40">
                 {{ fd.customer_code }}
@@ -165,7 +169,7 @@
           </div>
         {% else %}
           <!-- Unselected Farmer Card (Dark Card Deck) -->
-          <div class="farmer-card block p-4 rounded-xl border no-underline transition-all bg-[#131A26] border-[#28354A] hover:border-emerald-500 hover:shadow-sm" data-search="{{ fd.name|lower }} {{ fd.phone|lower }} {{ fd.village|lower }} {{ fd.customer_code|lower }}">
+          <div class="farmer-card block p-4 rounded-xl border no-underline transition-all bg-[#131A26] border-[#28354A] hover:border-emerald-500 hover:shadow-sm" data-search="{{ fd.name|lower }} {{ fd.phone|lower }} {{ fd.village|lower }} {{ fd.customer_code|lower }}" data-has-udhar="{% if fd.outstanding_udhar > 0 %}1{% else %}0{% endif %}">
             <div class="flex items-center justify-between mb-2">
               <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-gray-800 text-gray-300 border border-gray-700">
                 {{ fd.customer_code }}
@@ -365,7 +369,7 @@
                 </td>
                 <td class="py-3.5 px-3.5 text-right whitespace-nowrap print:hidden">
                   <div class="inline-flex items-center gap-1.5">
-                    <button type="button" onclick="window.sendWhatsAppReceipt({ voucher: '{{ s.manual_bill_no|default:s.work_code|escapejs }}', date: '{{ s.work_date|date:"d-m-Y" }}', farmerName: '{{ selected_customer.name|escapejs }}', phone: '{{ selected_customer.phone|escapejs }}', machine: '{{ s.machine.name|escapejs }}', acres: '{{ s.acres_worked|default:"" }}', hours: '{{ s.net_working_hours }}', gross: '{{ s.total_amount }}', advance: '{{ s.advance_amount }}', balance: '{{ s.udhar_amount }}', totalUdhar: '{{ farmer_balance_due }}' })" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] font-bold text-xs border border-[#25D366]/40 cursor-pointer transition-all min-h-[38px]" title="Send WhatsApp Bill Receipt to {{ selected_customer.name }}">
+                    <button type="button" onclick="window.sendWhatsAppReceipt({ voucher: '{{ s.manual_bill_no|default:s.work_code|escapejs }}', date: '{{ s.work_date|date:"d-m-Y" }}', farmerName: '{{ selected_customer.name|escapejs }}', phone: '{{ selected_customer.phone|escapejs }}', machine: '{{ s.machine.name|escapejs }}', acres: '{% if s.billing_type != "TIME_HOURLY" %}{{ s.quantity }}{% endif %}', hours: '{{ s.net_working_hours }}', gross: '{{ s.total_amount }}', advance: '{{ s.advance_amount }}', balance: '{{ s.udhar_amount }}', totalUdhar: '{{ farmer_balance_due }}' })" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] font-bold text-xs border border-[#25D366]/40 cursor-pointer transition-all min-h-[38px]" title="Send WhatsApp Bill Receipt to {{ selected_customer.name }}">
                       <i class="bi bi-whatsapp"></i>
                       <span>WhatsApp</span>
                     </button>
@@ -391,7 +395,7 @@
                 <span class="text-[11px] text-gray-400 font-mono">{{ s.work_date|date:"d M Y" }} &bull; {{ s.machine.name }}</span>
               </div>
               <div class="flex items-center gap-1.5">
-                <button type="button" onclick="window.sendWhatsAppReceipt({ voucher: '{{ s.manual_bill_no|default:s.work_code|escapejs }}', date: '{{ s.work_date|date:"d-m-Y" }}', farmerName: '{{ selected_customer.name|escapejs }}', phone: '{{ selected_customer.phone|escapejs }}', machine: '{{ s.machine.name|escapejs }}', acres: '{{ s.acres_worked|default:"" }}', hours: '{{ s.net_working_hours }}', gross: '{{ s.total_amount }}', advance: '{{ s.advance_amount }}', balance: '{{ s.udhar_amount }}', totalUdhar: '{{ farmer_balance_due }}' })" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#25D366]/20 text-[#25D366] font-bold text-xs border border-[#25D366]/40 cursor-pointer" title="WhatsApp Receipt">
+                <button type="button" onclick="window.sendWhatsAppReceipt({ voucher: '{{ s.manual_bill_no|default:s.work_code|escapejs }}', date: '{{ s.work_date|date:"d-m-Y" }}', farmerName: '{{ selected_customer.name|escapejs }}', phone: '{{ selected_customer.phone|escapejs }}', machine: '{{ s.machine.name|escapejs }}', acres: '{% if s.billing_type != "TIME_HOURLY" %}{{ s.quantity }}{% endif %}', hours: '{{ s.net_working_hours }}', gross: '{{ s.total_amount }}', advance: '{{ s.advance_amount }}', balance: '{{ s.udhar_amount }}', totalUdhar: '{{ farmer_balance_due }}' })" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#25D366]/20 text-[#25D366] font-bold text-xs border border-[#25D366]/40 cursor-pointer" title="WhatsApp Receipt">
                   <i class="bi bi-whatsapp"></i>
                 </button>
                 <a href="{% url 'machines:work_invoice' s.id %}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#182234] text-cyan-400 font-bold text-xs border border-[#28354A] no-underline">
@@ -516,7 +520,7 @@
             <h5 class="modal-title text-base font-bold text-white m-0" id="collectPaymentModalLabel">Collect Udhar Payment</h5>
             <p class="text-xs text-gray-400 m-0 mt-0.5">Settle outstanding Katha for {{ selected_customer.name }}</p>
           </div>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-white text-gray-300 hover:text-white flex items-center justify-center" data-bs-dismiss="modal" aria-label="Close"><i class="bi bi-x-lg text-xs"></i></button>
         </div>
         <div class="modal-body px-6 py-5 space-y-4">
           <div class="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between text-xs">
@@ -581,7 +585,7 @@
         {% csrf_token %}
         <div class="modal-header border-b border-[#28354A] px-6 py-4">
           <h5 class="modal-title text-base font-bold text-white m-0" id="registerFarmerModalLabel">Register New Farmer</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-white text-gray-300 hover:text-white flex items-center justify-center" data-bs-dismiss="modal" aria-label="Close"><i class="bi bi-x-lg text-xs"></i></button>
         </div>
         <div class="modal-body px-6 py-5 space-y-4">
           <div>
@@ -612,18 +616,20 @@
   </div>
 </div>
 
-<!-- Instant Client Search Filter Script -->
+<!-- Instant Client Search & Pending Udhar Filter Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const searchInput = document.getElementById('farmerSearchInput');
+  const udharBtn = document.getElementById('udharOnlyFilterBtn');
   const cards = document.querySelectorAll('.farmer-card');
+  let onlyPendingUdhar = false;
 
   if (searchInput) {
     const clearBtn = document.getElementById('farmerSearchClearBtn');
     const counterBadge = document.getElementById('searchCounterBadge');
 
-    searchInput.addEventListener('input', function() {
-      const q = this.value.toLowerCase().trim();
+    function applyFarmerFilters() {
+      const q = searchInput.value.toLowerCase().trim();
       let matchedCount = 0;
 
       if (clearBtn) {
@@ -633,7 +639,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
       cards.forEach(card => {
         const text = card.getAttribute('data-search') || '';
-        if (!q || text.includes(q)) {
+        const hasUdhar = card.getAttribute('data-has-udhar') === '1';
+        const matchesQuery = !q || text.includes(q);
+        const matchesUdhar = !onlyPendingUdhar || hasUdhar;
+        if (matchesQuery && matchesUdhar) {
           card.classList.remove('hidden');
           matchedCount++;
         } else {
@@ -642,14 +651,29 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       if (counterBadge) {
-        if (q) {
+        if (q || onlyPendingUdhar) {
           counterBadge.textContent = `${matchedCount} found`;
           counterBadge.classList.remove('hidden');
         } else {
           counterBadge.classList.add('hidden');
         }
       }
-    });
+    }
+
+    searchInput.addEventListener('input', applyFarmerFilters);
+    if (udharBtn) {
+      udharBtn.addEventListener('click', function() {
+        onlyPendingUdhar = !onlyPendingUdhar;
+        if (onlyPendingUdhar) {
+          udharBtn.classList.add('bg-rose-500/20', 'border-rose-500/50', 'text-rose-300');
+          udharBtn.classList.remove('bg-[#131A26]', 'border-[#28354A]', 'text-gray-300');
+        } else {
+          udharBtn.classList.remove('bg-rose-500/20', 'border-rose-500/50', 'text-rose-300');
+          udharBtn.classList.add('bg-[#131A26]', 'border-[#28354A]', 'text-gray-300');
+        }
+        applyFarmerFilters();
+      });
+    }
   }
 
   // Auto-sync Payment Mode with Deposit Account

@@ -67,7 +67,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <label class="block text-xs font-semibold text-gray-300 mb-1.5">Payment Method <span class="text-rose-400">*</span></label>
-          <div class="grid grid-cols-4 gap-1.5 sm:gap-2 mb-2" id="expPaymentPillContainer" data-target-input="payment_method">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 mb-2" id="expPaymentPillContainer" data-target-input="payment_method">
             <button type="button" class="pill-selector-item text-center p-2" data-value="CASH">
               <i class="bi bi-cash text-sm"></i> <span>Cash</span>
             </button>
@@ -336,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       saveCatBtn.disabled = true;
-      saveCatBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+      saveCatBtn.innerHTML = '<span class="spinner-border spinner-border-sm mr-1.5"></span> Saving...';
       catAlert.classList.add('hidden');
 
       const formData = new FormData();
@@ -363,8 +363,12 @@ document.addEventListener('DOMContentLoaded', () => {
           catNameInput.value = '';
           catCodeInput.value = '';
           const modalEl = document.getElementById('newExpenseCategoryModal');
-          const modalInst = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-          modalInst.hide();
+          if (window.agriCloseModal) {
+            window.agriCloseModal(modalEl);
+          } else if (window.bootstrap) {
+            const modalInst = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modalInst.hide();
+          }
         } else {
           let errMsg = 'Failed to create category.';
           if (data.errors) {
@@ -403,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       saveSupplierBtn.disabled = true;
-      saveSupplierBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+      saveSupplierBtn.innerHTML = '<span class="spinner-border spinner-border-sm mr-1.5"></span> Saving...';
       supplierAlert.classList.add('hidden');
 
       const formData = new FormData();
@@ -431,8 +435,12 @@ document.addEventListener('DOMContentLoaded', () => {
           supplierNameInput.value = '';
           supplierPhoneInput.value = '';
           const modalEl = document.getElementById('newSupplierModal');
-          const modalInst = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-          modalInst.hide();
+          if (window.agriCloseModal) {
+            window.agriCloseModal(modalEl);
+          } else if (window.bootstrap) {
+            const modalInst = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modalInst.hide();
+          }
         } else {
           let errMsg = 'Failed to create supplier.';
           if (data.errors) {

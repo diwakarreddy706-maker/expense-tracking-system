@@ -64,7 +64,8 @@ class EmployeeFinancialService:
 
         total_earned = accruals + bonuses
         total_disbursed = advances + settlements + bonuses
-        net_outstanding = (accruals + bonuses) - (advances + settlements)
+        # Bonuses are disbursed immediately on creation, so earned - disbursed simplifies to:
+        net_outstanding = accruals - (advances + settlements)
 
         return {
             'total_accruals': accruals,

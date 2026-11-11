@@ -1,461 +1,409 @@
 {% extends 'base.html' %}
 {% load humanize i18n currency_tags %}
 
-{% block title %}{% trans "Dashboard" %} | Sri Basaveshwara & Co.{% endblock %}
+{% block title %}{% trans "Dashboard" %} | Sri Basaveshwara &amp; Co.{% endblock %}
 
 {% block content %}
 <!-- ========================================================================= -->
-<!-- EXECUTIVE HEADER & QUICK ACTIONS                                          -->
+<!-- HEADER & PRIMARY ACTIONS                                                  -->
 <!-- ========================================================================= -->
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 sm:mb-8">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 mb-6 border-b border-[#28354A]">
   <div>
-    <div class="flex flex-wrap items-center gap-3">
-      <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight m-0">
-        {% trans "Executive Dashboard" %}
-      </h1>
-      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#182234] border border-[#28354A] text-cyan-400 font-mono text-xs font-semibold">
-        <i class="bi bi-calendar3 text-[11px]"></i> {{ kpis.today_formatted }}
-      </span>
-      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono text-[11px]">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse"></span>
-        <span>Synced {% now "H:i" %}</span>
-      </span>
-    </div>
-    <p class="text-xs sm:text-sm text-gray-400 mt-1.5 mb-0">Daily cash flow, machine expenses, and account balances</p>
+    <h1 class="text-xl sm:text-2xl font-semibold text-white tracking-tight m-0">
+      {% trans "Executive Dashboard" %}
+    </h1>
+    <p class="text-xs text-gray-400 mt-1 mb-0">
+      {{ kpis.today_formatted }} &middot; Daily cash flow, machine expenses, and account balances
+    </p>
   </div>
 
-  <!-- Desktop Header Action Buttons -->
-  <div class="hidden md:flex flex-wrap items-center gap-2.5">
-    <a href="{% url 'expenses:create' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm shadow-md shadow-emerald-950/30 transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-400 no-underline">
-      <i class="bi bi-plus-circle-fill text-sm"></i><span>{% trans "New Expense" %}</span>
+  <!-- Desktop Header Action Buttons (One Classic Navy primary CTA + crisp neutral actions) -->
+  <div class="hidden md:flex flex-wrap items-center gap-2">
+    <a href="{% url 'machines:farmer_ledger' %}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-[#182234] hover:bg-[#1F2A3F] text-gray-200 font-medium text-xs border border-[#28354A] transition-colors no-underline">
+      <i class="bi bi-book text-xs"></i><span>Farmer Udhar</span>
     </a>
-    <a href="{% url 'fuel:create' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#182234] hover:bg-[#1F2A3F] text-amber-800 dark:text-amber-300 font-medium text-sm border border-[#28354A] shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] no-underline">
-      <i class="bi bi-fuel-pump-fill text-amber-400"></i><span>{% trans "Log Fuel" %}</span>
+    <a href="{% url 'expenses:create' %}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-[#182234] hover:bg-[#1F2A3F] text-gray-200 font-medium text-xs border border-[#28354A] transition-colors no-underline">
+      <i class="bi bi-plus-circle text-xs"></i><span>{% trans "New Expense" %}</span>
     </a>
-    <a href="{% url 'finance:daily_closing' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#182234] hover:bg-[#1F2A3F] text-cyan-800 dark:text-cyan-300 font-medium text-sm border border-[#28354A] shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] no-underline">
-      <i class="bi bi-lock-fill text-cyan-400"></i><span>{% trans "Daily Closing" %}</span>
+    <a href="{% url 'fuel:create' %}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-[#182234] hover:bg-[#1F2A3F] text-gray-200 font-medium text-xs border border-[#28354A] transition-colors no-underline">
+      <i class="bi bi-fuel-pump text-xs"></i><span>{% trans "Log Fuel" %}</span>
     </a>
-    <a href="{% url 'reports:index' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#182234] hover:bg-[#1F2A3F] text-gray-700 dark:text-gray-300 hover:text-white font-medium text-sm border border-[#28354A] shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] no-underline">
-      <i class="bi bi-file-earmark-bar-graph-fill text-gray-400"></i><span>{% trans "Reports" %}</span>
+    <a href="{% url 'finance:daily_closing' %}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-[#182234] hover:bg-[#1F2A3F] text-gray-200 font-medium text-xs border border-[#28354A] transition-colors no-underline">
+      <i class="bi bi-lock text-xs"></i><span>{% trans "Daily Closing" %}</span>
+    </a>
+    <a href="{% url 'machines:work_create' %}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-[#1E3A8A] hover:bg-[#1E40AF] text-white font-semibold text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] no-underline" style="color: #FFFFFF !important;">
+      <i class="bi bi-plus-lg text-xs"></i><span>New Work Bill</span>
     </a>
   </div>
 </div>
 
-<!-- ========================================================================= -->
-<!-- 0. DAILY CLOSING ALERT BANNER (Positioned Distinctly Above KPI Metrics)   -->
-<!-- ========================================================================= -->
-{% if not kpis.is_day_closed %}
-  <div class="mb-5 sm:mb-6">
-    <a href="{% url 'finance:daily_closing' %}" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:px-5 sm:py-3.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/30 text-amber-800 dark:text-amber-300 no-underline shadow-sm transition-all hover:border-amber-500/50">
-      <div class="flex items-center gap-3">
-        <span class="flex h-2.5 w-2.5 relative flex-shrink-0">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
-        </span>
-        <span class="text-xs sm:text-sm font-semibold">
-          Daily Closing Pending &bull; Reconcile today's cash drawer with ledger transactions
-        </span>
-      </div>
-      <span class="inline-flex items-center gap-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-gray-950 px-3.5 py-1.5 rounded-xl shadow-sm self-start sm:self-auto transition-colors whitespace-nowrap">
-        Match Cash Now <i class="bi bi-arrow-right"></i>
-      </span>
-    </a>
-  </div>
-{% endif %}
+<!-- Mobile Quick Operations Strip (<md viewports) -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:hidden mb-5">
+  <a href="{% url 'machines:work_create' %}" class="flex items-center gap-2 p-3 rounded-md bg-[#1E3A8A] text-white font-semibold text-xs no-underline" style="color: #FFFFFF !important;">
+    <i class="bi bi-plus-lg text-sm"></i><span>Work Bill</span>
+  </a>
+  <a href="{% url 'machines:farmer_ledger' %}" class="flex items-center gap-2 p-3 rounded-md bg-[#131A26] border border-[#28354A] text-gray-200 font-medium text-xs no-underline">
+    <i class="bi bi-book text-sm"></i><span>Collect Udhar</span>
+  </a>
+  <a href="{% url 'fuel:create' %}" class="flex items-center gap-2 p-3 rounded-md bg-[#131A26] border border-[#28354A] text-gray-200 font-medium text-xs no-underline">
+    <i class="bi bi-fuel-pump text-sm"></i><span>Log Fuel</span>
+  </a>
+  <a href="{% url 'finance:daily_closing' %}" class="flex items-center gap-2 p-3 rounded-md bg-[#131A26] border border-[#28354A] text-gray-200 font-medium text-xs no-underline">
+    <i class="bi bi-lock text-sm"></i><span>Day Closing</span>
+  </a>
+</div>
 
 <!-- ========================================================================= -->
-<!-- 1. TODAY'S MONEY: AUTHORITATIVE LIQUID CASH & BANK POSITION               -->
+<!-- 1. TODAY'S FINANCIAL SUMMARY & LEDGER FLOW (Unified Flat Strip)           -->
 <!-- ========================================================================= -->
-<div class="glass-card p-4 sm:p-6 mb-8">
-  <div class="flex flex-wrap items-center justify-between border-b border-[#28354A] pb-3 sm:pb-4 mb-4 sm:mb-5 gap-3">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-inner">
-        <i class="bi bi-wallet2 text-lg"></i>
-      </div>
-      <div>
-        <h2 class="text-sm sm:text-base font-bold text-white tracking-tight m-0">Today's Financial Summary &amp; Ledger Flow</h2>
-        <p class="text-[11px] sm:text-xs text-gray-400 m-0">Today's Cash Flow Breakdown ({{ kpis.today|date:"d M Y" }})</p>
-      </div>
+<div class="glass-card overflow-hidden mb-6">
+  <div class="flex flex-wrap items-center justify-between px-4 sm:px-5 py-3 border-b border-[#28354A] gap-2">
+    <div>
+      <h2 class="text-sm font-semibold text-white m-0">Today's Financial Summary &amp; Ledger Flow</h2>
+      <p class="text-[11px] text-gray-400 m-0">Cash flow position for {{ kpis.today|date:"d M Y" }}</p>
     </div>
 
-    <!-- Closed Status Badge (When day is closed) -->
     {% if kpis.is_day_closed %}
-      <div class="block">
-        {% if kpis.closing_status == 'BALANCED' %}
-          <span class="status-pill status-pill-active">
-            <i class="bi bi-check-circle-fill"></i> Day Closed &amp; Balanced
-          </span>
-        {% elif kpis.closing_status == 'SURPLUS' %}
-          <span class="status-pill status-pill-pending">
-            <i class="bi bi-exclamation-triangle-fill"></i> Closed with Extra Cash (+₹{{ kpis.closing_difference|inr }})
-          </span>
-        {% else %}
-          <span class="status-pill status-pill-danger">
-            <i class="bi bi-exclamation-octagon-fill"></i> Closed with Cash Shortage (-₹{{ kpis.closing_difference|cut:"-"|inr }})
-          </span>
-        {% endif %}
-      </div>
+      {% if kpis.closing_status == 'BALANCED' %}
+        <span class="status-pill status-pill-active">
+          <i class="bi bi-check-circle"></i> Day Closed &amp; Balanced
+        </span>
+      {% elif kpis.closing_status == 'SURPLUS' %}
+        <span class="status-pill status-pill-pending">
+          <i class="bi bi-exclamation-triangle"></i> Extra Cash (+₹{{ kpis.closing_difference|inr }})
+        </span>
+      {% else %}
+        <span class="status-pill status-pill-danger">
+          <i class="bi bi-exclamation-octagon"></i> Cash Shortage (-₹{{ kpis.closing_difference|cut:"-"|inr }})
+        </span>
+      {% endif %}
     {% endif %}
   </div>
 
-  <!-- Mobile Compact 2x2 Summary Matrix (<md viewports) -->
-  <div class="grid grid-cols-2 gap-3 mb-4 md:hidden">
-    <!-- 1. Total Income / Received -->
-    <a href="{% url 'finance:daily_closing' %}" class="block p-3.5 rounded-2xl bg-[#0B0F17] hover:bg-emerald-950/30 border border-emerald-500/30 transition-all no-underline shadow-sm">
-      <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">Total Inflow</span>
-      <div class="text-base font-black text-emerald-700 dark:text-emerald-400 num-tabular tabular-nums mt-0.5 whitespace-nowrap truncate">+₹{{ kpis.money_received_today|inr_parts }}</div>
-      <span class="text-[10px] text-gray-600 dark:text-gray-400 block mt-1">Received Today &rarr;</span>
+  <!-- Mobile Compact 2x2 Ledger Grid (<md viewports) -->
+  <div class="grid grid-cols-2 divide-x divide-y divide-[#28354A] md:hidden">
+    <a href="{% url 'finance:daily_closing' %}" class="block p-3.5 hover:bg-gray-800/40 transition-colors no-underline">
+      <span class="text-[11px] font-medium text-gray-400 block">Total Inflow</span>
+      <div class="text-base font-semibold text-emerald-400 num-tabular tabular-nums mt-0.5 whitespace-nowrap">+₹{{ kpis.money_received_today|inr_parts }}</div>
+      <span class="text-[11px] text-gray-400 block mt-0.5">Received Today &rarr;</span>
     </a>
-
-    <!-- 2. Total Expense / Spent -->
-    <a href="{% url 'expenses:list' %}" class="block p-3.5 rounded-2xl bg-[#0B0F17] hover:bg-rose-950/30 border border-rose-500/30 transition-all no-underline shadow-sm">
-      <span class="text-[10px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider block">Total Outflow</span>
-      <div class="text-base font-black text-rose-700 dark:text-rose-400 num-tabular tabular-nums mt-0.5 whitespace-nowrap truncate">-₹{{ kpis.money_spent_today|inr_parts }}</div>
-      <span class="text-[10px] text-gray-600 dark:text-gray-400 block mt-1">Spent Today &rarr;</span>
+    <a href="{% url 'expenses:list' %}" class="block p-3.5 hover:bg-gray-800/40 transition-colors no-underline">
+      <span class="text-[11px] font-medium text-gray-400 block">Total Outflow</span>
+      <div class="text-base font-semibold text-rose-400 num-tabular tabular-nums mt-0.5 whitespace-nowrap">-₹{{ kpis.money_spent_today|inr_parts }}</div>
+      <span class="text-[11px] text-gray-400 block mt-0.5">Spent Today &rarr;</span>
     </a>
-
-    <!-- 3. Receivables / Udhar -->
-    <a href="{% url 'finance:receivables' %}" class="block p-3.5 rounded-2xl bg-[#0B0F17] hover:bg-amber-950/30 border border-amber-500/30 transition-all no-underline shadow-sm">
-      <span class="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">Receivables</span>
-      <div class="text-base font-black text-amber-800 dark:text-amber-400 num-tabular tabular-nums mt-0.5 whitespace-nowrap truncate">₹{{ kpis.receivables_to_receive|inr_parts }}</div>
-      <span class="text-[10px] text-gray-600 dark:text-gray-400 block mt-1">Pending Invoices &rarr;</span>
+    <a href="{% url 'finance:receivables' %}" class="block p-3.5 hover:bg-gray-800/40 transition-colors no-underline">
+      <span class="text-[11px] font-medium text-gray-400 block">Receivables</span>
+      <div class="text-base font-semibold text-amber-400 num-tabular tabular-nums mt-0.5 whitespace-nowrap">₹{{ kpis.receivables_to_receive|inr_parts }}</div>
+      <span class="text-[11px] text-gray-400 block mt-0.5">Pending Bills &rarr;</span>
     </a>
-
-    <!-- 4. Savings / Net Liquid Balance -->
-    <a href="{% url 'finance:accounts' %}" class="block p-3.5 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/40 transition-all no-underline shadow-sm">
-      <span class="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block">Net Liquid</span>
-      <div class="text-base font-black text-emerald-800 dark:text-emerald-400 num-tabular tabular-nums mt-0.5 whitespace-nowrap truncate">₹{{ kpis.total_current_liquid|inr_parts }}</div>
-      <span class="text-[10px] text-slate-700 dark:text-emerald-300/80 font-medium block mt-1">Cash + Bank + UPI &rarr;</span>
+    <a href="{% url 'finance:accounts' %}" class="block p-3.5 hover:bg-gray-800/40 transition-colors no-underline">
+      <span class="text-[11px] font-medium text-gray-400 block">Total Balance (Available)</span>
+      <div class="text-base font-semibold text-white num-tabular tabular-nums mt-0.5 whitespace-nowrap">₹{{ kpis.total_current_liquid|inr_parts }}</div>
+      <span class="text-[11px] text-gray-400 block mt-0.5">Cash + Bank + UPI &rarr;</span>
     </a>
   </div>
 
-  <!-- Desktop Visual Equation Strip (>=md viewports) -->
-  <div class="hidden md:grid md:grid-cols-5 gap-3.5 text-center items-stretch mb-5">
-    <!-- 1. Opening -->
-    <a href="{% url 'finance:daily_closing' %}" class="flex flex-col justify-between p-4 rounded-2xl bg-[#0B0F17]/80 hover:bg-[#182234] border border-[#28354A] hover:border-gray-500 transition-all no-underline group shadow-sm hover:scale-[1.02]">
+  <!-- Desktop Unified 5-Column Ledger Strip (>=md viewports, no nested boxes) -->
+  <div class="hidden md:grid md:grid-cols-5 divide-x divide-[#28354A]">
+    <a href="{% url 'finance:daily_closing' %}" class="flex flex-col justify-between p-4 hover:bg-gray-800/40 transition-colors no-underline">
       <div>
-        <span class="text-[10px] font-bold text-gray-400 group-hover:text-gray-300 uppercase tracking-wider block">1. Morning Cash &amp; Bank</span>
-        <div class="text-base sm:text-lg lg:text-xl font-bold text-white num-tabular tabular-nums mt-1.5 whitespace-nowrap">₹{{ kpis.opening_balance|inr_parts }}</div>
+        <span class="text-[11px] font-medium text-gray-400 block">1. Morning Cash &amp; Bank</span>
+        <div class="text-lg font-semibold text-white num-tabular tabular-nums mt-1 whitespace-nowrap">₹{{ kpis.opening_balance|inr_parts }}</div>
       </div>
-      <span class="text-[11px] font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white mt-2 block transition-colors">View Details &rarr;</span>
+      <span class="text-[11px] text-gray-400 mt-2 block">Opening &rarr;</span>
     </a>
 
-    <!-- 2. Received -->
-    <a href="{% url 'finance:daily_closing' %}" class="flex flex-col justify-between p-4 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-500/60 transition-all no-underline group shadow-sm hover:scale-[1.02]">
+    <a href="{% url 'finance:daily_closing' %}" class="flex flex-col justify-between p-4 hover:bg-gray-800/40 transition-colors no-underline">
       <div>
-        <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">+ Money In (Today)</span>
-        <div class="text-base sm:text-lg lg:text-xl font-bold text-emerald-700 dark:text-emerald-400 num-tabular tabular-nums mt-1.5 whitespace-nowrap">+₹{{ kpis.money_received_today|inr_parts }}</div>
+        <span class="text-[11px] font-medium text-gray-400 block">+ Money In (Today)</span>
+        <div class="text-lg font-semibold text-emerald-400 num-tabular tabular-nums mt-1 whitespace-nowrap">+₹{{ kpis.money_received_today|inr_parts }}</div>
       </div>
-      <span class="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 mt-2 block transition-colors">View Receipts &rarr;</span>
+      <span class="text-[11px] text-gray-400 mt-2 block">Receipts &rarr;</span>
     </a>
 
-    <!-- 3. Spent -->
-    <a href="{% url 'expenses:list' %}" class="flex flex-col justify-between p-4 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 hover:border-rose-500/60 transition-all no-underline group shadow-sm hover:scale-[1.02]">
+    <a href="{% url 'expenses:list' %}" class="flex flex-col justify-between p-4 hover:bg-gray-800/40 transition-colors no-underline">
       <div>
-        <span class="text-[10px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider block">- Money Out (Today)</span>
-        <div class="text-base sm:text-lg lg:text-xl font-bold text-rose-700 dark:text-rose-400 num-tabular tabular-nums mt-1.5 whitespace-nowrap">-₹{{ kpis.money_spent_today|inr_parts }}</div>
+        <span class="text-[11px] font-medium text-gray-400 block">- Money Out (Today)</span>
+        <div class="text-lg font-semibold text-rose-400 num-tabular tabular-nums mt-1 whitespace-nowrap">-₹{{ kpis.money_spent_today|inr_parts }}</div>
       </div>
-      <span class="text-[11px] font-medium text-rose-700 dark:text-rose-400 hover:text-rose-900 dark:hover:text-rose-300 mt-2 block transition-colors">View Expenses &rarr;</span>
+      <span class="text-[11px] text-gray-400 mt-2 block">Expenses &rarr;</span>
     </a>
 
-    <!-- 4. Expected Closing -->
-    <a href="{% url 'finance:daily_closing' %}" class="flex flex-col justify-between p-4 rounded-2xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 hover:border-cyan-500/60 transition-all no-underline group shadow-sm hover:scale-[1.02]">
+    <a href="{% url 'finance:daily_closing' %}" class="flex flex-col justify-between p-4 hover:bg-gray-800/40 transition-colors no-underline">
       <div>
-        <span class="text-[10px] font-bold text-cyan-700 dark:text-cyan-400 uppercase tracking-wider block">= Closing Balance (Expected)</span>
-        <div class="text-base sm:text-lg lg:text-xl font-bold text-cyan-700 dark:text-cyan-300 num-tabular tabular-nums mt-1.5 whitespace-nowrap">₹{{ kpis.expected_closing_today|inr_parts }}</div>
+        <span class="text-[11px] font-medium text-gray-400 block">= Expected Closing</span>
+        <div class="text-lg font-semibold text-white num-tabular tabular-nums mt-1 whitespace-nowrap">₹{{ kpis.expected_closing_today|inr_parts }}</div>
       </div>
-      <span class="text-[11px] font-medium text-sky-700 dark:text-cyan-400 hover:text-sky-900 dark:hover:text-cyan-300 mt-2 block transition-colors">Daily Closing &rarr;</span>
+      <span class="text-[11px] text-gray-400 mt-2 block">Closing Check &rarr;</span>
     </a>
 
-    <!-- 5. Total Liquid Available -->
-    <a href="{% url 'finance:accounts' %}" class="flex flex-col justify-between p-4 rounded-2xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 hover:border-emerald-400 transition-all no-underline group shadow-md hover:scale-[1.02]">
+    <a href="{% url 'finance:accounts' %}" class="flex flex-col justify-between p-4 hover:bg-gray-800/40 transition-colors no-underline">
       <div>
-        <span class="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block">Total Balance (Available)</span>
-        <div class="text-base sm:text-lg lg:text-xl font-bold text-emerald-700 dark:text-emerald-400 num-tabular tabular-nums mt-1.5 whitespace-nowrap">₹{{ kpis.total_current_liquid|inr_parts }}</div>
+        <span class="text-[11px] font-medium text-gray-400 block">Total Balance (Available)</span>
+        <div class="text-lg font-bold text-white num-tabular tabular-nums mt-1 whitespace-nowrap">₹{{ kpis.total_current_liquid|inr_parts }}</div>
       </div>
-      <span class="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 mt-2 block transition-colors">All Accounts &rarr;</span>
+      <span class="text-[11px] text-blue-400 font-medium mt-2 block">All Accounts &rarr;</span>
     </a>
   </div>
 
-  <!-- Account Breakdown Pills (Cash Box | Primary Bank | UPI) -->
+  <!-- Account Split & Daily Closing Reminder Footer Strip -->
   {% if kpis.cash_balance is not None or kpis.bank_balance is not None or kpis.upi_balance is not None %}
-    <div class="flex flex-wrap items-center justify-center gap-3 pt-3.5 border-t border-[#28354A] text-xs">
+    <div class="px-4 sm:px-5 py-2.5 border-t border-[#28354A] bg-[#0B0F17]/40 flex flex-wrap items-center gap-x-6 gap-y-1.5 text-xs">
       {% if kpis.cash_balance is not None %}
-        <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#0B0F17] border border-[#28354A] shadow-sm">
-          <i class="bi bi-cash-stack text-emerald-400 text-sm"></i>
-          <span class="text-gray-400 font-medium">Cash Box:</span>
-          <span class="text-white font-mono font-bold tabular-nums">₹{{ kpis.cash_balance|inr }}</span>
+        <span class="inline-flex items-center gap-1.5">
+          <span class="text-gray-400">Cash Box:</span>
+          <span class="text-white font-mono font-semibold tabular-nums">₹{{ kpis.cash_balance|inr }}</span>
         </span>
       {% endif %}
       {% if kpis.bank_balance is not None %}
-        <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#0B0F17] border border-[#28354A] shadow-sm">
-          <i class="bi bi-bank2 text-cyan-400 text-sm"></i>
-          <span class="text-gray-400 font-medium">Bank Accounts:</span>
-          <span class="text-white font-mono font-bold tabular-nums">₹{{ kpis.bank_balance|inr }}</span>
+        <span class="inline-flex items-center gap-1.5">
+          <span class="text-gray-400">Bank Accounts:</span>
+          <span class="text-white font-mono font-semibold tabular-nums">₹{{ kpis.bank_balance|inr }}</span>
         </span>
       {% endif %}
       {% if kpis.upi_balance is not None %}
-        <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#0B0F17] border border-[#28354A] shadow-sm">
-          <i class="bi bi-qr-code text-purple-400 text-sm"></i>
-          <span class="text-gray-400 font-medium">UPI Wallets:</span>
-          <span class="text-white font-mono font-bold tabular-nums">₹{{ kpis.upi_balance|inr }}</span>
+        <span class="inline-flex items-center gap-1.5">
+          <span class="text-gray-400">UPI Wallets:</span>
+          <span class="text-white font-mono font-semibold tabular-nums">₹{{ kpis.upi_balance|inr }}</span>
         </span>
       {% endif %}
     </div>
   {% endif %}
+
+  {% if not kpis.is_day_closed %}
+    <a href="{% url 'finance:daily_closing' %}" class="px-4 sm:px-5 py-2.5 border-t border-amber-500/30 bg-amber-500/10 flex flex-wrap items-center justify-between gap-2 text-xs text-amber-400 no-underline hover:bg-amber-500/15 transition-colors">
+      <span class="font-medium">
+        <i class="bi bi-clock-history mr-1.5"></i>Daily closing pending for today &middot; Reconcile cash drawer with ledger entries
+      </span>
+      <span class="font-semibold underline whitespace-nowrap">Match Cash Now &rarr;</span>
+    </a>
+  {% endif %}
 </div>
 
 <!-- ========================================================================= -->
-<!-- 2. THREE INDEPENDENT OBLIGATION SILOS                                     -->
+<!-- 2. RECEIVABLES, PAYABLES & EMPLOYEE WAGES                                 -->
 <!-- ========================================================================= -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
   <!-- Customer Receivables -->
-  <div class="glass-card card-hover-lift glass-card-amber border-t-4 border-t-amber-500 p-5 sm:p-6 flex flex-col justify-between">
+  <div class="glass-card p-5 flex flex-col justify-between">
     <div>
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider break-words">1. Customer Receivables</span>
-        <span class="status-pill status-pill-pending whitespace-nowrap self-start sm:self-auto">YOU RECEIVE</span>
+      <div class="flex items-center justify-between gap-2 mb-2">
+        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">1. Customer Receivables</span>
+        <span class="text-[11px] font-medium text-amber-400">To Receive</span>
       </div>
-      <div class="text-xl sm:text-2xl lg:text-3xl font-black text-amber-400 num-tabular tabular-nums whitespace-nowrap mt-1">₹{{ kpis.receivables_to_receive|inr_parts }}</div>
-      
-      <!-- Aging Buckets Badges with Counts and Sub-amounts -->
-      <div class="flex flex-wrap items-center gap-1.5 mt-3.5">
-        <span class="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30" title="0-15 Days Current Invoices">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <span>0-15d Current:</span>
-          <span class="font-mono font-bold">{{ kpis.receivables_aging.bucket_0_15.count|default:0 }}</span>
-          <span class="text-emerald-300 font-mono text-[9px]">(₹{{ kpis.receivables_aging.bucket_0_15.amount|default:0|inr }})</span>
-        </span>
-        <span class="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30" title="16-30 Days Aging Invoices">
-          <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-          <span>16-30d:</span>
-          <span class="font-mono font-bold">{{ kpis.receivables_aging.bucket_16_30.count|default:0 }}</span>
-          <span class="text-amber-300 font-mono text-[9px]">(₹{{ kpis.receivables_aging.bucket_16_30.amount|default:0|inr }})</span>
-        </span>
-        <span class="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/30" title="30+ Days Overdue Invoices">
-          <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
-          <span>30d+:</span>
-          <span class="font-mono font-bold">{{ kpis.receivables_aging.bucket_30_plus.count|default:0 }}</span>
-          <span class="text-rose-300 font-mono text-[9px]">(₹{{ kpis.receivables_aging.bucket_30_plus.amount|default:0|inr }})</span>
-        </span>
+      <div class="text-2xl font-bold text-white num-tabular tabular-nums whitespace-nowrap mt-1">₹{{ kpis.receivables_to_receive|inr_parts }}</div>
+
+      <div class="mt-3.5 pt-3 border-t border-[#28354A] space-y-1 text-xs">
+        <div class="flex items-center justify-between text-gray-400">
+          <span>0&ndash;15 days current</span>
+          <span class="font-mono text-white">{{ kpis.receivables_aging.bucket_0_15.count|default:0 }} (₹{{ kpis.receivables_aging.bucket_0_15.amount|default:0|inr }})</span>
+        </div>
+        <div class="flex items-center justify-between text-gray-400">
+          <span>16&ndash;30 days pending</span>
+          <span class="font-mono text-amber-400">{{ kpis.receivables_aging.bucket_16_30.count|default:0 }} (₹{{ kpis.receivables_aging.bucket_16_30.amount|default:0|inr }})</span>
+        </div>
+        <div class="flex items-center justify-between text-gray-400">
+          <span>30+ days overdue</span>
+          <span class="font-mono text-rose-400">{{ kpis.receivables_aging.bucket_30_plus.count|default:0 }} (₹{{ kpis.receivables_aging.bucket_30_plus.amount|default:0|inr }})</span>
+        </div>
       </div>
     </div>
 
-    <div class="pt-4 mt-4 border-t border-[#28354A]">
-      <a href="{% url 'finance:receivables' %}" class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-amber-300 no-underline font-medium transition-colors group">
-        <span>View customer credit &amp; invoices</span> <i class="bi bi-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+    <div class="pt-3 mt-4 border-t border-[#28354A]">
+      <a href="{% url 'finance:receivables' %}" class="text-xs text-blue-400 no-underline font-medium">
+        View customer credit &amp; invoices &rarr;
       </a>
     </div>
   </div>
 
   <!-- Supplier Payables -->
-  <div class="glass-card card-hover-lift glass-card-rose border-t-4 border-t-rose-500 p-5 sm:p-6 flex flex-col justify-between">
+  <div class="glass-card p-5 flex flex-col justify-between">
     <div>
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider break-words">2. Supplier Payables</span>
-        <span class="status-pill status-pill-danger whitespace-nowrap self-start sm:self-auto">YOU PAY</span>
+      <div class="flex items-center justify-between gap-2 mb-2">
+        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">2. Supplier Payables</span>
+        <span class="text-[11px] font-medium text-rose-400">To Pay</span>
       </div>
-      {% if kpis.payables_to_pay == 0 %}
-        <div class="flex items-center gap-2.5 mt-1">
-          <div class="text-xl sm:text-2xl lg:text-3xl font-black text-emerald-400 num-tabular tabular-nums whitespace-nowrap">₹{{ kpis.payables_to_pay|inr_parts }}</div>
-          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
-            <i class="bi bi-check2-circle text-xs"></i> No dues pending
-          </span>
-        </div>
-      {% else %}
-        <div class="text-xl sm:text-2xl lg:text-3xl font-black text-rose-400 num-tabular tabular-nums whitespace-nowrap mt-1">₹{{ kpis.payables_to_pay|inr_parts }}</div>
-      {% endif %}
-      <div class="text-xs text-gray-400 mt-3 flex items-center gap-2">
-        <i class="bi bi-fuel-pump-fill text-amber-400"></i>
-        <span>Fuel pumps &amp; spare parts vendors</span>
+      <div class="flex items-baseline gap-2.5 mt-1">
+        <div class="text-2xl font-bold {% if kpis.payables_to_pay == 0 %}text-white{% else %}text-rose-400{% endif %} num-tabular tabular-nums whitespace-nowrap">₹{{ kpis.payables_to_pay|inr_parts }}</div>
+        {% if kpis.payables_to_pay == 0 %}
+          <span class="text-xs font-medium text-emerald-400">&bull; No dues pending</span>
+        {% endif %}
+      </div>
+      <div class="text-xs text-gray-400 mt-3">
+        Fuel pumps &amp; spare parts vendors
       </div>
     </div>
 
-    <div class="pt-4 mt-4 border-t border-[#28354A]">
-      <a href="{% url 'finance:payables' %}" class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-rose-300 no-underline font-medium transition-colors group">
-        <span>View vendor bills &amp; diesel pump dues</span> <i class="bi bi-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+    <div class="pt-3 mt-4 border-t border-[#28354A]">
+      <a href="{% url 'finance:payables' %}" class="text-xs text-blue-400 no-underline font-medium">
+        View vendor bills &amp; diesel pump dues &rarr;
       </a>
     </div>
   </div>
 
-  <!-- Employee Liabilities -->
-  <div class="glass-card card-hover-lift glass-card-emerald border-t-4 border-t-indigo-500 p-5 sm:p-6 flex flex-col justify-between">
+  <!-- Employee Wage Liabilities -->
+  <div class="glass-card p-5 flex flex-col justify-between">
     <div>
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider break-words">3. Employee Wage Liabilities</span>
-        <span class="status-pill status-pill-indigo whitespace-nowrap self-start sm:self-auto">WAGES DUE</span>
+      <div class="flex items-center justify-between gap-2 mb-2">
+        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">3. Employee Wage Liabilities</span>
+        <span class="text-[11px] font-medium text-gray-400">Wages Due</span>
       </div>
-      {% if kpis.employee_wages_due == 0 %}
-        <div class="flex items-center gap-2.5 mt-1">
-          <div class="text-xl sm:text-2xl lg:text-3xl font-black text-emerald-400 num-tabular tabular-nums whitespace-nowrap">₹{{ kpis.employee_wages_due|inr_parts }}</div>
-          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
-            <i class="bi bi-check2-circle text-xs"></i> All settled
-          </span>
-        </div>
-      {% else %}
-        <div class="text-xl sm:text-2xl lg:text-3xl font-black text-indigo-400 num-tabular tabular-nums whitespace-nowrap mt-1">₹{{ kpis.employee_wages_due|inr_parts }}</div>
-      {% endif %}
-      <div class="text-xs text-gray-400 mt-3 flex items-center gap-2">
-        <i class="bi bi-people-fill text-cyan-400"></i>
-        <span>Driver wages &amp; advance balances</span>
+      <div class="flex items-baseline gap-2.5 mt-1">
+        <div class="text-2xl font-bold text-white num-tabular tabular-nums whitespace-nowrap">₹{{ kpis.employee_wages_due|inr_parts }}</div>
+        {% if kpis.employee_wages_due == 0 %}
+          <span class="text-xs font-medium text-emerald-400">&bull; All settled</span>
+        {% endif %}
+      </div>
+      <div class="text-xs text-gray-400 mt-3">
+        Driver wages &amp; advance balances
       </div>
     </div>
 
-    <div class="pt-4 mt-4 border-t border-[#28354A]">
-      <a href="{% url 'employees:wages' %}" class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-indigo-300 no-underline font-medium transition-colors group">
-        <span>View payroll ledger &amp; advance payouts</span> <i class="bi bi-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+    <div class="pt-3 mt-4 border-t border-[#28354A]">
+      <a href="{% url 'employees:wages' %}" class="text-xs text-blue-400 no-underline font-medium">
+        View payroll ledger &amp; advance payouts &rarr;
       </a>
     </div>
   </div>
 </div>
 
 <!-- ========================================================================= -->
-<!-- 3. OPERATIONAL COSTS HIERARCHY & BUDGET CONTROLS (MONTH)                  -->
+<!-- 3. MONTHLY EXPENSES & BUDGET CONTROLS                                     -->
 <!-- ========================================================================= -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
   <!-- Operational Spending Breakdown -->
-  <div class="glass-card p-5 sm:p-6 flex flex-col justify-between">
+  <div class="glass-card p-5 flex flex-col justify-between">
     <div>
       <div class="flex items-center justify-between border-b border-[#28354A] pb-3 mb-4">
-        <h2 class="text-sm sm:text-base font-bold text-white flex items-center gap-2 m-0">
-          <i class="bi bi-pie-chart-fill text-amber-400"></i>
-          <span>Monthly Expenses by Category</span>
-        </h2>
-        <span class="text-xs sm:text-sm font-extrabold text-white num-tabular">Total: ₹{{ kpis.total_expenses_month|inr }}</span>
+        <h2 class="text-sm font-semibold text-white m-0">Monthly Expenses by Category</h2>
+        <span class="text-xs font-semibold text-white num-tabular">Total: ₹{{ kpis.total_expenses_month|inr }}</span>
       </div>
 
-      <div class="space-y-4 pt-1">
+      <div class="space-y-3.5">
         <div>
-          <div class="flex justify-between text-xs text-gray-400 mb-1.5">
-            <span class="flex items-center gap-1.5 font-medium"><i class="bi bi-fuel-pump-fill text-amber-400"></i> Fuel &amp; Diesel</span>
-            <span class="text-white font-bold num-tabular">₹{{ kpis.fuel_cost_month|inr }} <span class="text-gray-500 font-normal text-[10px]">({{ kpis.fuel_pct|default:0 }}%)</span></span>
+          <div class="flex justify-between text-xs text-gray-400 mb-1">
+            <span>Fuel &amp; Diesel</span>
+            <span class="text-white font-medium num-tabular">₹{{ kpis.fuel_cost_month|inr }} <span class="text-gray-500 text-[11px]">({{ kpis.fuel_pct|default:0 }}%)</span></span>
           </div>
-          <div class="w-full bg-[#0B0F17] rounded-full h-2.5 overflow-hidden border border-[#28354A]">
-            <div class="bg-amber-400 h-2.5 rounded-full transition-all duration-500" style="width: {{ kpis.fuel_pct|default:0 }}%;"></div>
+          <div class="w-full bg-[#0B0F17] rounded-full h-2 overflow-hidden border border-[#28354A]">
+            <div class="bg-[#1E3A8A] h-2 rounded-full transition-all duration-500" style="width: {{ kpis.fuel_pct|default:0 }}%;"></div>
           </div>
         </div>
 
         <div>
-          <div class="flex justify-between text-xs text-gray-400 mb-1.5">
-            <span class="flex items-center gap-1.5 font-medium"><i class="bi bi-tools text-cyan-400"></i> Machinery Maintenance &amp; Parts</span>
-            <span class="text-white font-bold num-tabular">₹{{ kpis.maintenance_cost_month|inr }} <span class="text-gray-500 font-normal text-[10px]">({{ kpis.maintenance_pct|default:0 }}%)</span></span>
+          <div class="flex justify-between text-xs text-gray-400 mb-1">
+            <span>Machinery Maintenance &amp; Parts</span>
+            <span class="text-white font-medium num-tabular">₹{{ kpis.maintenance_cost_month|inr }} <span class="text-gray-500 text-[11px]">({{ kpis.maintenance_pct|default:0 }}%)</span></span>
           </div>
-          <div class="w-full bg-[#0B0F17] rounded-full h-2.5 overflow-hidden border border-[#28354A]">
-            <div class="bg-cyan-400 h-2.5 rounded-full transition-all duration-500" style="width: {{ kpis.maintenance_pct|default:0 }}%;"></div>
-          </div>
-        </div>
-
-        <div>
-          <div class="flex justify-between text-xs text-gray-400 mb-1.5">
-            <span class="flex items-center gap-1.5 font-medium"><i class="bi bi-people-fill text-emerald-400"></i> Wages &amp; Advance Payouts</span>
-            <span class="text-white font-bold num-tabular">₹{{ kpis.emp_payouts_month|inr }} <span class="text-gray-500 font-normal text-[10px]">({{ kpis.emp_pct|default:0 }}%)</span></span>
-          </div>
-          <div class="w-full bg-[#0B0F17] rounded-full h-2.5 overflow-hidden border border-[#28354A]">
-            <div class="bg-emerald-400 h-2.5 rounded-full transition-all duration-500" style="width: {{ kpis.emp_pct|default:0 }}%;"></div>
+          <div class="w-full bg-[#0B0F17] rounded-full h-2 overflow-hidden border border-[#28354A]">
+            <div class="bg-amber-500 h-2 rounded-full transition-all duration-500" style="width: {{ kpis.maintenance_pct|default:0 }}%;"></div>
           </div>
         </div>
 
         <div>
-          <div class="flex justify-between text-xs text-gray-400 mb-1.5">
-            <span class="flex items-center gap-1.5 font-medium"><i class="bi bi-receipt text-gray-400"></i> General Administration</span>
-            <span class="text-white font-bold num-tabular">₹{{ kpis.other_expenses_month|inr }} <span class="text-gray-500 font-normal text-[10px]">({{ kpis.other_pct|default:0 }}%)</span></span>
+          <div class="flex justify-between text-xs text-gray-400 mb-1">
+            <span>Wages &amp; Advance Payouts</span>
+            <span class="text-white font-medium num-tabular">₹{{ kpis.emp_payouts_month|inr }} <span class="text-gray-500 text-[11px]">({{ kpis.emp_pct|default:0 }}%)</span></span>
           </div>
-          <div class="w-full bg-[#0B0F17] rounded-full h-2.5 overflow-hidden border border-[#28354A]">
-            <div class="bg-gray-500 h-2.5 rounded-full transition-all duration-500" style="width: {{ kpis.other_pct|default:0 }}%;"></div>
+          <div class="w-full bg-[#0B0F17] rounded-full h-2 overflow-hidden border border-[#28354A]">
+            <div class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: {{ kpis.emp_pct|default:0 }}%;"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs text-gray-400 mb-1">
+            <span>General Administration</span>
+            <span class="text-white font-medium num-tabular">₹{{ kpis.other_expenses_month|inr }} <span class="text-gray-500 text-[11px]">({{ kpis.other_pct|default:0 }}%)</span></span>
+          </div>
+          <div class="w-full bg-[#0B0F17] rounded-full h-2 overflow-hidden border border-[#28354A]">
+            <div class="bg-gray-500 h-2 rounded-full transition-all duration-500" style="width: {{ kpis.other_pct|default:0 }}%;"></div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Budget Controls & Threshold Warnings -->
-  <div class="glass-card p-5 sm:p-6 flex flex-col justify-between">
+  <!-- Budget Controls (Unified strip, zero nested boxes) -->
+  <div class="glass-card p-5 flex flex-col justify-between">
     <div>
       <div class="flex items-center justify-between border-b border-[#28354A] pb-3 mb-4">
-        <h2 class="text-sm sm:text-base font-bold text-white flex items-center gap-2 m-0">
-          <i class="bi bi-bullseye text-cyan-400"></i>
-          <span>Budget Controls (This Month)</span>
-        </h2>
+        <h2 class="text-sm font-semibold text-white m-0">Budget Controls (This Month)</h2>
         {% if kpis.budget_summary.status == 'NORMAL' %}
           <span class="status-pill status-pill-active">Normal (&lt;80%)</span>
         {% elif kpis.budget_summary.status == 'WARNING' %}
-          <span class="status-pill status-pill-pending">Warning (80-99%)</span>
+          <span class="status-pill status-pill-pending">Warning (80&ndash;99%)</span>
         {% else %}
           <span class="status-pill status-pill-danger">Exceeded (&ge;100%)</span>
         {% endif %}
       </div>
 
-      <div class="grid grid-cols-3 gap-3 text-center mb-5 pt-1">
-        <div class="p-3 rounded-2xl bg-[#0B0F17]/80 border border-[#28354A] shadow-sm">
-          <span class="text-[11px] font-semibold text-gray-400 block uppercase tracking-wider">Planned</span>
+      <div class="grid grid-cols-3 divide-x divide-[#28354A] border border-[#28354A] rounded-md mb-4 text-center">
+        <div class="p-3">
+          <span class="text-[11px] font-medium text-gray-400 block">Planned</span>
           {% if kpis.budget_summary.total_budgeted == 0 %}
-            <div class="text-sm sm:text-base font-extrabold text-gray-400 num-tabular mt-1">₹0.00</div>
-            <span class="text-[10px] text-emerald-400 font-semibold block mt-0.5"><i class="bi bi-check2"></i> No limit</span>
+            <div class="text-sm font-semibold text-gray-400 num-tabular mt-0.5">₹0.00</div>
+            <span class="text-[10px] text-gray-400 block">No limit</span>
           {% else %}
-            <div class="text-sm sm:text-base font-extrabold text-white num-tabular mt-1">₹{{ kpis.budget_summary.total_budgeted|inr }}</div>
+            <div class="text-sm font-semibold text-white num-tabular mt-0.5">₹{{ kpis.budget_summary.total_budgeted|inr }}</div>
           {% endif %}
         </div>
-        <div class="p-3 rounded-2xl bg-[#0B0F17]/80 border border-[#28354A] shadow-sm">
-          <span class="text-[11px] font-semibold text-gray-400 block uppercase tracking-wider">Spent</span>
-          <div class="text-sm sm:text-base font-extrabold text-emerald-400 num-tabular mt-1">₹{{ kpis.budget_summary.total_spent|inr }}</div>
+        <div class="p-3">
+          <span class="text-[11px] font-medium text-gray-400 block">Spent</span>
+          <div class="text-sm font-semibold text-white num-tabular mt-0.5">₹{{ kpis.budget_summary.total_spent|inr }}</div>
         </div>
-        <div class="p-3 rounded-2xl bg-[#0B0F17]/80 border border-[#28354A] shadow-sm">
-          <span class="text-[11px] font-semibold text-gray-400 block uppercase tracking-wider">Remaining</span>
-          <div class="text-sm sm:text-base font-extrabold {% if kpis.budget_summary.total_remaining < 0 %}text-rose-400{% else %}text-white{% endif %} num-tabular mt-1">
+        <div class="p-3">
+          <span class="text-[11px] font-medium text-gray-400 block">Remaining</span>
+          <div class="text-sm font-semibold {% if kpis.budget_summary.total_remaining < 0 %}text-rose-400{% else %}text-white{% endif %} num-tabular mt-0.5">
             ₹{{ kpis.budget_summary.total_remaining|inr }}
           </div>
         </div>
       </div>
 
-      <div class="p-4 bg-[#0B0F17] rounded-2xl border border-[#28354A] mb-4 shadow-inner">
-        <div class="flex justify-between text-xs text-gray-400 mb-2 font-medium">
+      <div>
+        <div class="flex justify-between text-xs text-gray-400 mb-1.5 font-medium">
           <span>Monthly Budget Used</span>
-          <span class="font-black text-white num-tabular">{{ kpis.budget_summary.overall_utilization }}%</span>
+          <span class="font-semibold text-white num-tabular">{{ kpis.budget_summary.overall_utilization }}%</span>
         </div>
-        <div class="w-full bg-[#182234] rounded-full h-3 overflow-hidden border border-[#28354A]">
-          <div class="h-3 rounded-full transition-all duration-500 {% if kpis.budget_summary.status == 'EXCEEDED' %}bg-rose-500{% elif kpis.budget_summary.status == 'WARNING' %}bg-amber-400{% else %}bg-emerald-500{% endif %}" style="width: {{ kpis.budget_summary.overall_utilization|default:0 }}%;"></div>
+        <div class="w-full bg-[#182234] rounded-full h-2.5 overflow-hidden border border-[#28354A]">
+          <div class="h-2.5 rounded-full transition-all duration-500 {% if kpis.budget_summary.status == 'EXCEEDED' %}bg-rose-500{% elif kpis.budget_summary.status == 'WARNING' %}bg-amber-400{% else %}bg-[#1E3A8A]{% endif %}" style="width: {{ kpis.budget_summary.overall_utilization|default:0 }}%;"></div>
         </div>
       </div>
     </div>
 
-    <div class="text-right pt-3 border-t border-[#28354A]">
-      <a href="{% url 'budgets:list' %}" class="text-xs text-cyan-400 hover:text-cyan-300 no-underline inline-flex items-center gap-1 font-semibold group">
-        <span>Manage Category Budgets</span> <i class="bi bi-arrow-right group-hover:translate-x-1 transition-transform"></i>
+    <div class="text-right pt-3 mt-4 border-t border-[#28354A]">
+      <a href="{% url 'budgets:list' %}" class="text-xs text-blue-400 no-underline font-medium">
+        Manage Category Budgets &rarr;
       </a>
     </div>
   </div>
 </div>
 
 <!-- ========================================================================= -->
-<!-- 4. MACHINERY OPERATING COST INTELLIGENCE (Fleet Comparison)               -->
+<!-- 4. MACHINERY RUNNING COSTS                                                -->
 <!-- ========================================================================= -->
-<div class="glass-card p-5 sm:p-6 mb-8">
-  <div class="flex flex-wrap items-center justify-between border-b border-[#28354A] pb-3 mb-4 gap-2">
-    <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-        <i class="bi bi-truck text-base"></i>
-      </div>
-      <div>
-        <h2 class="text-sm sm:text-base font-bold text-white tracking-tight m-0">Machinery Operating Costs &amp; Fuel Mileage</h2>
-        <p class="text-[11px] text-gray-400 m-0">Compare diesel consumption, maintenance, and running costs per acre/hour</p>
-      </div>
+<div class="glass-card overflow-hidden mb-6">
+  <div class="flex flex-wrap items-center justify-between px-5 py-3.5 border-b border-[#28354A] gap-2">
+    <div>
+      <h2 class="text-sm font-semibold text-white m-0">Machinery Operating Costs &amp; Fuel Mileage</h2>
+      <p class="text-[11px] text-gray-400 m-0">Diesel consumption, maintenance, and running costs per hour/acre</p>
     </div>
-    <a href="{% url 'machines:list' %}" class="text-xs text-cyan-400 hover:text-cyan-300 no-underline inline-flex items-center gap-1 font-semibold group">
-      <span>Fleet Master</span> <i class="bi bi-arrow-right group-hover:translate-x-1 transition-transform"></i>
+    <a href="{% url 'machines:list' %}" class="text-xs text-blue-400 no-underline font-medium">
+      All Machines &rarr;
     </a>
   </div>
 
   <!-- Desktop Table (>=md) -->
-  <div class="hidden md:block overflow-x-auto rounded-xl border border-[#28354A]">
+  <div class="hidden md:block overflow-x-auto">
     <table class="w-full text-left text-xs border-collapse dashboard-table">
       <thead>
         <tr>
           <th>Code</th>
           <th>Equipment</th>
-          <th>Type</th>
+          <th>Category</th>
           <th class="text-right">Fuel Cost</th>
           <th class="text-right">Repairs/Parts</th>
-          <th class="text-right">Total Operating Cost</th>
+          <th class="text-right">Total Cost</th>
           <th class="text-right">Meter Reading</th>
           <th class="text-right">Cost / Unit</th>
           <th class="text-center">Status</th>
@@ -464,23 +412,23 @@
       <tbody>
         {% for m in kpis.machine_costs %}
           <tr>
-            <td class="font-mono font-bold text-cyan-400">{{ m.machine_code }}</td>
-            <td class="font-semibold text-white">{{ m.name }}</td>
-            <td><span class="px-2.5 py-0.5 rounded-lg bg-[#182234] text-gray-300 border border-[#28354A] text-[10px] font-medium">{{ m.machine_type }}</span></td>
-            <td class="text-right font-mono text-amber-400">₹{{ m.fuel_cost|inr }}</td>
-            <td class="text-right font-mono text-cyan-400">₹{{ m.maintenance_cost|inr }}</td>
-            <td class="text-right font-mono font-black text-white">₹{{ m.total_cost|inr }}</td>
-            <td class="text-right font-mono text-gray-400">{{ m.current_meter }} {{ m.meter_unit }}</td>
-            <td class="text-right font-mono font-bold text-emerald-400">
+            <td class="font-mono font-semibold text-gray-400 whitespace-nowrap">{{ m.machine_code }}</td>
+            <td class="font-medium text-white">{{ m.name }}</td>
+            <td class="text-gray-400 whitespace-nowrap">{{ m.machine_type }}</td>
+            <td class="text-right font-mono text-white">₹{{ m.fuel_cost|inr }}</td>
+            <td class="text-right font-mono text-white">₹{{ m.maintenance_cost|inr }}</td>
+            <td class="text-right font-mono font-semibold text-white">₹{{ m.total_cost|inr }}</td>
+            <td class="text-right font-mono text-gray-400 whitespace-nowrap">{{ m.current_meter }} {{ m.meter_unit }}</td>
+            <td class="text-right font-mono text-gray-400">
               {% if m.cost_per_unit > 0 %}₹{{ m.cost_per_unit|inr }}{% else %}--{% endif %}
             </td>
-            <td class="text-center">
+            <td class="text-center whitespace-nowrap">
               {% if m.status == 'ACTIVE' %}
-                <span class="status-pill status-pill-active">Ready</span>
+                <span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-400"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Ready</span>
               {% elif m.status == 'UNDER_MAINTENANCE' %}
-                <span class="status-pill status-pill-pending">Workshop</span>
+                <span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-400"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Workshop</span>
               {% else %}
-                <span class="status-pill status-pill-info">Idle</span>
+                <span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-gray-400"><span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>Idle</span>
               {% endif %}
             </td>
           </tr>
@@ -494,34 +442,34 @@
   </div>
 
   <!-- Mobile Cards (<md) -->
-  <div class="grid grid-cols-1 gap-3 md:hidden">
+  <div class="p-4 grid grid-cols-1 gap-3 md:hidden">
     {% for m in kpis.machine_costs %}
-      <div class="p-4 rounded-2xl bg-[#0B0F17] border border-[#28354A] shadow-sm">
-        <div class="flex items-start justify-between mb-2.5">
+      <div class="p-3.5 rounded-md border border-[#28354A] bg-[#0B0F17]/50">
+        <div class="flex items-start justify-between mb-2">
           <div>
-            <div class="font-bold text-white text-sm">{{ m.name }}</div>
-            <div class="text-[11px] font-mono text-cyan-400 mt-0.5">{{ m.machine_code }} &bull; {{ m.machine_type }}</div>
+            <div class="font-semibold text-white text-sm">{{ m.name }}</div>
+            <div class="text-[11px] text-gray-400 mt-0.5"><span class="font-mono">{{ m.machine_code }}</span> &middot; {{ m.machine_type }}</div>
           </div>
           {% if m.status == 'ACTIVE' %}
-            <span class="status-pill status-pill-active">Ready</span>
+            <span class="text-[11px] font-medium text-emerald-400 whitespace-nowrap">&bull; Ready</span>
           {% elif m.status == 'UNDER_MAINTENANCE' %}
-            <span class="status-pill status-pill-pending">Workshop</span>
+            <span class="text-[11px] font-medium text-amber-400 whitespace-nowrap">&bull; Workshop</span>
           {% else %}
-            <span class="status-pill status-pill-info">Idle</span>
+            <span class="text-[11px] font-medium text-gray-400 whitespace-nowrap">&bull; Idle</span>
           {% endif %}
         </div>
-        <div class="grid grid-cols-3 gap-2 text-center pt-2.5 border-t border-[#182234] text-xs">
-          <div class="bg-[#131A26] p-2 rounded-xl">
+        <div class="grid grid-cols-3 gap-2 pt-2 border-t border-[#28354A] text-xs">
+          <div>
             <span class="text-[10px] text-gray-400 block">Fuel</span>
-            <span class="font-mono font-bold text-amber-400">₹{{ m.fuel_cost|inr }}</span>
+            <span class="font-mono font-medium text-white">₹{{ m.fuel_cost|inr }}</span>
           </div>
-          <div class="bg-[#131A26] p-2 rounded-xl">
+          <div>
             <span class="text-[10px] text-gray-400 block">Repairs</span>
-            <span class="font-mono font-bold text-cyan-400">₹{{ m.maintenance_cost|inr }}</span>
+            <span class="font-mono font-medium text-white">₹{{ m.maintenance_cost|inr }}</span>
           </div>
-          <div class="bg-[#131A26] p-2 rounded-xl">
+          <div class="text-right">
             <span class="text-[10px] text-gray-400 block">Total</span>
-            <span class="font-mono font-bold text-white">₹{{ m.total_cost|inr }}</span>
+            <span class="font-mono font-semibold text-white">₹{{ m.total_cost|inr }}</span>
           </div>
         </div>
       </div>
@@ -532,30 +480,26 @@
 </div>
 
 <!-- ========================================================================= -->
-<!-- 5. RECENT TRANSACTIONS STREAM                                             -->
+<!-- 5. RECENT TRANSACTIONS                                                    -->
 <!-- ========================================================================= -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
   <!-- Recent Expenses -->
-  <div class="glass-card p-5 sm:p-6">
-    <div class="flex items-center justify-between border-b border-[#28354A] pb-3 mb-4">
-      <h2 class="text-sm sm:text-base font-bold text-white flex items-center gap-2 m-0">
-        <i class="bi bi-receipt-cutoff text-rose-400"></i>
-        <span>Recent Operational Expenses</span>
-      </h2>
-      <a href="{% url 'expenses:list' %}" class="text-xs text-gray-400 hover:text-white font-medium no-underline">View All &rarr;</a>
+  <div class="glass-card overflow-hidden">
+    <div class="flex items-center justify-between px-5 py-3.5 border-b border-[#28354A]">
+      <h2 class="text-sm font-semibold text-white m-0">Recent Operational Expenses</h2>
+      <a href="{% url 'expenses:list' %}" class="text-xs text-blue-400 font-medium no-underline">View All &rarr;</a>
     </div>
 
-    <!-- Desktop Table -->
-    <div class="hidden sm:block overflow-x-auto rounded-xl border border-[#28354A]">
+    <div class="hidden sm:block overflow-x-auto">
       <table class="w-full text-left text-xs border-collapse dashboard-table">
         <tbody>
           {% for exp in kpis.recent_expenses %}
             <tr>
-              <td class="text-gray-400 font-mono text-[11px]">{{ exp.expense_date|date:"d M" }}</td>
-              <td class="font-mono font-semibold text-cyan-400">{{ exp.expense_code }}</td>
+              <td class="text-gray-400 font-mono text-[11px] whitespace-nowrap">{{ exp.expense_date|date:"d M" }}</td>
+              <td class="font-mono text-gray-400 whitespace-nowrap">{{ exp.expense_code }}</td>
               <td class="text-white font-medium">{{ exp.category.name }}</td>
-              <td class="text-gray-400"><span class="px-2 py-0.5 rounded bg-[#182234] text-[10px] text-gray-300 border border-[#28354A]">{{ exp.account.account_name|default:"Credit" }}</span></td>
-              <td class="text-right font-mono font-black text-rose-400">-₹{{ exp.amount|inr }}</td>
+              <td class="text-gray-400 whitespace-nowrap">{{ exp.account.account_name|default:"Credit" }}</td>
+              <td class="text-right font-mono font-semibold text-rose-400 whitespace-nowrap">-₹{{ exp.amount|inr }}</td>
             </tr>
           {% empty %}
             <tr><td colspan="5" class="py-6 text-center text-gray-500">No recent expenses recorded.</td></tr>
@@ -564,16 +508,15 @@
       </table>
     </div>
 
-    <!-- Mobile Card Stream -->
-    <div class="space-y-2.5 sm:hidden">
+    <div class="p-4 space-y-2.5 sm:hidden">
       {% for exp in kpis.recent_expenses %}
-        <div class="p-3.5 rounded-2xl bg-[#0B0F17] border border-[#28354A] flex items-center justify-between">
+        <div class="p-3 rounded-md border border-[#28354A] flex items-center justify-between">
           <div>
-            <div class="font-bold text-white text-xs">{{ exp.category.name }}</div>
-            <div class="text-[10px] text-gray-400 font-mono mt-0.5">{{ exp.expense_date|date:"d M" }} &bull; {{ exp.expense_code }}</div>
+            <div class="font-medium text-white text-xs">{{ exp.category.name }}</div>
+            <div class="text-[10px] text-gray-400 font-mono mt-0.5">{{ exp.expense_date|date:"d M" }} &middot; {{ exp.expense_code }}</div>
           </div>
           <div class="text-right">
-            <div class="font-mono font-bold text-rose-400 text-sm">-₹{{ exp.amount|inr }}</div>
+            <div class="font-mono font-semibold text-rose-400 text-xs">-₹{{ exp.amount|inr }}</div>
             <div class="text-[10px] text-gray-400">{{ exp.account.account_name|default:"Credit" }}</div>
           </div>
         </div>
@@ -584,34 +527,30 @@
   </div>
 
   <!-- Recent Receipts & Settlements -->
-  <div class="glass-card p-5 sm:p-6">
-    <div class="flex items-center justify-between border-b border-[#28354A] pb-3 mb-4">
-      <h2 class="text-sm sm:text-base font-bold text-white flex items-center gap-2 m-0">
-        <i class="bi bi-arrow-left-right text-emerald-400"></i>
-        <span>Recent Receipts &amp; Settlements</span>
-      </h2>
-      <a href="{% url 'finance:receivables' %}" class="text-xs text-gray-400 hover:text-white font-medium no-underline">Receivables &rarr;</a>
+  <div class="glass-card overflow-hidden">
+    <div class="flex items-center justify-between px-5 py-3.5 border-b border-[#28354A]">
+      <h2 class="text-sm font-semibold text-white m-0">Recent Receipts &amp; Settlements</h2>
+      <a href="{% url 'finance:receivables' %}" class="text-xs text-blue-400 font-medium no-underline">Receivables &rarr;</a>
     </div>
 
-    <!-- Desktop Table -->
-    <div class="hidden sm:block overflow-x-auto rounded-xl border border-[#28354A]">
+    <div class="hidden sm:block overflow-x-auto">
       <table class="w-full text-left text-xs border-collapse dashboard-table">
         <tbody>
           {% for cp in kpis.recent_customer_payments %}
             <tr>
-              <td class="text-gray-400 font-mono text-[11px]">{{ cp.payment_date|date:"d M" }}</td>
-              <td><span class="status-pill status-pill-active">Received</span></td>
+              <td class="text-gray-400 font-mono text-[11px] whitespace-nowrap">{{ cp.payment_date|date:"d M" }}</td>
+              <td><span class="text-[11px] font-medium text-emerald-400">Received</span></td>
               <td class="text-white font-medium">{{ cp.receivable.customer.name }}</td>
-              <td class="text-right font-mono font-black text-emerald-400">+₹{{ cp.amount|inr }}</td>
+              <td class="text-right font-mono font-semibold text-emerald-400 whitespace-nowrap">+₹{{ cp.amount|inr }}</td>
             </tr>
           {% empty %}
           {% endfor %}
           {% for sp in kpis.recent_supplier_payments %}
             <tr>
-              <td class="text-gray-400 font-mono text-[11px]">{{ sp.payment_date|date:"d M" }}</td>
-              <td><span class="status-pill status-pill-danger">Paid</span></td>
+              <td class="text-gray-400 font-mono text-[11px] whitespace-nowrap">{{ sp.payment_date|date:"d M" }}</td>
+              <td><span class="text-[11px] font-medium text-rose-400">Paid</span></td>
               <td class="text-white font-medium">{{ sp.payable.supplier.name }}</td>
-              <td class="text-right font-mono font-black text-rose-400">-₹{{ sp.amount|inr }}</td>
+              <td class="text-right font-mono font-semibold text-rose-400 whitespace-nowrap">-₹{{ sp.amount|inr }}</td>
             </tr>
           {% empty %}
           {% endfor %}
@@ -622,27 +561,26 @@
       </table>
     </div>
 
-    <!-- Mobile Card Stream -->
-    <div class="space-y-2.5 sm:hidden">
+    <div class="p-4 space-y-2.5 sm:hidden">
       {% for cp in kpis.recent_customer_payments %}
-        <div class="p-3.5 rounded-2xl bg-[#0B0F17] border border-emerald-500/30 flex items-center justify-between">
+        <div class="p-3 rounded-md border border-[#28354A] flex items-center justify-between">
           <div>
-            <div class="font-bold text-white text-xs">{{ cp.receivable.customer.name }}</div>
-            <div class="text-[10px] text-gray-400 font-mono mt-0.5">{{ cp.payment_date|date:"d M" }} &bull; Customer Payment</div>
+            <div class="font-medium text-white text-xs">{{ cp.receivable.customer.name }}</div>
+            <div class="text-[10px] text-gray-400 font-mono mt-0.5">{{ cp.payment_date|date:"d M" }} &middot; Customer Payment</div>
           </div>
-          <div class="text-right font-mono font-bold text-emerald-400 text-sm">
+          <div class="text-right font-mono font-semibold text-emerald-400 text-xs">
             +₹{{ cp.amount|inr }}
           </div>
         </div>
       {% empty %}
       {% endfor %}
       {% for sp in kpis.recent_supplier_payments %}
-        <div class="p-3.5 rounded-2xl bg-[#0B0F17] border border-rose-500/30 flex items-center justify-between">
+        <div class="p-3 rounded-md border border-[#28354A] flex items-center justify-between">
           <div>
-            <div class="font-bold text-white text-xs">{{ sp.payable.supplier.name }}</div>
-            <div class="text-[10px] text-gray-400 font-mono mt-0.5">{{ sp.payment_date|date:"d M" }} &bull; Vendor Payment</div>
+            <div class="font-medium text-white text-xs">{{ sp.payable.supplier.name }}</div>
+            <div class="text-[10px] text-gray-400 font-mono mt-0.5">{{ sp.payment_date|date:"d M" }} &middot; Vendor Payment</div>
           </div>
-          <div class="text-right font-mono font-bold text-rose-400 text-sm">
+          <div class="text-right font-mono font-semibold text-rose-400 text-xs">
             -₹{{ sp.amount|inr }}
           </div>
         </div>

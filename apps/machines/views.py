@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Q, Sum, Count, F
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -184,12 +185,19 @@ def machine_type_create_ajax_view(request):
         if not name:
             return JsonResponse({'success': False, 'error': 'Equipment type name is required.'}, status=400)
         if not code:
-            code = re.sub(r'[^a-zA-Z0-9]+', '_', name).strip('_').upper()[:30]
+            base_code = (re.sub(r'[^a-zA-Z0-9]+', '_', name).strip('_').upper() or 'TYPE')[:25]
+            code = base_code
+            suffix = 1
+            while MachineType.objects.filter(code=code).exists():
+                code = f"{base_code}_{suffix}"[:30]
+                suffix += 1
 
-        mtype, created = MachineType.objects.get_or_create(
-            name__iexact=name,
-            defaults={'name': name, 'code': code}
-        )
+        existing = MachineType.objects.filter(name__iexact=name).first()
+        if existing:
+            mtype, created = existing, False
+        else:
+            mtype = MachineType.objects.create(name=name, code=code)
+            created = True
         return JsonResponse({
             'success': True,
             'id': mtype.id,
@@ -451,6 +459,7 @@ def dispatch_board_view(request):
         'confirmed_list': confirmed_list,
         'dispatched_list': dispatched_list,
         'in_progress_list': in_progress_list,
+        'total_active': dispatched_list.count() + in_progress_list.count(),
         'completed_list': completed_list,
         'title': 'Machinery Operational Dispatch Board',
     })
@@ -521,60 +530,68 @@ def work_entry_create_view(request):
     initial_data = {}
 
     if booking_id:
-        linked_booking = get_object_or_404(MachineBooking, id=booking_id, is_deleted=False)
-        initial_data = {
-            'booking': linked_booking,
-            'customer': linked_booking.customer,
-            'machine': linked_booking.machine,
-            'operator': linked_booking.operator,
-            'work_date': linked_booking.work_date,
-            'billing_type': linked_booking.billing_type,
-            'notes': f"Recorded from Booking {linked_booking.booking_code}. {linked_booking.notes or ''}".strip(),
-        }
-        if linked_booking.billing_type == MachineWorkEntry.BILLING_TIME_HOURLY:
-            initial_data['start_time'] = linked_booking.requested_start_time
-        elif linked_booking.billing_type in [MachineWorkEntry.BILLING_ACRE, MachineWorkEntry.BILLING_PIECE]:
-            initial_data['quantity'] = linked_booking.expected_quantity
+        try:
+            linked_booking = get_object_or_404(MachineBooking, id=int(booking_id), is_deleted=False)
+        except (TypeError, ValueError):
+            messages.warning(request, "Invalid booking reference ignored.")
+            linked_booking = None
+        if linked_booking:
+            initial_data = {
+                'booking': linked_booking,
+                'customer': linked_booking.customer,
+                'machine': linked_booking.machine,
+                'operator': linked_booking.operator,
+                'work_date': linked_booking.work_date,
+                'billing_type': linked_booking.billing_type,
+                'notes': f"Recorded from Booking {linked_booking.booking_code}. {linked_booking.notes or ''}".strip(),
+            }
+            if linked_booking.billing_type == MachineWorkEntry.BILLING_TIME_HOURLY:
+                initial_data['start_time'] = linked_booking.requested_start_time
+            elif linked_booking.billing_type in [MachineWorkEntry.BILLING_ACRE, MachineWorkEntry.BILLING_PIECE]:
+                initial_data['quantity'] = linked_booking.expected_quantity
 
-        if linked_booking.machine:
-            initial_data['start_meter'] = linked_booking.machine.current_meter_reading
+            if linked_booking.machine:
+                initial_data['start_meter'] = linked_booking.machine.current_meter_reading
 
     if request.method == 'POST':
         form = MachineWorkEntryForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
-            entry = WorkService.create_work_entry(
-                work_date=cd['work_date'],
-                machine=cd['machine'],
-                customer=cd['customer'],
-                operator=cd.get('operator'),
-                booking=cd.get('booking') or linked_booking,
-                billing_type=cd['billing_type'],
-                start_time=cd.get('start_time'),
-                end_time=cd.get('end_time'),
-                break_hours=cd.get('break_hours') or Decimal('0.00'),
-                hourly_rate=cd.get('hourly_rate') or Decimal('0.00'),
-                quantity=cd.get('quantity') or Decimal('0.00'),
-                unit_rate=cd.get('unit_rate') or Decimal('0.00'),
-                start_meter=cd.get('start_meter'),
-                end_meter=cd.get('end_meter'),
-                manual_bill_no=cd.get('manual_bill_no'),
-                advance_amount=cd.get('advance_amount') or Decimal('0.00'),
-                udhar_amount=cd.get('udhar_amount') or Decimal('0.00'),
-                payment_mode=cd.get('payment_mode') or 'UDHAR',
-                payment_account=cd.get('payment_account'),
-                fuel_liters=cd.get('fuel_liters') or Decimal('0.00'),
-                fuel_rate=cd.get('fuel_rate') or Decimal('95.00'),
-                notes=cd.get('notes'),
-                auto_create_receivable=True,
-                created_by=request.user,
-                request=request
-            )
-            adv_info = f" (Advance Paid: ₹{entry.advance_amount:,.2f}, Balance Udhar: ₹{entry.udhar_amount:,.2f})" if entry.advance_amount or entry.udhar_amount else ""
-            messages.success(request, f"Harvesting Bill '{entry.work_code}' recorded. Total: ₹{entry.total_amount:,.2f}{adv_info}")
-            if entry.booking:
-                return redirect('machines:booking_detail', booking_id=entry.booking.id)
-            return redirect('machines:work_invoice', entry_id=entry.id)
+            try:
+                entry = WorkService.create_work_entry(
+                    work_date=cd['work_date'],
+                    machine=cd['machine'],
+                    customer=cd['customer'],
+                    operator=cd.get('operator'),
+                    booking=cd.get('booking') or linked_booking,
+                    billing_type=cd['billing_type'],
+                    start_time=cd.get('start_time'),
+                    end_time=cd.get('end_time'),
+                    break_hours=cd.get('break_hours') or Decimal('0.00'),
+                    hourly_rate=cd.get('hourly_rate') or Decimal('0.00'),
+                    quantity=cd.get('quantity') or Decimal('0.00'),
+                    unit_rate=cd.get('unit_rate') or Decimal('0.00'),
+                    start_meter=cd.get('start_meter'),
+                    end_meter=cd.get('end_meter'),
+                    manual_bill_no=cd.get('manual_bill_no'),
+                    advance_amount=cd.get('advance_amount') or Decimal('0.00'),
+                    udhar_amount=cd.get('udhar_amount') or Decimal('0.00'),
+                    payment_mode=cd.get('payment_mode') or 'UDHAR',
+                    payment_account=cd.get('payment_account'),
+                    fuel_liters=cd.get('fuel_liters') or Decimal('0.00'),
+                    fuel_rate=cd.get('fuel_rate') or Decimal('95.00'),
+                    notes=cd.get('notes'),
+                    auto_create_receivable=True,
+                    created_by=request.user,
+                    request=request
+                )
+                adv_info = f" (Advance Paid: ₹{entry.advance_amount:,.2f}, Balance Udhar: ₹{entry.udhar_amount:,.2f})" if entry.advance_amount or entry.udhar_amount else ""
+                messages.success(request, f"Harvesting Bill '{entry.work_code}' recorded. Total: ₹{entry.total_amount:,.2f}{adv_info}")
+                if entry.booking:
+                    return redirect('machines:booking_detail', booking_id=entry.booking.id)
+                return redirect('machines:work_invoice', entry_id=entry.id)
+            except ValidationError as e:
+                messages.error(request, f"Could not save work entry: {e.message if hasattr(e, 'message') else str(e)}")
         else:
             messages.error(request, "Please correct the errors in the work entry form.")
     else:
@@ -635,8 +652,11 @@ def work_entry_edit_view(request, entry_id):
 def work_entry_delete_view(request, entry_id):
     """Soft deletes a machine work entry (Owner only)."""
     entry = get_object_or_404(MachineWorkEntry, id=entry_id, is_deleted=False)
-    WorkService.soft_delete_work_entry(entry, request.user, request=request)
-    messages.warning(request, f"Work Entry '{entry.work_code}' deleted.")
+    try:
+        WorkService.soft_delete_work_entry(entry, request.user, request=request)
+        messages.warning(request, f"Work Entry '{entry.work_code}' deleted.")
+    except ValidationError as e:
+        messages.error(request, e.message if hasattr(e, 'message') else str(e))
     return redirect('machines:work_list')
 
 
@@ -1205,15 +1225,21 @@ def rented_owner_create_view(request):
 @role_required(['OWNER', 'ACCOUNTANT'])
 def rented_settlement_settle_view(request, settlement_id):
     """Marks a rented owner payout settlement as paid / settled."""
-    settlement = get_object_or_404(RentedHarvesterSettlement, id=settlement_id)
     if request.method == 'POST':
         try:
             ref = request.POST.get('reference_no', '').strip()
-            settlement.status = RentedHarvesterSettlement.STATUS_SETTLED
-            settlement.settled_at = timezone.now()
-            settlement.settlement_reference = ref or f"PAID-{timezone.now().strftime('%Y%m%d%H%M')}"
-            settlement.save(update_fields=['status', 'settled_at', 'settlement_reference', 'updated_at'])
+            with transaction.atomic():
+                settlement = RentedHarvesterSettlement.objects.select_for_update().get(id=settlement_id)
+                if settlement.status == RentedHarvesterSettlement.STATUS_SETTLED:
+                    messages.warning(request, f"Settlement #{settlement.id} for {settlement.owner.name} is already marked as SETTLED.")
+                    return redirect('machines:rented_owners')
+                settlement.status = RentedHarvesterSettlement.STATUS_SETTLED
+                settlement.settled_at = timezone.now()
+                settlement.settlement_reference = ref or f"PAID-{timezone.now().strftime('%Y%m%d%H%M')}"
+                settlement.save(update_fields=['status', 'settled_at', 'settlement_reference', 'updated_at'])
             messages.success(request, f"Settlement of ₹{settlement.net_payable:,.2f} marked as SETTLED to {settlement.owner.name}.")
+        except RentedHarvesterSettlement.DoesNotExist:
+            messages.error(request, "Settlement record not found.")
         except Exception as e:
             messages.error(request, f"Failed to settle payout: {str(e)}")
     else:
@@ -1334,9 +1360,8 @@ def work_entry_invoice_view(request, entry_id):
         phone = '91' + phone
 
     # Calculate Farmer cumulative outstanding Udhar balance across all bills
-    from django.db.models import Sum, F
     farmer_outstanding_udhar = entry.customer.receivables.filter(
-        is_deleted=False
+        is_deleted=False, is_reversed=False
     ).exclude(status='PAID').aggregate(
         s=Sum(F('total_amount') - F('received_amount'))
     )['s'] or Decimal('0.00')
@@ -1385,9 +1410,8 @@ def work_entry_thermal_view(request, entry_id):
         id=entry_id,
         is_deleted=False
     )
-    from django.db.models import Sum, F
     farmer_outstanding_udhar = entry.customer.receivables.filter(
-        is_deleted=False
+        is_deleted=False, is_reversed=False
     ).exclude(status='PAID').aggregate(
         s=Sum(F('total_amount') - F('received_amount'))
     )['s'] or Decimal('0.00')
@@ -1395,10 +1419,27 @@ def work_entry_thermal_view(request, entry_id):
     from apps.reports.services.company_profile_service import CompanyProfileService
     profile = CompanyProfileService.get_profile()
 
+    # Build pre-encoded UPI deep link & QR image URL when balance is due
+    import urllib.parse
+    due_amount = entry.udhar_amount if (entry.udhar_amount and entry.udhar_amount > Decimal('0.00')) else Decimal('0.00')
+    upi_qr_url = ''
+    if getattr(profile, 'upi_id', None) and due_amount > Decimal('0.00'):
+        upi_params = urllib.parse.urlencode({
+            'pa': profile.upi_id,
+            'pn': profile.business_name or 'Sri Basaveshwara',
+            'am': f"{due_amount:.2f}",
+            'cu': 'INR',
+            'tn': f"Bill {entry.manual_bill_no or entry.work_code}",
+        })
+        upi_uri = f"upi://pay?{upi_params}"
+        upi_qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={urllib.parse.quote(upi_uri, safe='')}"
+
     return render(request, 'machines/work_entry_thermal_receipt.html', {
         'entry': entry,
         'profile': profile,
         'farmer_outstanding_udhar': farmer_outstanding_udhar,
+        'due_amount': due_amount,
+        'upi_qr_url': upi_qr_url,
         'title': f"Thermal Slip: {entry.manual_bill_no or entry.work_code}",
     })
 
@@ -1419,12 +1460,25 @@ def farmer_ledger_pdf_view(request, customer_id):
     Generates official Farmer Account Statement / Passbook A4 PDF using FarmerStatementPDFService.
     """
     customer = get_object_or_404(Customer, id=customer_id, is_deleted=False)
+    start_str = request.GET.get('start_date') or None
+    end_str = request.GET.get('end_date') or None
+    start_dt = None
+    end_dt = None
+    try:
+        if start_str:
+            start_dt = datetime.date.fromisoformat(start_str)
+        if end_str:
+            end_dt = datetime.date.fromisoformat(end_str)
+    except ValueError:
+        messages.error(request, "Invalid date format for PDF statement filter.")
+        return redirect('machines:farmer_ledger_detail', customer_id=customer.id)
+
     from apps.reports.services.farmer_statement_pdf_service import FarmerStatementPDFService
     return FarmerStatementPDFService.generate_pdf(
         customer_id=customer.id,
         user=request.user,
-        start_date=request.GET.get('start_date') or None,
-        end_date=request.GET.get('end_date') or None
+        start_date=start_dt,
+        end_date=end_dt
     )
 
 
@@ -1437,7 +1491,7 @@ def farmer_details_ajax_view(request, customer_id):
     """Returns customer details (name, phone, village/location, current udhar balance) for instant form autofill."""
     customer = get_object_or_404(Customer, id=customer_id, is_deleted=False)
     # Calculate outstanding balance from unpaid receivables
-    unpaid = customer.receivables.filter(is_deleted=False).exclude(status='PAID').aggregate(
+    unpaid = customer.receivables.filter(is_deleted=False, is_reversed=False).exclude(status='PAID').aggregate(
         s=Sum(F('total_amount') - F('received_amount'))
     )['s'] or Decimal('0.00')
     return JsonResponse({
@@ -1476,26 +1530,45 @@ def farmer_credit_ledger_view(request, customer_id=None):
     """
     import urllib.parse
 
-    # 1. Global Fleet Summary KPIs
-    active_customers = Customer.objects.filter(is_deleted=False).order_by('name')
+    # 1. Global Fleet Summary KPIs (single-query customer Udhar annotation; no double-counted ADV-* payments)
+    active_customers = (
+        Customer.objects.filter(is_deleted=False)
+        .annotate(
+            outstanding_udhar=Sum(
+                F('receivables__total_amount') - F('receivables__received_amount'),
+                filter=Q(receivables__is_deleted=False, receivables__is_reversed=False) & ~Q(receivables__status='PAID')
+            )
+        )
+        .order_by('name')
+    )
     total_farmers_count = active_customers.count()
 
     total_work_billed = MachineWorkEntry.objects.filter(is_deleted=False).aggregate(
         s=Sum('total_amount')
     )['s'] or Decimal('0.00')
 
-    total_advances = MachineWorkEntry.objects.filter(is_deleted=False).aggregate(
-        s=Sum('advance_amount')
-    )['s'] or Decimal('0.00')
+    all_active_payments = CustomerPayment.objects.filter(
+        is_deleted=False,
+        is_reversed=False,
+        receivable__is_deleted=False,
+        receivable__is_reversed=False
+    )
+    recorded_adv_codes_global = set(
+        all_active_payments.filter(reference_no__startswith='ADV-').values_list('reference_no', flat=True)
+    )
+    recorded_adv_work_codes = {ref[4:] for ref in recorded_adv_codes_global if ref}
 
-    total_receipts = CustomerPayment.objects.filter(is_deleted=False).aggregate(
-        s=Sum('amount')
-    )['s'] or Decimal('0.00')
+    unlinked_advances = MachineWorkEntry.objects.filter(
+        is_deleted=False,
+        advance_amount__gt=Decimal('0.00')
+    ).exclude(work_code__in=recorded_adv_work_codes).aggregate(s=Sum('advance_amount'))['s'] or Decimal('0.00')
 
-    total_collected = total_advances + total_receipts
+    total_receipts = all_active_payments.aggregate(s=Sum('amount'))['s'] or Decimal('0.00')
+    total_collected = unlinked_advances + total_receipts
 
     total_outstanding_udhar = Receivable.objects.filter(
-        is_deleted=False
+        is_deleted=False,
+        is_reversed=False
     ).exclude(status='PAID').aggregate(
         s=Sum(F('total_amount') - F('received_amount'))
     )['s'] or Decimal('0.00')
@@ -1503,9 +1576,7 @@ def farmer_credit_ledger_view(request, customer_id=None):
     # 2. Build Farmer Cards with Individual Outstanding Udhar
     farmers_data = []
     for c in active_customers:
-        udhar = c.receivables.filter(is_deleted=False).exclude(status='PAID').aggregate(
-            s=Sum(F('total_amount') - F('received_amount'))
-        )['s'] or Decimal('0.00')
+        udhar = (c.outstanding_udhar or Decimal('0.00')).quantize(Decimal('0.01'))
         farmers_data.append({
             'customer': c,
             'id': c.id,
@@ -1527,12 +1598,8 @@ def farmer_credit_ledger_view(request, customer_id=None):
                 selected_farmer_data = fd
                 break
     elif farmers_data:
-        # Prioritize farmer with Udhar > 0, else first
         with_udhar = [f for f in farmers_data if f['outstanding_udhar'] > 0]
-        if with_udhar:
-            selected_farmer_data = with_udhar[0]
-        else:
-            selected_farmer_data = farmers_data[0]
+        selected_farmer_data = with_udhar[0] if with_udhar else farmers_data[0]
         selected_customer = selected_farmer_data['customer']
 
     # 4. Selected Farmer Profile & Deep Metrics
@@ -1553,20 +1620,36 @@ def farmer_credit_ledger_view(request, customer_id=None):
 
         farmer_payments = CustomerPayment.objects.filter(
             receivable__customer=selected_customer,
-            is_deleted=False
+            receivable__is_deleted=False,
+            receivable__is_reversed=False,
+            is_deleted=False,
+            is_reversed=False
         ).select_related('account', 'created_by').order_by('-payment_date', '-id')
 
         farmer_sessions_count = farmer_sessions.count()
-
         farmer_total_billed = farmer_sessions.aggregate(s=Sum('total_amount'))['s'] or Decimal('0.00')
-        farmer_adv_paid = farmer_sessions.aggregate(s=Sum('advance_amount'))['s'] or Decimal('0.00')
-        farmer_rec_paid = farmer_payments.aggregate(s=Sum('amount'))['s'] or Decimal('0.00')
+
+        # Split recorded payments cleanly between ADV-* on-site advances and direct settlements
+        farmer_payments_list = list(farmer_payments)
+        farmer_adv_codes = set()
+        for p in farmer_payments_list:
+            if p.reference_no and p.reference_no.startswith('ADV-'):
+                farmer_adv_codes.add(p.reference_no[4:])
+                farmer_adv_paid += p.amount
+            else:
+                farmer_rec_paid += p.amount
+
+        # Add only unlinked manual advances not already recorded as ADV-* CustomerPayments
+        unlinked_farmer_adv = farmer_sessions.filter(
+            advance_amount__gt=Decimal('0.00')
+        ).exclude(work_code__in=farmer_adv_codes).aggregate(s=Sum('advance_amount'))['s'] or Decimal('0.00')
+        farmer_adv_paid += unlinked_farmer_adv
 
         if selected_farmer_data:
             farmer_balance_due = selected_farmer_data['outstanding_udhar']
         else:
             farmer_balance_due = selected_customer.receivables.filter(
-                is_deleted=False
+                is_deleted=False, is_reversed=False
             ).exclude(status='PAID').aggregate(
                 s=Sum(F('total_amount') - F('received_amount'))
             )['s'] or Decimal('0.00')
@@ -1598,11 +1681,6 @@ def farmer_credit_ledger_view(request, customer_id=None):
         whatsapp_statement_url = f"https://api.whatsapp.com/send?phone={phone}&text={encoded_msg}" if phone else f"https://api.whatsapp.com/send?text={encoded_msg}"
 
     accounts = Account.objects.filter(is_active=True, is_deleted=False).order_by('account_name')
-    if not accounts.exists():
-        Account.objects.get_or_create(account_name='Cash in Hand', defaults={'account_type': Account.TYPE_CASH, 'opening_balance': Decimal('50000.00'), 'current_balance': Decimal('50000.00')})
-        Account.objects.get_or_create(account_name='SBI Current Account', defaults={'account_type': Account.TYPE_BANK_CURRENT, 'opening_balance': Decimal('200000.00'), 'current_balance': Decimal('200000.00')})
-        Account.objects.get_or_create(account_name='PhonePe / UPI Wallet', defaults={'account_type': Account.TYPE_UPI_WALLET, 'opening_balance': Decimal('25000.00'), 'current_balance': Decimal('25000.00')})
-        accounts = Account.objects.filter(is_active=True, is_deleted=False).order_by('account_name')
 
     return render(request, 'machines/farmer_ledger.html', {
         'total_farmers_count': total_farmers_count,
@@ -1642,10 +1720,9 @@ def farmer_collect_payment_view(request, customer_id):
                 messages.error(request, "Payment amount must be greater than zero.")
                 return redirect('machines:farmer_ledger_detail', customer_id=customer.id)
 
-            # Resilient Account Resolution (never fail on missing account)
             account = None
             if account_id:
-                account = Account.objects.filter(id=account_id, is_deleted=False).first()
+                account = Account.objects.filter(id=account_id, is_active=True, is_deleted=False).first()
             if not account:
                 if payment_method == 'UPI':
                     account = Account.objects.filter(is_active=True, is_deleted=False, account_type=Account.TYPE_UPI_WALLET).first()
@@ -1655,27 +1732,28 @@ def farmer_collect_payment_view(request, customer_id):
                     account = Account.objects.filter(is_active=True, is_deleted=False, account_type=Account.TYPE_CASH).first()
                 if not account:
                     account = Account.objects.filter(is_active=True, is_deleted=False).first()
-                if not account:
-                    account = Account.objects.create(
-                        account_name='Cash in Hand',
-                        account_type=Account.TYPE_CASH,
-                        opening_balance=Decimal('50000.00'),
-                        current_balance=Decimal('50000.00'),
-                        is_active=True
-                    )
 
-            unpaid_rcvs = list(customer.receivables.filter(is_deleted=False).exclude(status='PAID').order_by('bill_date', 'id'))
+            if not account:
+                messages.error(request, "No active Cash/Bank/UPI account exists. Please create a Business Account under Finance → Accounts first.")
+                return redirect('machines:farmer_ledger_detail', customer_id=customer.id)
 
-            # If no open receivables exist on Customer model, check MachineWorkEntry
-            if not unpaid_rcvs:
-                from apps.machines.models import MachineWorkEntry
-                unsettled_works = MachineWorkEntry.objects.filter(
-                    customer=customer,
-                    is_deleted=False,
-                    udhar_amount__gt=Decimal('0.00')
+            with transaction.atomic():
+                unpaid_rcvs = list(
+                    customer.receivables.select_for_update()
+                    .filter(is_deleted=False, is_reversed=False)
+                    .exclude(status='PAID')
+                    .order_by('bill_date', 'id')
                 )
-                for w in unsettled_works:
-                    if not w.receivable or w.receivable.status == 'PAID':
+
+                # If no open receivables exist on Customer model, check unlinked MachineWorkEntry Udhar
+                if not unpaid_rcvs:
+                    unsettled_works = MachineWorkEntry.objects.select_for_update().filter(
+                        customer=customer,
+                        is_deleted=False,
+                        udhar_amount__gt=Decimal('0.00'),
+                        receivable__isnull=True
+                    )
+                    for w in unsettled_works:
                         new_rcv = CustomerReceivableService.create_receivable(
                             user=request.user,
                             customer=customer,
@@ -1689,43 +1767,39 @@ def farmer_collect_payment_view(request, customer_id):
                         w.save(update_fields=['receivable'])
                         unpaid_rcvs.append(new_rcv)
 
-            # If still no open receivable, create a settlement receivable for this transaction
-            if not unpaid_rcvs:
-                new_rcv = CustomerReceivableService.create_receivable(
-                    user=request.user,
-                    customer=customer,
-                    total_amount=amount,
-                    bill_date=payment_date,
-                    invoice_no=f"SETTLE-{timezone.now().strftime('%Y%m%d%H%M%S')}",
-                    notes="Direct Udhar Katha Settlement",
-                    request=request
-                )
-                unpaid_rcvs = [new_rcv]
+                if not unpaid_rcvs:
+                    raise ValidationError(f"{customer.name} has no pending Udhar balance to settle.")
 
-            remaining_to_apply = amount
-            for rcv in unpaid_rcvs:
-                if remaining_to_apply <= Decimal('0.00'):
-                    break
-                due = rcv.outstanding_amount
-                if due <= Decimal('0.00'):
-                    continue
-                apply_amount = min(due, remaining_to_apply)
-                CustomerReceivableService.record_payment(
-                    user=request.user,
-                    receivable_id=rcv.id,
-                    amount=apply_amount,
-                    account=account,
-                    payment_method=payment_method,
-                    payment_date=payment_date,
-                    reference_no=reference_no or f"REC-{timezone.now().strftime('%m%d%H%M')}",
-                    notes=f"Farmer Udhar settlement: {notes}" if notes else "Farmer Udhar settlement",
-                    request=request
-                )
-                remaining_to_apply -= apply_amount
+                total_due = sum((r.outstanding_amount for r in unpaid_rcvs), Decimal('0.00')).quantize(Decimal('0.01'))
+                if amount > total_due:
+                    raise ValidationError(
+                        f"Collection amount (₹{amount:,.2f}) exceeds total pending Udhar (₹{total_due:,.2f})."
+                    )
+
+                remaining_to_apply = amount
+                for rcv in unpaid_rcvs:
+                    if remaining_to_apply <= Decimal('0.00'):
+                        break
+                    due = rcv.outstanding_amount
+                    if due <= Decimal('0.00'):
+                        continue
+                    apply_amount = min(due, remaining_to_apply)
+                    CustomerReceivableService.record_payment(
+                        user=request.user,
+                        receivable_id=rcv.id,
+                        amount=apply_amount,
+                        account=account,
+                        payment_method=payment_method,
+                        payment_date=payment_date,
+                        reference_no=reference_no or f"REC-{timezone.now().strftime('%m%d%H%M')}",
+                        notes=f"Farmer Udhar settlement: {notes}" if notes else "Farmer Udhar settlement",
+                        request=request
+                    )
+                    remaining_to_apply -= apply_amount
 
             messages.success(request, f"Successfully settled ₹{amount:,.2f} from {customer.name} credited into {account.account_name}.")
         except Exception as e:
-            messages.error(request, f"Error processing payment: {str(e)}")
+            messages.error(request, f"Error processing payment: {e.message if hasattr(e, 'message') else str(e)}")
     return redirect('machines:farmer_ledger_detail', customer_id=customer.id)
 
 

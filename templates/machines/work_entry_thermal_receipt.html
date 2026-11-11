@@ -5,28 +5,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ title }}</title>
-  <style>
+  <style id="thermal-print-styles">
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
+    :root {
+      --thermal-width: 58mm;
+      --font-scale: 12px;
+    }
     body {
       background-color: #f1f5f9;
       color: #000;
       font-family: 'Courier New', Courier, monospace;
-      font-size: 12px;
+      font-size: var(--font-scale);
       line-height: 1.35;
       padding: 16px;
     }
     .ticket-container {
-      max-width: 58mm;
+      max-width: var(--thermal-width);
       width: 100%;
       margin: 0 auto;
       background: #fff;
       padding: 8px 6px;
       border: 1px solid #cbd5e1;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      transition: max-width 0.2s ease;
     }
     .text-center { text-align: center; }
     .text-right { text-align: right; }
@@ -47,14 +52,20 @@
       margin: 2px 0;
     }
     .no-print {
-      max-width: 58mm;
+      max-width: var(--thermal-width);
       margin: 0 auto 12px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: max-width 0.2s ease;
+    }
+    .control-row {
       display: flex;
       gap: 6px;
     }
     .btn {
       flex: 1;
-      padding: 8px 12px;
+      padding: 8px 10px;
       font-size: 11px;
       font-weight: bold;
       border-radius: 6px;
@@ -62,9 +73,34 @@
       border: none;
       text-align: center;
       text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .btn-print { background: #059669; color: #fff; }
+    .btn-print:hover { background: #047857; }
     .btn-back { background: #334155; color: #fff; }
+    .btn-back:hover { background: #1e293b; }
+    .btn-size {
+      background: #e2e8f0;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      font-size: 10px;
+    }
+    .btn-size.active {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #0369a1;
+    }
+    .qr-container {
+      margin: 6px auto;
+      text-align: center;
+    }
+    .qr-container img {
+      max-width: 90px;
+      height: auto;
+      display: inline-block;
+    }
 
     @media print {
       body {
@@ -76,8 +112,8 @@
       .ticket-container {
         border: none;
         box-shadow: none;
-        max-width: 100%;
-        width: 58mm;
+        max-width: 100% !important;
+        width: var(--thermal-width) !important;
         padding: 2px 2px;
       }
       @page {
@@ -91,12 +127,20 @@
 
   <!-- Screen Controls -->
   <div class="no-print">
-    <button onclick="window.print()" class="btn btn-print">Print Slip</button>
-    <a href="{% url 'machines:work_invoice' entry.id %}" class="btn btn-back">&larr; Back to Invoice</a>
+    <!-- Size Selector -->
+    <div class="control-row">
+      <button type="button" class="btn btn-size active" id="btn-58mm" onclick="setRollWidth('58mm')">58mm (Mobile POS)</button>
+      <button type="button" class="btn btn-size" id="btn-80mm" onclick="setRollWidth('80mm')">80mm (Desktop POS)</button>
+    </div>
+    <!-- Actions -->
+    <div class="control-row">
+      <button onclick="window.print()" class="btn btn-print">Print Slip</button>
+      <a href="{% url 'machines:work_invoice' entry.id %}" class="btn btn-back">&larr; Back to Invoice</a>
+    </div>
   </div>
 
   <!-- Thermal Paper Container -->
-  <div class="ticket-container">
+  <div class="ticket-container" id="ticketContainer">
     <div class="text-center">
       <div class="font-bold uppercase" style="font-size: 13px;">{{ profile.business_name|default:"SRI BASAVESHWARA & CO." }}</div>
       <div style="font-size: 10px;">{{ profile.tagline|default:"Agricultural Harvesting & Fleet Hub" }}</div>
@@ -148,15 +192,23 @@
     </div>
     <div class="row">
       <span>Timing:</span>
-      <span>{{ entry.start_time|default:"" }} - {{ entry.end_time|default:"" }}</span>
+      <span>{% if entry.start_time and entry.end_time %}{{ entry.start_time }} - {{ entry.end_time }}{% else %}--{% endif %}</span>
     </div>
     <div class="row">
       <span>Work Units:</span>
-      <span class="font-bold">{{ entry.net_working_hours }} hrs / acres</span>
+      {% if entry.billing_type == 'TIME_HOURLY' %}
+        <span class="font-bold">{{ entry.net_working_hours }} hrs</span>
+      {% else %}
+        <span class="font-bold">{{ entry.quantity }} {{ entry.get_billing_type_display }}</span>
+      {% endif %}
     </div>
     <div class="row">
       <span>Rate:</span>
-      <span>Rs. {{ entry.hourly_rate|floatformat:2 }}</span>
+      {% if entry.billing_type == 'TIME_HOURLY' %}
+        <span>Rs. {{ entry.hourly_rate|floatformat:2 }}/hr</span>
+      {% else %}
+        <span>Rs. {{ entry.unit_rate|floatformat:2 }}/unit</span>
+      {% endif %}
     </div>
 
     <div class="dotted-line"></div>
@@ -182,12 +234,19 @@
     </div>
     {% endif %}
 
-    {% if profile.upi_id %}
+    {% if upi_qr_url %}
     <div class="dotted-line"></div>
     <div class="text-center" style="font-size: 10px;">
-      <div>Pay via UPI:</div>
+      <div>Pay via UPI (GPay/PhonePe/Paytm):</div>
       <div class="font-bold">{{ profile.upi_id }}</div>
+      <div class="qr-container">
+        <img id="upiQrImg" src="{{ upi_qr_url }}" alt="UPI QR Code" onerror="this.closest('.qr-container').style.display='none';">
+      </div>
+      <div style="font-size: 8px; color: #444;">Scan to pay pending balance (Rs. {{ due_amount|floatformat:2 }})</div>
     </div>
+    {% elif due_amount <= 0 %}
+    <div class="dotted-line"></div>
+    <div class="text-center font-bold" style="font-size: 10px;">PAID IN FULL</div>
     {% endif %}
 
     <div class="double-line"></div>
@@ -200,11 +259,62 @@
   </div>
 
   <script>
-    // Auto-trigger print when loaded directly on mobile/pos devices
+    function setRollWidth(size) {
+      const root = document.documentElement;
+      const btn58 = document.getElementById('btn-58mm');
+      const btn80 = document.getElementById('btn-80mm');
+
+      if (size === '80mm') {
+        root.style.setProperty('--thermal-width', '80mm');
+        root.style.setProperty('--font-scale', '13px');
+        btn80.classList.add('active');
+        btn58.classList.remove('active');
+        updatePagePrintSize('80mm');
+        try { localStorage.setItem('ets_thermal_paper_size', '80mm'); } catch(e) {}
+      } else {
+        root.style.setProperty('--thermal-width', '58mm');
+        root.style.setProperty('--font-scale', '12px');
+        btn58.classList.add('active');
+        btn80.classList.remove('active');
+        updatePagePrintSize('58mm');
+        try { localStorage.setItem('ets_thermal_paper_size', '58mm'); } catch(e) {}
+      }
+    }
+
+    function updatePagePrintSize(size) {
+      let pageRule = document.getElementById('dynamic-print-page-rule');
+      if (!pageRule) {
+        pageRule = document.createElement('style');
+        pageRule.id = 'dynamic-print-page-rule';
+        document.head.appendChild(pageRule);
+      }
+      pageRule.textContent = `@media print { @page { size: ${size} auto; margin: 0; } }`;
+    }
+
+    // Initialize roll width from user preference or URL param
     window.addEventListener('load', function() {
       const urlParams = new URLSearchParams(window.location.search);
+      let preferred = urlParams.get('width');
+      if (!preferred) {
+        try { preferred = localStorage.getItem('ets_thermal_paper_size'); } catch(e) {}
+      }
+      if (preferred === '80mm') {
+        setRollWidth('80mm');
+      } else {
+        setRollWidth('58mm');
+      }
+
       if (urlParams.get('autoprint') === '1') {
-        window.print();
+        const qrImg = document.getElementById('upiQrImg');
+        if (qrImg && !qrImg.complete) {
+          let printed = false;
+          const doPrint = () => { if (!printed) { printed = true; window.print(); } };
+          qrImg.addEventListener('load', doPrint, { once: true });
+          qrImg.addEventListener('error', doPrint, { once: true });
+          setTimeout(doPrint, 2000);
+        } else {
+          window.print();
+        }
       }
     });
   </script>

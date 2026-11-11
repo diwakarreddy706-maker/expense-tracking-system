@@ -12,7 +12,7 @@
     </div>
     <div class="flex items-center gap-3">
       <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0 font-mono">{{ entry.fuel_code }}</h2>
-      {% if entry.is_reversed %}
+      {% if entry.linked_expense.is_reversed %}
         <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">REVERSED</span>
       {% else %}
         <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ACTIVE</span>
@@ -25,16 +25,18 @@
       <i class="bi bi-arrow-left"></i>
       <span>Back</span>
     </a>
-    {% if not entry.is_reversed and request.user.profile.role in 'OWNER,ACCOUNTANT' or request.user.is_superuser %}
-      <button
-        type="button"
-        data-bs-toggle="modal"
-        data-bs-target="#fuelReversalModal"
-        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-rose-500"
-      >
-        <i class="bi bi-arrow-counterclockwise"></i>
-        <span>Reverse Entry</span>
-      </button>
+    {% if not entry.linked_expense.is_reversed %}
+      {% if request.user.profile.role in 'OWNER,ACCOUNTANT' or request.user.is_superuser %}
+        <button
+          type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#fuelReversalModal"
+          class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-rose-500"
+        >
+          <i class="bi bi-arrow-counterclockwise"></i>
+          <span>Reverse Entry</span>
+        </button>
+      {% endif %}
     {% endif %}
   </div>
 </div>
@@ -61,17 +63,17 @@
         <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#28354A]">
           <span class="text-gray-400 block mb-1">Fuel Type &amp; Date</span>
           <span class="text-white font-bold text-sm block">{{ entry.get_fuel_type_display }}</span>
-          <span class="text-gray-300 font-mono text-[11px]">{{ entry.entry_date|date:"d M Y" }}</span>
+          <span class="text-gray-300 font-mono text-[11px]">{{ entry.date|date:"d M Y" }}</span>
         </div>
 
         <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#28354A]">
           <span class="text-gray-400 block mb-1">Quantity Dispensed</span>
-          <span class="text-xl font-extrabold font-mono text-cyan-400">{{ entry.quantity_liters }} Liters</span>
+          <span class="text-xl font-extrabold font-mono text-cyan-400">{{ entry.quantity }} Liters</span>
         </div>
 
         <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#28354A]">
           <span class="text-gray-400 block mb-1">Rate per Liter</span>
-          <span class="text-xl font-extrabold font-mono text-white">₹{{ entry.rate_per_liter }}</span>
+          <span class="text-xl font-extrabold font-mono text-white">₹{{ entry.unit_price }}</span>
         </div>
 
         <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#28354A]">
@@ -102,7 +104,7 @@
         </div>
         <div>
           <span class="text-gray-400 font-semibold block mb-1">Operator / Driver</span>
-          <span class="text-white font-medium">{{ entry.operator_name|default:"Direct Machine Fill" }}</span>
+          <span class="text-white font-medium">{% if entry.operator %}{{ entry.operator.full_name }}{% else %}Direct Machine Fill{% endif %}</span>
         </div>
         {% if entry.notes %}
           <div class="sm:col-span-2">
@@ -114,7 +116,7 @@
     </div>
 
     <!-- Reversal Record (if reversed) -->
-    {% if entry.is_reversed %}
+    {% if entry.linked_expense.is_reversed %}
       <div class="bg-rose-950/20 border border-rose-600/30 rounded-2xl p-6 shadow-sm">
         <div class="flex items-center gap-2.5 border-b border-rose-600/30 pb-3 mb-3">
           <div class="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
@@ -123,9 +125,8 @@
           <h3 class="text-sm font-bold text-rose-300 tracking-tight m-0">Reversal Audit Data</h3>
         </div>
         <div class="text-xs text-rose-200 space-y-1.5">
-          <div>Reversed On: <strong class="text-white font-mono">{{ entry.reversed_at|date:"d M Y, H:i" }}</strong></div>
-          <div>Reversed By: <strong class="text-white">{{ entry.reversed_by.username }}</strong></div>
-          <div>Reason: <span class="italic text-rose-100">{{ entry.reversal_reason|default:"No reason stated." }}</span></div>
+          <div>Linked Expense Reversed: <strong class="text-white font-mono">{{ entry.linked_expense.expense_code }}</strong></div>
+          <div>Updated At: <strong class="text-white font-mono">{{ entry.linked_expense.updated_at|date:"d M Y, H:i" }}</strong></div>
         </div>
       </div>
     {% endif %}
@@ -223,7 +224,8 @@
 </div>
 
 <!-- Fuel Reversal Modal -->
-{% if not entry.linked_expense.is_reversed and request.user.profile.role in 'OWNER,ACCOUNTANT' or request.user.is_superuser %}
+{% if not entry.linked_expense.is_reversed %}
+  {% if request.user.profile.role in 'OWNER,ACCOUNTANT' or request.user.is_superuser %}
 <div class="modal fade fixed inset-0 z-50 overflow-y-auto" id="fuelReversalModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered min-h-[calc(100%-3.5rem)] flex items-center justify-center p-4">
     <div class="modal-content relative w-full max-w-md bg-[#131A26] border border-[#28354A] rounded-2xl shadow-2xl overflow-hidden text-gray-100">
@@ -268,5 +270,6 @@
     </div>
   </div>
 </div>
+  {% endif %}
 {% endif %}
 {% endblock %}

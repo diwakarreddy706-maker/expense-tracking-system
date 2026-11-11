@@ -10,7 +10,7 @@
     </div>
     <div>
       <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight m-0 flex items-center gap-2">
-        <span>New Machine Work &amp; Billing Voucher Entry</span>
+        <span>{% if entry %}Edit Machine Work &amp; Billing Voucher ({{ entry.work_code }}){% else %}New Machine Work &amp; Billing Voucher Entry{% endif %}</span>
       </h2>
       <p class="text-xs text-gray-400 mt-0.5 mb-0">Record machine work session with exact start/end time, break hours and bill calculation</p>
     </div>
@@ -826,8 +826,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function recalculateAll() {
-    recalculateHarvester();
-    recalculateTractor();
+    const mode = billingTypeSelect ? billingTypeSelect.value : 'TIME_HOURLY';
+    if (mode === 'TIME_HOURLY') {
+      recalculateHarvester();
+    } else {
+      recalculateTractor();
+    }
     recalculateMeter();
   }
 

@@ -212,9 +212,9 @@
           </tr>
         {% empty %}
           <tr>
-            <td colspan="9" class="py-12 text-center text-gray-500">
-              <i class="bi bi-calendar-x text-3xl d-block mb-2 text-gray-600"></i>
-              No machinery bookings found matching your search.
+            <td colspan="9" class="p-0">
+              {% url 'machines:booking_create' as add_bkg_url %}
+              {% include 'components/empty_state.html' with icon='bi bi-calendar-plus' title='No Machinery Bookings Yet' message='Schedule a harvester or tractor field job for a farmer.' action_url=add_bkg_url action_text='Create First Booking' %}
             </td>
           </tr>
         {% endfor %}

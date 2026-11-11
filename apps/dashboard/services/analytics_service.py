@@ -138,13 +138,12 @@ class DashboardAnalyticsService:
         ).aggregate(t=Sum('total_amount'), p=Sum('paid_amount'))
         payables_to_pay = ((pay_data['t'] or zero) - (pay_data['p'] or zero)).quantize(Decimal('0.01'))
 
-        # Employee Wages & Liabilities Outstanding
+        # Employee Wages & Liabilities Outstanding (Bonuses are paid out immediately on creation)
         emp_p = EmployeePayment.objects.filter(is_deleted=False, is_reversed=False)
         emp_accruals = emp_p.filter(payment_type=EmployeePayment.TYPE_SALARY_ACCRUAL).aggregate(s=Sum('amount'))['s'] or zero
-        emp_bonuses = emp_p.filter(payment_type=EmployeePayment.TYPE_BONUS).aggregate(s=Sum('amount'))['s'] or zero
         emp_advances = emp_p.filter(payment_type=EmployeePayment.TYPE_ADVANCE_PAYOUT).aggregate(s=Sum('amount'))['s'] or zero
         emp_settlements = emp_p.filter(payment_type=EmployeePayment.TYPE_SALARY_SETTLEMENT).aggregate(s=Sum('amount'))['s'] or zero
-        employee_wages_due = ((emp_accruals + emp_bonuses) - (emp_advances + emp_settlements)).quantize(Decimal('0.01'))
+        employee_wages_due = (emp_accruals - (emp_advances + emp_settlements)).quantize(Decimal('0.01'))
 
         # ====================================================================
         # 3. OPERATIONAL SPENDING BREAKDOWN (Current Month)

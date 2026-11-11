@@ -52,8 +52,8 @@ class ReceivablesAgingPDFService:
         }
 
         for c in customers:
-            unpaid_recs = c.receivables.filter(is_deleted=False).exclude(status=Receivable.STATUS_PAID)
-            all_recs = c.receivables.filter(is_deleted=False)
+            unpaid_recs = c.receivables.filter(is_deleted=False, is_reversed=False).exclude(status=Receivable.STATUS_PAID)
+            all_recs = c.receivables.filter(is_deleted=False, is_reversed=False)
 
             total_billed = all_recs.aggregate(s=Sum('total_amount'))['s'] or zero
             total_received = all_recs.aggregate(s=Sum('received_amount'))['s'] or zero
@@ -85,7 +85,10 @@ class ReceivablesAgingPDFService:
             # Last payment date
             last_payment = CustomerPayment.objects.filter(
                 receivable__customer=c,
-                receivable__is_deleted=False
+                receivable__is_deleted=False,
+                receivable__is_reversed=False,
+                is_deleted=False,
+                is_reversed=False,
             ).aggregate(m=Max('payment_date'))['m']
 
             farmer_rows.append({

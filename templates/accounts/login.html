@@ -1,156 +1,828 @@
-<!DOCTYPE html>
+<!doctype html>
 {% load static %}
-<html lang="en" class="dark h-full">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-  <title>Sign In | Sri Basaveshwara & Co. Machinery &amp; Financial ERP</title>
+<html lang="en" class="light h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0"
+    />
+    <title>Sign In | Sri Basaveshwara &amp; Co.</title>
 
-  <!-- PWA & Mobile Meta Tags -->
-  <link rel="manifest" href="{% static 'manifest.webmanifest' %}?v=3.2">
-  <meta name="theme-color" content="#10B981">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Sri Basaveshwara">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="icon" type="image/x-icon" href="{% static 'icons/favicon.ico' %}?v=3.2">
-  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}?v=3.2">
-  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'icons/favicon-16x16.png' %}?v=3.2">
-  <link rel="apple-touch-icon" sizes="192x192" href="{% static 'icons/icon-192.png' %}?v=3.2">
+    <!-- Instant Theme Initializer (Default: Light / Toggleable: Sunlight, Dark) -->
+    <script>
+      (function () {
+        const savedTheme =
+          localStorage.getItem("sbh_theme") ||
+          localStorage.getItem("agribos_theme") ||
+          "light";
+        const root = document.documentElement;
+        root.classList.remove("dark", "light", "sunlight");
+        root.removeAttribute("data-theme");
+        if (savedTheme === "sunlight") {
+          root.classList.add("sunlight");
+          root.setAttribute("data-theme", "sunlight");
+        } else if (savedTheme === "dark") {
+          root.classList.add("dark");
+          root.setAttribute("data-theme", "dark");
+        } else {
+          root.classList.add("light");
+          root.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
 
-  <!-- Fonts & Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
-  <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <!-- PWA & Mobile Meta Tags -->
+    <link rel="manifest" href="{% static 'manifest.webmanifest' %}?v=3.2" />
+    <meta name="theme-color" content="#1E3A8A" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Sri Basaveshwara" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="{% static 'icons/favicon.ico' %}?v=3.2"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="{% static 'icons/favicon-32x32.png' %}?v=3.2"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="{% static 'icons/favicon-16x16.png' %}?v=3.2"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="192x192"
+      href="{% static 'icons/icon-192.png' %}?v=3.2"
+    />
 
-  <!-- Alpine.js & Core Client Script -->
-  <script defer src="{% static 'vendor/alpine.min.js' %}"></script>
-  <script defer src="{% static 'js/app.js' %}"></script>
-</head>
-<body class="min-h-screen bg-[#0B0F17] flex items-center justify-center p-4 selection:bg-emerald-500 selection:text-white">
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}?v=5.1" />
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}?v=5.1" />
 
-  <div class="w-full max-w-md">
-    <!-- Brand Header (Centered, Clear & Visual) -->
-    <div class="text-center mb-6 sm:mb-8 flex flex-col items-center">
-      <a href="{% url 'root' %}" class="relative group mb-4 block no-underline focus:outline-none" title="AgriBOS ERP • Sri Basaveshwara &amp; Co.">
-        <!-- Ambient emerald halo glow -->
-        <div class="absolute -inset-2 bg-gradient-to-tr from-emerald-500/40 via-teal-400/30 to-emerald-600/40 rounded-full blur-xl opacity-80 group-hover:opacity-100 transition duration-300"></div>
-        <!-- High-res circular emblem container -->
-        <div class="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-slate-900 border-2 border-emerald-500/50 shadow-2xl shadow-emerald-950/80 flex items-center justify-center overflow-hidden transform group-hover:scale-105 transition-transform duration-300">
-          <picture>
-            <source srcset="{% static 'icons/logo.webp' %}" type="image/webp">
-            <img src="{% static 'icons/logo.png' %}" alt="Sri Basaveshwara & Co Logo" class="w-full h-full object-cover drop-shadow-sm" width="144" height="144">
-          </picture>
-        </div>
-      </a>
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
-        Sri Basaveshwara &amp; Co
-      </h1>
-      <div class="inline-flex items-center gap-2 mt-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span class="text-xs font-semibold text-emerald-300 tracking-wide">Harvesting Machines &amp; Financial ERP</span>
-      </div>
-      <p class="text-[11px] text-gray-400 font-medium mt-1">
-        Powering Harvests, Growing Futures
-      </p>
-    </div>
+    <!-- Alpine.js & Core Client Script -->
+    <script defer src="{% static 'vendor/alpine.min.js' %}"></script>
+    <script defer src="{% static 'js/app.js' %}?v=5.1"></script>
 
-    <!-- Login Card -->
-    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-      <!-- Subtle top decorative bar -->
-      <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500"></div>
+    <!-- Scoped Approved Design Styles (Immune to Theme Text Overrides) -->
+    <style>
+      #sbhLoginBody {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        background-color: #f1f5f9 !important;
+      }
+      html.dark #sbhLoginBody,
+      html[data-theme="dark"] #sbhLoginBody {
+        background-color: #080c14 !important;
+      }
 
-      <!-- Messages / Errors -->
-      {% if messages %}
-        <div class="mb-5 space-y-2">
-          {% for message in messages %}
-            <div class="p-3 rounded-xl text-xs font-medium border flex items-center gap-2 {% if message.tags == 'error' %}bg-rose-950/80 border-rose-600/40 text-rose-200{% else %}bg-emerald-950/80 border-emerald-600/40 text-emerald-200{% endif %}">
-              <i class="bi {% if message.tags == 'error' %}bi-exclamation-octagon{% else %}bi-check-circle{% endif %}"></i>
-              <span>{{ message }}</span>
+      #sbhLoginShell {
+        width: 100%;
+        max-width: 1020px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        min-height: 620px;
+      }
+      html.dark #sbhLoginShell,
+      html[data-theme="dark"] #sbhLoginShell {
+        border-color: #1e293b;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+      }
+
+      @media (max-width: 900px) {
+        #sbhLoginShell {
+          grid-template-columns: 1fr;
+          max-width: 480px;
+          min-height: auto;
+        }
+      }
+
+      /* ===== LEFT NAVY SHOWCASE PANEL ===== */
+      .sbh-showcase {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 44px 32px;
+        text-align: center;
+        background: linear-gradient(170deg, #0a1628 0%, #132552 45%, #1e3a8a 100%) !important;
+      }
+      .sbh-showcase-bg-svg {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 120px;
+        opacity: 0.14;
+        pointer-events: none;
+      }
+      .sbh-logo-stage {
+        position: relative;
+        z-index: 10;
+      }
+      .sbh-logo-halo {
+        position: absolute;
+        inset: -22px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(202, 138, 4, 0.28), transparent 70%);
+        pointer-events: none;
+      }
+
+      @keyframes sbhBreathe {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(202, 138, 4, 0.34), 0 8px 30px rgba(0, 0, 0, 0.35);
+        }
+        50% {
+          box-shadow: 0 0 0 9px rgba(202, 138, 4, 0.06), 0 14px 44px rgba(0, 0, 0, 0.48);
+        }
+      }
+      .sbh-logo-medallion {
+        width: 210px;
+        height: 210px;
+        border-radius: 50%;
+        padding: 4px;
+        background: linear-gradient(to bottom, #eab308, #ca8a04, #854d0e);
+        position: relative;
+        animation: sbhBreathe 4s ease-in-out infinite;
+      }
+      @media (max-width: 900px) {
+        .sbh-showcase {
+          padding: 32px 24px;
+        }
+        .sbh-logo-medallion {
+          width: 148px;
+          height: 148px;
+        }
+      }
+      .sbh-logo-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #1a1f14;
+        border: 2px solid rgba(234, 179, 8, 0.22);
+      }
+      .sbh-logo-inner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .sbh-gold-divider {
+        width: 180px;
+        height: 1px;
+        margin: 0 auto;
+        background: linear-gradient(90deg, transparent, #ca8a04, transparent);
+      }
+      .sbh-showcase-title {
+        margin: 12px 0 0;
+        font-size: 24px;
+        font-weight: 800;
+        color: #ffffff !important;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+      }
+      .sbh-showcase-sub {
+        margin: 6px 0 0;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #eab308 !important;
+      }
+      .sbh-showcase-desc {
+        margin: 10px auto 14px;
+        font-size: 12px;
+        color: rgba(219, 234, 254, 0.82) !important;
+        max-width: 290px;
+        line-height: 1.55;
+      }
+
+      .sbh-pillars-grid {
+        position: relative;
+        z-index: 10;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 22px;
+        width: 100%;
+        max-width: 330px;
+      }
+      .sbh-pillar-card {
+        text-align: center;
+        padding: 10px 6px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .sbh-pillar-ico {
+        font-size: 18px;
+        margin-bottom: 2px;
+        line-height: 1.2;
+      }
+      .sbh-pillar-title {
+        font-size: 10px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.94) !important;
+      }
+      .sbh-pillar-sub {
+        font-size: 9px;
+        color: rgba(219, 234, 254, 0.65) !important;
+        margin-top: 1px;
+      }
+      .sbh-showcase-quote {
+        position: relative;
+        z-index: 10;
+        margin: 20px 0 0;
+        font-size: 10px;
+        color: rgba(191, 219, 254, 0.62) !important;
+        font-style: italic;
+      }
+
+      /* ===== RIGHT BUSINESS FORM PANEL ===== */
+      .sbh-form-panel {
+        background: #ffffff !important;
+        display: flex;
+        flex-direction: column;
+      }
+      .sbh-brand-strip {
+        height: 4px;
+        background: linear-gradient(90deg, #1e3a8a, #ca8a04, #15803d);
+        flex-shrink: 0;
+      }
+      .sbh-form-inner {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 38px 32px;
+      }
+      .sbh-form-box {
+        width: 100%;
+        max-width: 360px;
+      }
+      .sbh-form-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 24px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      .sbh-mini-seal {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+        padding: 2px;
+        background: linear-gradient(to bottom, #ca8a04, #854d0e);
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      }
+      .sbh-mini-seal-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #1a1f14;
+      }
+      .sbh-mini-seal-inner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .sbh-portal-kicker {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #1e3a8a !important;
+      }
+      .sbh-welcome-h1 {
+        margin: 2px 0 0;
+        font-size: 22px;
+        font-weight: 700;
+        color: #0f172a !important;
+        line-height: 1.2;
+      }
+      .sbh-welcome-sub {
+        margin: 2px 0 0;
+        font-size: 12px;
+        color: #64748b !important;
+      }
+
+      /* Form Labels & Tactile Inputs */
+      .sbh-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #475569 !important;
+        margin-bottom: 6px;
+      }
+      .sbh-input-wrap {
+        position: relative;
+      }
+      .sbh-input-ico {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8 !important;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+      }
+      .sbh-input {
+        width: 100%;
+        padding: 10px 14px 10px 38px;
+        font-size: 14px;
+        color: #0f172a !important;
+        background: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 10px;
+        transition: border-color 200ms ease, box-shadow 200ms ease;
+      }
+      .sbh-input:focus {
+        border-color: #1e3a8a !important;
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12) !important;
+        outline: none !important;
+      }
+      .sbh-input::placeholder {
+        color: #94a3b8 !important;
+      }
+      .sbh-eye-btn {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #64748b !important;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+      }
+      .sbh-eye-btn:hover {
+        color: #1e3a8a !important;
+      }
+
+      /* Alerts (Messages) */
+      .sbh-alert-error {
+        margin-bottom: 16px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: #fef2f2 !important;
+        border: 1px solid #fecaca !important;
+        font-size: 12px;
+        font-weight: 500;
+        color: #991b1b !important;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .sbh-alert-success {
+        margin-bottom: 16px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: #f0fdf4 !important;
+        border: 1px solid #bbf7d0 !important;
+        font-size: 12px;
+        font-weight: 500;
+        color: #166534 !important;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* Sign In Button */
+      .sbh-submit-btn {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        height: 44px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #1e3a8a, #1e40af) !important;
+        color: #ffffff !important;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 2px 8px rgba(30, 58, 138, 0.25);
+        transition: box-shadow 200ms ease, transform 200ms ease;
+      }
+      .sbh-submit-btn:hover:not(:disabled) {
+        box-shadow: 0 4px 16px rgba(30, 58, 138, 0.35);
+        transform: translateY(-1px);
+      }
+      .sbh-submit-btn:disabled {
+        opacity: 0.92;
+        cursor: wait;
+      }
+      .sbh-submit-btn * {
+        color: #ffffff !important;
+      }
+      .sbh-btn-sweep {
+        position: absolute;
+        inset: 0;
+        width: 0%;
+        background: rgba(37, 99, 235, 0.55);
+        transition: width 550ms cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+        border-radius: 10px;
+      }
+
+      @keyframes sbhSpin {
+        to { transform: rotate(360deg); }
+      }
+      @keyframes sbhCheckDraw {
+        from { stroke-dashoffset: 36; }
+        to { stroke-dashoffset: 0; }
+      }
+      .sbh-spin-svg {
+        animation: sbhSpin 0.9s linear infinite;
+      }
+      .sbh-chk-path {
+        stroke-dasharray: 36;
+        stroke-dashoffset: 36;
+        animation: sbhCheckDraw 300ms ease-out forwards;
+      }
+
+      /* Staggered Entrance */
+      @keyframes sbhFadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .sbh-a1 { opacity: 0; animation: sbhFadeUp 520ms 70ms ease-out forwards; }
+      .sbh-a2 { opacity: 0; animation: sbhFadeUp 520ms 180ms ease-out forwards; }
+      .sbh-a3 { opacity: 0; animation: sbhFadeUp 520ms 290ms ease-out forwards; }
+      .sbh-a4 { opacity: 0; animation: sbhFadeUp 520ms 400ms ease-out forwards; }
+
+      /* Trust Badges & Footer */
+      .sbh-trust-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        margin-top: 20px;
+        font-size: 10px;
+        color: #64748b !important;
+      }
+      .sbh-trust-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: #64748b !important;
+      }
+      .sbh-login-footer {
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 11px;
+        color: #64748b !important;
+      }
+      .sbh-login-footer a {
+        color: #475569 !important;
+        text-decoration: none;
+      }
+      .sbh-login-footer a:hover {
+        color: #1e3a8a !important;
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+
+  <body id="sbhLoginBody" class="selection:bg-[#1E3A8A] selection:text-white">
+    <!-- Branded Pre-loader & Login/Logout Transition Curtain -->
+    {% include 'components/transition_curtain.html' %}
+
+    <main id="sbhLoginShell">
+      <!-- LEFT PANEL: Agriculture & Fleet Brand Showcase -->
+      <section class="sbh-showcase" aria-label="Brand Overview">
+        <!-- Subtle Agricultural Horizon SVG Backdrop -->
+        <svg class="sbh-showcase-bg-svg" viewBox="0 0 600 120" fill="none" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 100 Q150 50 300 80 T600 60 V120 H0 Z" fill="#CA8A04" />
+          <path d="M0 110 Q150 75 300 95 T600 85 V120 H0 Z" fill="#15803D" />
+        </svg>
+
+        <!-- High-Resolution Company Logo Medallion -->
+        <div class="sbh-logo-stage sbh-a1">
+          <div class="sbh-logo-halo" aria-hidden="true"></div>
+          <a href="{% url 'root' %}" class="no-underline focus:outline-none inline-block" aria-label="Sri Basaveshwara &amp; Co. Home">
+            <div class="sbh-logo-medallion">
+              <div class="sbh-logo-inner">
+                <img
+                  src="{% static 'icons/icon-512.png' %}"
+                  alt="Sri Basaveshwara &amp; Co. — Harvesting Machines — Powering Harvests, Growing Futures"
+                  width="210"
+                  height="210"
+                />
+              </div>
             </div>
-          {% endfor %}
+          </a>
         </div>
-      {% endif %}
 
-      <form method="post" action="." class="space-y-4">
-        {% csrf_token %}
+        <!-- Company Title & Tagline -->
+        <div class="sbh-a2" style="position: relative; z-index: 10; text-align: center; margin-top: 22px;">
+          <div class="sbh-gold-divider"></div>
+          <h2 class="sbh-showcase-title">Sri Basaveshwara &amp; Co.</h2>
+          <p class="sbh-showcase-sub">Harvesting Machines</p>
+          <p class="sbh-showcase-desc">
+            Combine harvester &amp; tractor billing, diesel tracking, farmer Udhar ledger, and daily cash reconciliation.
+          </p>
+          <div class="sbh-gold-divider"></div>
+        </div>
 
-        <div>
-          <label for="id_username" class="block text-xs font-semibold text-gray-300 mb-1.5">
-            Username
-          </label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
-              <i class="bi bi-person text-sm"></i>
-            </span>
-            <input
-              type="text"
-              name="username"
-              id="id_username"
-              autocomplete="username"
-              required
-              autofocus
-              class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none transition-colors"
-              placeholder="Enter your system username"
-            >
+        <!-- Three Core Business Pillars -->
+        <div class="sbh-pillars-grid sbh-a3">
+          <div class="sbh-pillar-card">
+            <div class="sbh-pillar-ico" aria-hidden="true">🚜</div>
+            <div class="sbh-pillar-title">Fleet</div>
+            <div class="sbh-pillar-sub">Machines</div>
+          </div>
+          <div class="sbh-pillar-card">
+            <div class="sbh-pillar-ico" aria-hidden="true">🌾</div>
+            <div class="sbh-pillar-title">Farmer</div>
+            <div class="sbh-pillar-sub">Udhar Book</div>
+          </div>
+          <div class="sbh-pillar-card">
+            <div class="sbh-pillar-ico" aria-hidden="true">💰</div>
+            <div class="sbh-pillar-title">Accounts</div>
+            <div class="sbh-pillar-sub">Cash &amp; UPI</div>
           </div>
         </div>
 
-        <div x-data="{ showPass: false }">
-          <label for="id_password" class="block text-xs font-semibold text-gray-300 mb-1.5">
-            Password
-          </label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
-              <i class="bi bi-lock text-sm"></i>
-            </span>
-            <input
-              type="password"
-              :type="showPass ? 'text' : 'password'"
-              name="password"
-              id="id_password"
-              autocomplete="current-password"
-              required
-              class="w-full pl-9 pr-10 py-2.5 rounded-xl bg-[#0B0F17] border border-[#28354A] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white text-xs placeholder-gray-500 focus:outline-none transition-colors"
-              placeholder="Enter your secure password"
-            >
-            <button
-              type="button"
-              @click="showPass = !showPass"
-              class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-200 focus:outline-none"
-              aria-label="Toggle password visibility"
-            >
-              <i :class="showPass ? 'bi-eye-slash' : 'bi-eye'" class="bi text-sm"></i>
-            </button>
+        <p class="sbh-showcase-quote sbh-a4">&ldquo;Powering Harvests, Growing Futures&rdquo;</p>
+      </section>
+
+      <!-- RIGHT PANEL: Business Sign-In Form -->
+      <section class="sbh-form-panel" aria-label="Sign In Form">
+        <div class="sbh-brand-strip"></div>
+
+        <div class="sbh-form-inner">
+          <div class="sbh-form-box">
+            <!-- Header with Compact Company Stamp -->
+            <div class="sbh-form-header sbh-a1">
+              <div class="sbh-mini-seal">
+                <div class="sbh-mini-seal-inner">
+                  <img
+                    src="{% static 'icons/icon-192.png' %}"
+                    alt="Sri Basaveshwara &amp; Co."
+                    width="52"
+                    height="52"
+                  />
+                </div>
+              </div>
+              <div>
+                <div class="sbh-portal-kicker">Accounts &amp; Fleet Portal</div>
+                <h1 class="sbh-welcome-h1">Welcome Back</h1>
+                <p class="sbh-welcome-sub">Sign in to manage your business</p>
+              </div>
+            </div>
+
+            <!-- Messages / Errors / Signed-out Notice -->
+            {% if messages %}
+            <div class="space-y-2 mb-4">
+              {% for message in messages %}
+              <div
+                class="{% if 'error' in message.tags %}sbh-alert-error{% else %}sbh-alert-success{% endif %}"
+                {% if 'error' in message.tags %}data-sbh-has-error="true"{% endif %}
+                role="alert"
+              >
+                <i class="bi {% if 'error' in message.tags %}bi-exclamation-octagon-fill{% else %}bi-check-circle-fill{% endif %}"></i>
+                <span>{{ message }}</span>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Authentication Form -->
+            <form id="sbhLoginForm" method="post" action="." data-custom-loader="true" class="sbh-a2">
+              {% csrf_token %}
+
+              <div style="margin-bottom: 16px;">
+                <label for="id_username" class="sbh-label">Username</label>
+                <div class="sbh-input-wrap">
+                  <span class="sbh-input-ico" aria-hidden="true">
+                    <i class="bi bi-person text-base"></i>
+                  </span>
+                  <input
+                    type="text"
+                    name="username"
+                    id="id_username"
+                    autocomplete="username"
+                    required
+                    autofocus
+                    value="{{ form.username.value|default:'' }}"
+                    class="sbh-input"
+                    placeholder="Enter username"
+                  />
+                </div>
+              </div>
+
+              <div x-data="{ showPass: false }" style="margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                  <label for="id_password" class="sbh-label" style="margin-bottom: 0;">Password</label>
+                  <span style="font-size: 10px; color: #64748b;">
+                    <i class="bi bi-shield-lock text-[10px]"></i> Encrypted
+                  </span>
+                </div>
+                <div class="sbh-input-wrap">
+                  <span class="sbh-input-ico" aria-hidden="true">
+                    <i class="bi bi-lock text-base"></i>
+                  </span>
+                  <input
+                    type="password"
+                    :type="showPass ? 'text' : 'password'"
+                    name="password"
+                    id="id_password"
+                    autocomplete="current-password"
+                    required
+                    class="sbh-input"
+                    style="padding-right: 40px;"
+                    placeholder="Enter password"
+                  />
+                  <button
+                    type="button"
+                    @click="showPass = !showPass"
+                    class="sbh-eye-btn"
+                    aria-label="Toggle password visibility"
+                  >
+                    <i :class="showPass ? 'bi-eye-slash' : 'bi-eye'" class="bi text-base"></i>
+                  </button>
+                </div>
+              </div>
+
+              <button id="sbhLoginBtn" type="submit" class="sbh-submit-btn">
+                <span id="sbhLoginSweep" class="sbh-btn-sweep"></span>
+                <svg id="sbhLoginSpin" class="sbh-spin-svg" style="display: none; position: relative; z-index: 1;" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="white" stroke-opacity="0.3" stroke-width="3" />
+                  <path d="M12 2a10 10 0 0 1 10 10" stroke="white" stroke-width="3" stroke-linecap="round" />
+                </svg>
+                <svg id="sbhLoginCheck" style="display: none; position: relative; z-index: 1;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <path class="sbh-chk-path" d="M5 13l4 4L19 7" />
+                </svg>
+                <span id="sbhLoginLabel" style="position: relative; z-index: 1;">Sign In &rarr;</span>
+              </button>
+            </form>
+
+            <!-- Security Trust Indicators -->
+            <div class="sbh-trust-row sbh-a3">
+              <span class="sbh-trust-item">
+                <i class="bi bi-shield-check" style="color: #16a34a;"></i> Secure
+              </span>
+              <span style="color: #cbd5e1;">|</span>
+              <span class="sbh-trust-item">
+                <i class="bi bi-lock-fill" style="color: #2563eb;"></i> Encrypted
+              </span>
+              <span style="color: #cbd5e1;">|</span>
+              <span class="sbh-trust-item">
+                <i class="bi bi-person-badge-fill" style="color: #d97706;"></i> Staff Only
+              </span>
+            </div>
+
+            <!-- Footer Links -->
+            <footer class="sbh-login-footer sbh-a4">
+              <span>&copy; {% now "Y" %} Sri Basaveshwara &amp; Co.</span>
+              <span>
+                <a href="{% url 'privacy_policy' %}">Privacy Policy</a>
+                &bull;
+                <a href="{% url 'terms_of_service' %}">Terms of Service</a>
+              </span>
+            </footer>
           </div>
         </div>
+      </section>
+    </main>
 
-        <div class="pt-2">
-          <button
-            type="submit"
-            class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-md shadow-emerald-950/40 focus:outline-none focus:ring-2 focus:ring-emerald-400 flex items-center justify-center gap-2"
-          >
-            <span>Sign In to Sri Basaveshwara</span>
-            <i class="bi bi-arrow-right"></i>
-          </button>
-        </div>
-      </form>
-    </div>
+    <!-- Login Pre-loader & Login -> Website Motion Controller -->
+    <script>
+      (function () {
+        var hasError = Boolean(document.querySelector('[data-sbh-has-error="true"]'));
+        var activeFlow = document.documentElement.getAttribute('data-sbh-flow');
 
-    <!-- Security Footnote -->
-    <div class="text-center mt-6 text-[11px] text-gray-500 space-y-1">
-      <div>Protected Enterprise System &bull; Sri Basaveshwara &amp; Co.</div>
-      <div class="text-gray-400">
-        <a href="{% url 'privacy_policy' %}" class="hover:text-gray-300 transition-colors no-underline">Privacy Policy</a>
-        &bull;
-        <a href="{% url 'terms_of_service' %}" class="hover:text-gray-300 transition-colors no-underline">Terms of Service</a>
-      </div>
-    </div>
-  </div>
+        // 1. Page Pre-loader (Fresh arrival on login page, skipped on login error or post-logout)
+        if (!hasError && !activeFlow && window.SbhMotion) {
+          var alreadySplashed = false;
+          try { alreadySplashed = sessionStorage.getItem('sbh_login_splashed') === '1'; } catch (e) {}
 
-</body>
+          if (!alreadySplashed) {
+            try { sessionStorage.setItem('sbh_login_splashed', '1'); } catch (e) {}
+            window.SbhMotion.showCurtain('Loading Portal...', 'Connecting to Sri Basaveshwara & Co.', 25);
+            window.SbhMotion.showTopBar(35);
+            setTimeout(function () {
+              window.SbhMotion.updateCurtain('Loading Portal...', 'Preparing Business Ledger...', 85);
+              window.SbhMotion.showTopBar(85);
+              setTimeout(function () {
+                window.SbhMotion.updateCurtain('Ready', 'Welcome', 100);
+                window.SbhMotion.hideTopBar();
+                setTimeout(window.SbhMotion.hideCurtain, 220);
+              }, 260);
+            }, 260);
+          }
+        }
+
+        // 2. Login -> Website Smooth Submit & Transition Flow
+        var form = document.getElementById('sbhLoginForm');
+        var btn = document.getElementById('sbhLoginBtn');
+        var sweep = document.getElementById('sbhLoginSweep');
+        var spin = document.getElementById('sbhLoginSpin');
+        var check = document.getElementById('sbhLoginCheck');
+        var label = document.getElementById('sbhLoginLabel');
+
+        if (form && btn) {
+          form.addEventListener('submit', function (e) {
+            if (form.dataset.sbhLoginSubmitting === 'true') return;
+            if (form.checkValidity && !form.checkValidity()) return;
+
+            e.preventDefault();
+            form.dataset.sbhLoginSubmitting = 'true';
+            btn.disabled = true;
+
+            if (spin) spin.style.display = 'inline-block';
+            if (label) label.textContent = 'Verifying...';
+            if (sweep) sweep.style.width = '75%';
+            if (window.SbhMotion) window.SbhMotion.showTopBar(55);
+
+            try { sessionStorage.setItem('sbh_nav_flow', 'login'); } catch (err) {}
+
+            setTimeout(function () {
+              if (spin) spin.style.display = 'none';
+              if (check) check.style.display = 'inline-block';
+              if (label) label.textContent = 'Signing In...';
+              if (sweep) sweep.style.width = '100%';
+
+              if (window.SbhMotion) {
+                window.SbhMotion.showTopBar(85);
+                window.SbhMotion.showCurtain('Signing In...', 'Authenticating & opening your ledger...', 40);
+              }
+
+              setTimeout(function () {
+                HTMLFormElement.prototype.submit.call(form);
+              }, 280);
+            }, 300);
+          });
+        }
+
+        window.addEventListener('pageshow', function () {
+          if (form) delete form.dataset.sbhLoginSubmitting;
+          if (btn) btn.disabled = false;
+          if (spin) spin.style.display = 'none';
+          if (check) check.style.display = 'none';
+          if (sweep) sweep.style.width = '0%';
+          if (label) label.innerHTML = 'Sign In &rarr;';
+        });
+      })();
+    </script>
+  </body>
 </html>

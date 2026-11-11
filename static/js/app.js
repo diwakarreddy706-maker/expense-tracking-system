@@ -40,6 +40,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Universal Double-Submit Protection for Financial & Operational Forms
   document.querySelectorAll('form[method="post"]').forEach(form => {
     form.addEventListener('submit', function(e) {
+      if (form.dataset.customLoader === 'true') {
+        return;
+      }
+
       // Check if already submitting
       if (form.dataset.submitting === 'true') {
         e.preventDefault();
@@ -59,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add spinner if not already present
         if (!btn.querySelector('.submit-spinner')) {
           const spinner = document.createElement('span');
-          spinner.className = 'spinner-border spinner-border-sm submit-spinner me-1.5';
+          spinner.className = 'spinner-border spinner-border-sm submit-spinner mr-2 inline-block';
           spinner.setAttribute('role', 'status');
           spinner.setAttribute('aria-hidden', 'true');
           btn.prepend(spinner);
@@ -115,7 +119,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initPullToRefresh();
 
   // Phase 25: PWA & Network Resilience Engine Initializers
-  initNetworkStatusMonitor();
+  // Only inject JS fallback banners if server-rendered pwa_banner component is not present
+  if (!document.getElementById('pwaBannerRoot')) {
+    initNetworkStatusMonitor();
+  }
   initPwaInstallPrompt();
   initServiceWorkerUpdates();
 
@@ -603,7 +610,7 @@ function initPwaInstallPrompt() {
       el.classList.remove('hidden', 'd-none');
     });
 
-    if (!isSnoozed) {
+    if (!isSnoozed && !document.getElementById('pwaBannerRoot')) {
       showPwaInstallBanner();
     }
   });

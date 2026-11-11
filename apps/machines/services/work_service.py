@@ -222,37 +222,34 @@ class WorkService:
 
         # Step 4: Farmer Credit Ledger (Udhar) Integration
         if auto_create_receivable and total_amount > Decimal('0.00'):
-            try:
-                rcv = CustomerReceivableService.create_receivable(
+            rcv = CustomerReceivableService.create_receivable(
+                user=created_by,
+                customer=customer,
+                total_amount=total_amount,
+                bill_date=work_date,
+                invoice_no=manual_bill_no or work_code,
+                notes=f"Harvesting Work: {work_code} ({machine.name})",
+                request=request
+            )
+            entry.receivable = rcv
+            entry.save(update_fields=['receivable'])
+
+            # If Advance was collected on site, record receipt into selected Account
+            if advance_amount > Decimal('0.00') and payment_account:
+                pay_method = CustomerPayment.METHOD_CASH if payment_mode == 'CASH' else (
+                    CustomerPayment.METHOD_UPI if payment_mode == 'UPI' else CustomerPayment.METHOD_CASH
+                )
+                CustomerReceivableService.record_payment(
                     user=created_by,
-                    customer=customer,
-                    total_amount=total_amount,
-                    bill_date=work_date,
-                    invoice_no=manual_bill_no or work_code,
-                    notes=f"Harvesting Work: {work_code} ({machine.name})",
+                    receivable_id=rcv.id,
+                    amount=advance_amount,
+                    account=payment_account,
+                    payment_method=pay_method,
+                    payment_date=work_date,
+                    reference_no=f"ADV-{work_code}",
+                    notes=f"Advance collected on-site for harvesting bill {work_code}",
                     request=request
                 )
-                entry.receivable = rcv
-                entry.save(update_fields=['receivable'])
-
-                # If Advance was collected on site, record receipt into selected Account
-                if advance_amount > Decimal('0.00') and payment_account:
-                    pay_method = CustomerPayment.METHOD_CASH if payment_mode == 'CASH' else (
-                        CustomerPayment.METHOD_UPI if payment_mode == 'UPI' else CustomerPayment.METHOD_CASH
-                    )
-                    CustomerReceivableService.record_payment(
-                        user=created_by,
-                        receivable_id=rcv.id,
-                        amount=advance_amount,
-                        account=payment_account,
-                        payment_method=pay_method,
-                        payment_date=work_date,
-                        reference_no=f"ADV-{work_code}",
-                        notes=f"Advance collected on-site for harvesting bill {work_code}",
-                        request=request
-                    )
-            except Exception as e:
-                logger.warning(f"Receivable creation warning for {work_code}: {e}")
 
         # Step 5: Automated Rented Harvester Settlement
         if machine.ownership_type == Machine.OWNERSHIP_RENTED and machine.rented_owner:
@@ -415,13 +412,19 @@ class WorkService:
     @classmethod
     @transaction.atomic
     def soft_delete_work_entry(cls, entry: MachineWorkEntry, user: User, request=None) -> None:
-        """Soft deletes a MachineWorkEntry with audit logging."""
-        entry.is_deleted = True
-        entry.save(update_fields=['is_deleted', 'updated_at'])
-
+        """Soft deletes a MachineWorkEntry with audit logging, guarding linked payments."""
         if entry.receivable and not entry.receivable.is_deleted:
+            if entry.receivable.payments.filter(is_deleted=False, is_reversed=False).exists():
+                raise ValidationError(
+                    f"Cannot delete work entry '{entry.work_code}' because its receivable "
+                    f"'{entry.receivable.receivable_code}' already has active customer payment(s). "
+                    "Reverse those payments first."
+                )
             entry.receivable.is_deleted = True
             entry.receivable.save(update_fields=['is_deleted', 'updated_at'])
+
+        entry.is_deleted = True
+        entry.save(update_fields=['is_deleted', 'updated_at'])
 
         log_audit_event(
             user=user,

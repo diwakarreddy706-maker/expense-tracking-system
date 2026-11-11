@@ -52,8 +52,8 @@ def fuel_list_view(request):
     if end_date:
         entries = entries.filter(date__lte=end_date)
 
-    # Basic analytics preparation (Section 22)
-    stats = entries.aggregate(
+    # Basic analytics preparation (exclude reversed fuel entries from totals)
+    stats = entries.filter(linked_expense__is_reversed=False).aggregate(
         total_litres=Sum('quantity'),
         total_fuel_cost=Sum('total_amount'),
         avg_price=Avg('unit_price')

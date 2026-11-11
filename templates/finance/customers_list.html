@@ -117,9 +117,9 @@
       </div>
     </div>
   {% empty %}
-    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-8 text-center text-gray-500 text-xs">
-      <i class="bi bi-people text-3xl d-block mb-2 text-gray-600"></i>
-      No customers found. Click "Add Customer" to create a new client profile.
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl">
+      {% url 'finance:customer_create' as add_cust_url %}
+      {% include 'components/empty_state.html' with icon='bi bi-people' title='No Farmers / Customers Yet' message='Register farmers and clients to track harvesting work bills and Udhar settlements.' action_url=add_cust_url action_text='Add First Customer' %}
     </div>
   {% endfor %}
 </div>
@@ -176,18 +176,18 @@
                   <i class="bi bi-pencil-square"></i>
                 </a>
                 {% if request.user.profile.role in 'OWNER,ACCOUNTANT' or request.user.is_superuser %}
-                  <a href="{% url 'finance:customer_delete' c.id %}" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors no-underline text-xs" title="Delete" aria-label="Delete Customer" onclick="return confirm('Soft delete customer {{ c.name }}?');">
+                  <button type="button" @click="$dispatch('open-confirm-modal', { url: '{% url 'finance:customer_delete' c.id %}', title: 'Delete Customer?', message: 'Are you sure you want to soft delete {{ c.name|escapejs }}? Existing invoices and ledger history remain preserved.', confirmLabel: 'Delete Customer' })" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-rose-400 hover:text-rose-300 border border-[#28354A] transition-colors cursor-pointer text-xs" title="Delete" aria-label="Delete Customer">
                     <i class="bi bi-trash"></i>
-                  </a>
+                  </button>
                 {% endif %}
               </div>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="6" class="py-12 text-center text-gray-500">
-              <i class="bi bi-people text-3xl d-block mb-2 text-gray-600"></i>
-              No customers found. Click "Add Customer" to create a new client profile.
+            <td colspan="6" class="p-0">
+              {% url 'finance:customer_create' as add_cust_url %}
+              {% include 'components/empty_state.html' with icon='bi bi-people' title='No Farmers / Customers Yet' message='Register farmers and clients to track harvesting work bills and Udhar settlements.' action_url=add_cust_url action_text='Add First Customer' %}
             </td>
           </tr>
         {% endfor %}

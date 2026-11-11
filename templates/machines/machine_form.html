@@ -58,6 +58,22 @@
         </div>
       </div>
 
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Ownership Type</label>
+          {{ form.ownership_type }}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Rented Fleet Owner (If Rented)</label>
+          {{ form.rented_owner }}
+          {% if form.rented_owner.errors %}<div class="text-rose-400 text-xs font-medium mt-1.5">{{ form.rented_owner.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">Standard Hourly Rate (₹)</label>
+          {{ form.hourly_rate }}
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-semibold text-gray-300 mb-1.5">Operational Status <span class="text-rose-400">*</span></label>

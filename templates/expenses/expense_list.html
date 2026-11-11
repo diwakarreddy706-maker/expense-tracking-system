@@ -169,9 +169,9 @@
       </div>
     </div>
   {% empty %}
-    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl p-8 text-center text-gray-500 text-xs">
-      <i class="bi bi-receipt text-3xl d-block mb-2 text-gray-600"></i>
-      No expenses found matching the criteria. Click "Record Expense" or "Quick Expense" to log your first transaction.
+    <div class="bg-[#131A26] border border-[#28354A] rounded-2xl">
+      {% url 'expenses:create' as add_exp_url %}
+      {% include 'components/empty_state.html' with icon='bi bi-receipt' title='No Expenses Recorded Yet' message='Record operational expenses, spare parts purchases, and field reimbursements.' action_url=add_exp_url action_text='Record First Expense' %}
     </div>
   {% endfor %}
 </div>
@@ -246,9 +246,9 @@
           </tr>
         {% empty %}
           <tr>
-            <td colspan="8" class="py-12 text-center text-gray-500">
-              <i class="bi bi-receipt text-3xl d-block mb-2 text-gray-600"></i>
-              No expenses found matching the criteria. Click "Record Expense" or "Quick Expense" to log your first transaction.
+            <td colspan="8" class="p-0">
+              {% url 'expenses:create' as add_exp_url %}
+              {% include 'components/empty_state.html' with icon='bi bi-receipt' title='No Expenses Recorded Yet' message='Record operational expenses, spare parts purchases, and field reimbursements.' action_url=add_exp_url action_text='Record First Expense' %}
             </td>
           </tr>
         {% endfor %}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Invoice #{{ entry.manual_bill_no|default:entry.work_code }} | AgriBOS ERP{% endblock %}
+{% block title %}Invoice #{{ entry.manual_bill_no|default:entry.work_code }} | Sri Basaveshwara & Co.{% endblock %}
 
 {% block content %}
 <!-- Top Action Bar (Hidden on print) -->
@@ -24,7 +24,7 @@
       <i class="bi bi-plus-lg"></i>
       <span>+ New Bill</span>
     </a>
-    <button type="button" onclick="window.shareContent({ title: 'Harvesting Bill {{ entry.manual_bill_no|default:entry.work_code }}', text: 'Sri Basaveshwara & Co Harvesting Bill for {{ entry.farmer_name|escapejs }} - Total: ₹{{ entry.total_amount|floatformat:0 }}', phone: '{{ entry.farmer_phone|escapejs }}', url: window.location.href })" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-sm transition-all border-0 cursor-pointer">
+    <button type="button" onclick="window.shareContent({ title: 'Harvesting Bill {{ entry.manual_bill_no|default:entry.work_code }}', text: 'Sri Basaveshwara & Co Harvesting Bill for {{ entry.customer.name|escapejs }} - Total: ₹{{ entry.total_amount|floatformat:0 }}', phone: '{{ entry.customer.phone|default:''|escapejs }}', url: window.location.href })" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-sm transition-all border-0 cursor-pointer">
       <i class="bi bi-share-fill"></i>
       <span>Share</span>
     </button>
@@ -74,7 +74,7 @@
 
   <div class="p-6 sm:p-8 space-y-6">
     <!-- Party Details Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-6 border-b border-gray-200" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px;">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-6 border-b border-gray-200">
       <div>
         <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500 font-mono block">BILLED TO (FARMER)</span>
         <h3 class="text-base font-bold text-gray-900 mt-1 mb-0">{{ entry.customer.name }}</h3>
@@ -260,13 +260,13 @@
     {% endif %}
 
     <!-- Footer Signatures -->
-    <div class="grid grid-cols-2 gap-8 pt-8 border-t border-gray-200 text-center text-xs text-gray-500 font-mono" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px;">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 border-t border-gray-200 text-center text-xs text-gray-500 font-mono">
       <div>
-        <div class="h-12 border-b border-gray-400 w-48 mx-auto"></div>
+        <div class="h-12 border-b border-gray-400 w-full max-w-[12rem] mx-auto"></div>
         <span class="block mt-1 font-semibold text-gray-700">Farmer / Customer Signature</span>
       </div>
       <div>
-        <div class="h-12 border-b border-gray-400 w-48 mx-auto"></div>
+        <div class="h-12 border-b border-gray-400 w-full max-w-[12rem] mx-auto"></div>
         <span class="block mt-1 font-semibold text-gray-700">For {{ company_profile.business_name|default:"Sri Basaveshwara & Co." }} ({{ company_profile.authorized_signatory_designation|default:"Authorized" }})</span>
       </div>
     </div>

@@ -116,23 +116,26 @@ class DailyClosingService:
             is_deleted=False
         )
 
-        # Inflows (External Money In)
+        # Inflows (External Money In, including credit reversals)
         inflow_types = [
             AccountTransaction.TYPE_INCOME,
             AccountTransaction.TYPE_RECEIVABLE_PAYMENT,
             AccountTransaction.TYPE_OPENING_BALANCE,
             AccountTransaction.TYPE_ADJUSTMENT,
+            AccountTransaction.TYPE_REVERSAL,
         ]
         inflows = txs.filter(
             direction=AccountTransaction.DIRECTION_CREDIT,
             transaction_type__in=inflow_types
         ).aggregate(s=Sum('amount'))['s'] or zero
 
-        # Outflows (External Money Out)
+        # Outflows (External Money Out, including debit reversals & adjustments)
         outflow_types = [
             AccountTransaction.TYPE_EXPENSE,
             AccountTransaction.TYPE_EMPLOYEE_PAYMENT,
             AccountTransaction.TYPE_PAYABLE_PAYMENT,
+            AccountTransaction.TYPE_ADJUSTMENT,
+            AccountTransaction.TYPE_REVERSAL,
         ]
         outflows = txs.filter(
             direction=AccountTransaction.DIRECTION_DEBIT,
@@ -172,10 +175,10 @@ class DailyClosingService:
 
         emp_payments = EmployeePayment.objects.filter(is_deleted=False, is_reversed=False)
         emp_accruals = emp_payments.filter(payment_type=EmployeePayment.TYPE_SALARY_ACCRUAL).aggregate(s=Sum('amount'))['s'] or zero
-        emp_bonuses = emp_payments.filter(payment_type=EmployeePayment.TYPE_BONUS).aggregate(s=Sum('amount'))['s'] or zero
         emp_advances = emp_payments.filter(payment_type=EmployeePayment.TYPE_ADVANCE_PAYOUT).aggregate(s=Sum('amount'))['s'] or zero
         emp_settlements = emp_payments.filter(payment_type=EmployeePayment.TYPE_SALARY_SETTLEMENT).aggregate(s=Sum('amount'))['s'] or zero
-        emp_out_total = ((emp_accruals + emp_bonuses) - (emp_advances + emp_settlements)).quantize(Decimal('0.01'))
+        # Bonuses are immediately disbursed on record_payout, so unpaid liability excludes bonuses
+        emp_out_total = (emp_accruals - (emp_advances + emp_settlements)).quantize(Decimal('0.01'))
 
         return {
             'closing_date': closing_date,
@@ -223,13 +226,19 @@ class DailyClosingService:
         actual_closing = actual_closing.quantize(Decimal('0.01'))
 
         with transaction.atomic():
+            # Lock target account (or all active accounts for CONSOLIDATED) to prevent concurrent duplicate closings
+            if scope == DailyClosing.SCOPE_CONSOLIDATED:
+                list(Account.objects.select_for_update().filter(is_active=True, is_deleted=False).order_by('id'))
+            elif account_id:
+                Account.objects.select_for_update().filter(id=account_id).first()
+
             # 1. Calculate authoritative figures
             reconciliation = cls.calculate_daily_reconciliation(closing_date, scope, account_id)
             target_account = reconciliation['target_account']
             expected = reconciliation['expected_closing']
 
-            # 2. Check for duplicate closing
-            existing = DailyClosing.objects.filter(
+            # 2. Check for duplicate closing with row lock
+            existing = DailyClosing.objects.select_for_update().filter(
                 closing_date=closing_date,
                 scope=scope,
                 account=target_account
