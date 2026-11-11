@@ -87,4 +87,63 @@
     </table>
   </div>
 </div>
+
+<!-- Owner-Only Clean Start / Data Reset Utility -->
+<div class="mt-6 bg-[#131A26] border border-rose-500/30 rounded-2xl shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-rose-500/20 bg-rose-950/20 flex items-center gap-3">
+    <div class="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
+      <i class="bi bi-trash3 text-base"></i>
+    </div>
+    <div>
+      <h3 class="text-sm font-bold text-white tracking-tight m-0">Clean Start &mdash; Erase All Business Data</h3>
+      <p class="text-xs text-gray-400 mt-0.5 mb-0">
+        Removes all financial accounts, transactions, machines, work entries, fuel logs, expenses, employees, customers, suppliers, audit logs, and extra users &mdash; while keeping <strong class="text-white">{{ request.user.username }}</strong> and your current password untouched.
+      </p>
+    </div>
+  </div>
+
+  <form method="post" action="{% url 'accounts:cleanup_business_data' %}" class="p-6">
+    {% csrf_token %}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+      <div>
+        <label for="id_confirm_phrase" class="block text-xs font-semibold text-gray-300 mb-1.5">
+          Type <span class="font-mono text-rose-400">CLEAR DATA</span> to confirm
+        </label>
+        <input
+          type="text"
+          id="id_confirm_phrase"
+          name="confirm_phrase"
+          required
+          autocomplete="off"
+          placeholder="CLEAR DATA"
+          class="w-full px-3 py-2 rounded-lg bg-[#0B0F17] border border-[#28354A] text-white text-xs font-mono focus:outline-none focus:border-rose-500"
+        />
+      </div>
+      <div>
+        <label for="id_owner_confirm_pw" class="block text-xs font-semibold text-gray-300 mb-1.5">
+          Confirm Owner Password
+        </label>
+        <input
+          type="password"
+          id="id_owner_confirm_pw"
+          name="password"
+          required
+          autocomplete="current-password"
+          placeholder="Enter your password"
+          class="w-full px-3 py-2 rounded-lg bg-[#0B0F17] border border-[#28354A] text-white text-xs focus:outline-none focus:border-rose-500"
+        />
+      </div>
+      <div>
+        <button
+          type="submit"
+          class="w-full px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2 border-0 cursor-pointer"
+          style="color: #ffffff !important;"
+        >
+          <i class="bi bi-exclamation-triangle"></i>
+          <span>Clean Up Data Only</span>
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
 {% endblock %}

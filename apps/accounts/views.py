@@ -9,6 +9,7 @@ from django.views.decorators.http import require_http_methods
 
 from .forms import LoginForm, UserProfileUpdateForm, UserCreateForm, UserEditForm
 from .decorators import role_required, owner_required
+from .cleanup_service import execute_business_data_cleanup
 from apps.audit.utils import log_audit_event
 from apps.audit.models import AuditLog
 
@@ -171,3 +172,33 @@ def user_edit_view(request, user_id):
         'target_user': target_user,
         'title': f"Edit User: {target_user.username}",
     })
+
+
+@owner_required
+@require_http_methods(["POST"])
+def cleanup_business_data_view(request):
+    """
+    Owner-only action to erase operational/financial/machinery/audit data and
+    extra user accounts while preserving the current Owner's username and password.
+    """
+    confirm_phrase = request.POST.get('confirm_phrase', '').strip()
+    password = request.POST.get('password', '')
+
+    if confirm_phrase != 'CLEAR DATA':
+        messages.error(request, "Confirmation mismatch. Type CLEAR DATA exactly to proceed.")
+        return redirect('accounts:user_list')
+
+    if not password or not request.user.check_password(password):
+        messages.error(request, "Incorrect Owner password. Business data was not changed.")
+        return redirect('accounts:user_list')
+
+    summary = execute_business_data_cleanup(
+        keep_user=request.user,
+        preserve_session_key=request.session.session_key,
+    )
+    total_removed = sum(summary.values())
+    messages.success(
+        request,
+        f"Clean start complete ({total_removed} records removed). Username '{request.user.username}' and your password remain unchanged."
+    )
+    return redirect('accounts:user_list')
